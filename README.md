@@ -58,10 +58,10 @@ py app.py            :: interfaz
 build.bat            :: genera dist\iRacingOptimizer.exe
 ```
 
-GitHub Actions compila el `.exe` en cada push a `main`; está disponible como *artifact* del workflow. Al crear una etiqueta `vX.Y.Z` se publica una Release con el ejecutable:
+GitHub Actions compila el `.exe` en cada push a `main`; está disponible como *artifact* del workflow. Al publicar una Release (o subir una etiqueta `vX.Y.Z`), el workflow compila y adjunta el ejecutable:
 
 ```
-git tag v0.3.0 && git push origin v0.3.0
+gh release create v0.3.1 --generate-notes
 ```
 
 ### Estructura
