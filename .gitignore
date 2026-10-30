@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+build/
+dist/
+*.spec
+.venv/
+.pytest_cache/
+# sesiones y backups locales
+session_*.csv
+session_*.json
+*.report.html
+*.recs.json
+demo_iracing_ini/

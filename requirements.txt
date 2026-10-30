@@ -1,0 +1,4 @@
+pyirsdk>=1.3.5
+PyYAML>=6.0
+psutil>=5.9
+nvidia-ml-py>=12.0 ; platform_system == "Windows"

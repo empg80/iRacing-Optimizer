@@ -1,0 +1,55 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller pytest
+
+      - name: Tests
+        run: python -m pytest -q tests
+
+      - name: Compilar ejecutable
+        run: >
+          pyinstaller --noconfirm --onefile --windowed
+          --name iRacingOptimizer
+          --hidden-import irsdk --hidden-import pynvml --hidden-import yaml
+          app.py
+
+      - name: Probar que arranca la CLI
+        shell: pwsh
+        run: |
+          $p = Start-Process dist\iRacingOptimizer.exe -ArgumentList "demo --out $env:RUNNER_TEMP\demo --no-browser" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { exit 1 }
+          if (-not (Test-Path "$env:RUNNER_TEMP\demo\session_demo.report.html")) { exit 1 }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iRacingOptimizer-windows
+          path: dist/iRacingOptimizer.exe
+
+      - name: Publicar release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/iRacingOptimizer.exe
+          generate_release_notes: true
