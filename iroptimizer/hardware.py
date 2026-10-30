@@ -11,6 +11,8 @@ import sys
 
 import psutil
 
+from .safety import system_exe
+
 POWER_PLANS = {
     "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c": "Alto rendimiento",
     "381b4222-f694-41f0-9685-ff5bb260df2e": "Equilibrado",
@@ -68,9 +70,12 @@ def gpu_info() -> list[dict]:
         return gpus
     except Exception:
         pass
-    try:  # sin pynvml pero con driver NVIDIA
+    exe = system_exe("nvidia-smi.exe", r"C:\Program Files\NVIDIA Corporation\NVSMI") if sys.platform == "win32" else None
+    try:  # sin pynvml pero con driver NVIDIA (ruta absoluta: nunca un nvidia-smi de la carpeta actual)
+        if not exe:
+            raise FileNotFoundError
         out = subprocess.run(
-            ["nvidia-smi", "--query-gpu=name,memory.total,driver_version", "--format=csv,noheader,nounits"],
+            [exe, "--query-gpu=name,memory.total,driver_version", "--format=csv,noheader,nounits"],
             capture_output=True, text=True, timeout=5).stdout
         for line in out.strip().splitlines():
             n, mem, drv = [x.strip() for x in line.split(",")]
@@ -122,7 +127,10 @@ def windows_tweaks() -> dict:
     import winreg
     out: dict = {}
     try:
-        txt = subprocess.run(["powercfg", "/getactivescheme"], capture_output=True, text=True, timeout=5).stdout
+        exe = system_exe("powercfg.exe")
+        if not exe:
+            raise FileNotFoundError("powercfg")
+        txt = subprocess.run([exe, "/getactivescheme"], capture_output=True, text=True, timeout=5).stdout
         m = re.search(r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})", txt, re.I)
         if m:
             g = m.group(1).lower()

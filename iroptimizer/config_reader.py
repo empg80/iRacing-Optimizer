@@ -8,13 +8,7 @@ from pathlib import Path
 
 from .iniio import IniFile
 
-RENDERER_FILES = [
-    "rendererDX11Monitor.ini",
-    "rendererDX11OpenXR.ini",
-    "rendererDX11OpenVR.ini",
-    "rendererDX11Oculus.ini",
-    "rendererDX11.ini",
-]
+from .safety import RENDERER_FILES, redact_path, safe_renderer
 
 
 def documents_dir() -> Path:
@@ -73,7 +67,7 @@ def load(ini_dir: str | None = None, renderer: str | None = None) -> IRacingConf
     cands = [(n, (d / n).stat().st_mtime) for n in RENDERER_FILES if (d / n).is_file()]
     cfg.renderer_candidates = sorted(cands, key=lambda x: -x[1])
     if renderer:
-        cfg.renderer = IniFile(d / renderer)
+        cfg.renderer = IniFile(d / safe_renderer(renderer))
     else:
         # Prioridad: Monitor si existe (pantalla plana); si no, el modificado más reciente.
         names = [n for n, _ in cfg.renderer_candidates]
@@ -89,7 +83,7 @@ def load(ini_dir: str | None = None, renderer: str | None = None) -> IRacingConf
 
 def snapshot(cfg: IRacingConfig) -> dict:
     return {
-        "directory": str(cfg.directory),
+        "directory": redact_path(str(cfg.directory)),  # sin tu nombre de usuario si compartes la sesión
         "renderer_file": cfg.renderer_name,
         "renderer_candidates": cfg.renderer_candidates,
         "renderer": cfg.renderer.as_dict() if cfg.renderer else {},

@@ -5,8 +5,12 @@ así que nunca reescribimos el archivo entero: solo sustituimos el valor de la l
 """
 from __future__ import annotations
 
+import os
 import re
+import tempfile
 from pathlib import Path
+
+from .safety import safe_value
 
 _SECTION = re.compile(r"^\s*\[(?P<name>[^\]]+)\]")
 _KV = re.compile(
@@ -78,13 +82,14 @@ class IniFile:
         i = self._find(key, section)
         if i is None:
             return False
+        value = safe_value(_fmt(value))  # nunca escribir saltos de línea, ';', '=' ni corchetes
         m = _KV.match(self.lines[i])
         pad = m.group("pad") or ""
         comment = m.group("comment") or ""
         if comment and not pad:
             pad = " "
         self.lines[i] = (
-            f"{m.group('lead')}{m.group('key')}{m.group('eq')}{_fmt(value)}"
+            f"{m.group('lead')}{m.group('key')}{m.group('eq')}{value}"
             f"{pad}{comment}{m.group('eol') or ''}"
         )
         return True
@@ -107,7 +112,20 @@ class IniFile:
         data = "".join(self.lines).encode(self.encoding, errors="replace")
         if self.bom:
             data = b"\xef\xbb\xbf" + data
-        target.write_bytes(data)
+        # escritura atómica: si algo falla a mitad, el .ini original queda intacto
+        fd, tmp = tempfile.mkstemp(prefix=".iro_", suffix=".tmp", dir=str(target.parent))
+        try:
+            with os.fdopen(fd, "wb") as f:
+                f.write(data)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp, target)
+        except BaseException:
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+            raise
 
 
 def _fmt(value) -> str:

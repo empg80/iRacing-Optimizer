@@ -14,6 +14,7 @@ from datetime import datetime
 from pathlib import Path
 
 from .iniio import IniFile
+from .safety import MAX_JSON_BYTES, UnsafeInput, is_safe_value, safe_renderer
 
 GROUPS = {
     "graficos": {"label": "Gráficos (calidad y rendimiento)", "file": "renderer", "sections": ["Graphics Options"]},
@@ -61,7 +62,9 @@ def list_profiles(base: Path) -> list[dict]:
     out = []
     for p in sorted(profiles_dir(base).glob("*.json")):
         try:
-            d = json.loads(p.read_text(encoding="utf-8"))
+            if p.stat().st_size > MAX_JSON_BYTES:
+                continue
+            d = validate(json.loads(p.read_text(encoding="utf-8")))
             d["_path"] = str(p)
             out.append(d)
         except Exception:
@@ -72,7 +75,7 @@ def list_profiles(base: Path) -> list[dict]:
 def changes_for(prof: dict, ini_dir: Path, renderer_file: str | None = None) -> list[dict]:
     """Diferencias entre el perfil y los .ini actuales (solo claves existentes)."""
     ini_dir = Path(ini_dir)
-    target = renderer_file or prof.get("renderer_file") or "rendererDX11Monitor.ini"
+    target = safe_renderer(renderer_file or prof.get("renderer_file"))
     out = []
     for file_key, fname in (("renderer", target), ("app", "app.ini")):
         secs = (prof.get("data") or {}).get(file_key) or {}
@@ -80,9 +83,13 @@ def changes_for(prof: dict, ini_dir: Path, renderer_file: str | None = None) -> 
             continue
         cur = IniFile(ini_dir / fname)
         for sec, kv in secs.items():
+            if not isinstance(kv, dict):
+                continue
             for k, v in kv.items():
+                if not isinstance(k, str) or not is_safe_value(v):
+                    continue  # valor sospechoso en el perfil: se ignora
                 c = cur.get(k, sec)
-                if c is not None and str(c) != str(v):
+                if c is not None and str(c) != str(v).strip():
                     out.append({"file": file_key, "file_name": fname, "section": sec, "key": k,
                                 "current": c, "proposed": str(v)})
     return out
@@ -92,10 +99,37 @@ def delete(path: str | Path) -> None:
     Path(path).unlink(missing_ok=True)
 
 
+def validate(d: dict) -> dict:
+    """Comprueba un perfil externo y devuelve una copia limpia."""
+    if not isinstance(d, dict) or not isinstance(d.get("data"), dict) or not isinstance(d.get("name"), str):
+        raise UnsafeInput("El archivo no es un perfil de iRacing Optimizer.")
+    clean = {"renderer": {}, "app": {}}
+    dropped = 0
+    for fk in ("renderer", "app"):
+        for sec, kv in (d["data"].get(fk) or {}).items():
+            if not isinstance(sec, str) or not isinstance(kv, dict):
+                continue
+            for k, v in kv.items():
+                if isinstance(k, str) and len(k) <= 64 and k.replace("_", "").isalnum() and is_safe_value(v):
+                    clean[fk].setdefault(sec[:64], {})[k] = str(v).strip()
+                else:
+                    dropped += 1
+    try:
+        rf = safe_renderer(d.get("renderer_file"))
+    except UnsafeInput:
+        rf = "rendererDX11Monitor.ini"
+    return {"name": d["name"][:60], "description": str(d.get("description", ""))[:200],
+            "created": str(d.get("created", ""))[:25], "renderer_file": rf,
+            "groups": [g for g in d.get("groups", []) if g in GROUPS], "data": clean, "format": 1,
+            "_dropped": dropped}
+
+
 def import_file(base: Path, src: str | Path) -> Path:
-    d = json.loads(Path(src).read_text(encoding="utf-8"))
-    if "data" not in d or "name" not in d:
-        raise ValueError("El archivo no es un perfil de iRacing Optimizer.")
+    src = Path(src)
+    if src.stat().st_size > MAX_JSON_BYTES:
+        raise UnsafeInput("Archivo demasiado grande para ser un perfil.")
+    d = validate(json.loads(src.read_text(encoding="utf-8")))
+    d.pop("_dropped", None)
     dst = profiles_dir(base) / f"{_slug(d['name'])}.json"
     dst.write_text(json.dumps(d, indent=2, ensure_ascii=False), encoding="utf-8")
     return dst

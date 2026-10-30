@@ -140,7 +140,7 @@ def render_html(a: dict, recs: list[dict], profs: dict | None = None, diag: dict
                     f"<br>{_e(r['current'])} → <b>{_e(r['proposed'])}</b>")
         else:
             what = f"<b>{_e(r['title'])}</b>"
-        rec_rows.append(f"<tr><td class='p{r['priority']}'>P{r['priority']}</td><td>{CAT.get(r['category'], r['category'])}</td>"
+        rec_rows.append(f"<tr><td class='p{r['priority']}'>P{r['priority']}</td><td>{_e(CAT.get(r['category'], r['category']))}</td>"
                         f"<td>{what}</td><td>{_e(r['reason'])}</td></tr>")
     recs_html = "".join(rec_rows) or "<tr><td colspan=4 class=muted>Nada que cambiar: vas sobrado.</td></tr>"
 

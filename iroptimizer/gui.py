@@ -15,6 +15,7 @@ from tkinter import filedialog, messagebox, ttk
 
 import math
 
+from .safety import RENDERER_FILES
 from . import __version__, apply as applier, config_reader, diagnostics, fov, hardware, pipeline, profiles, userprofiles
 
 APP = "iRacing Optimizer"
@@ -39,7 +40,7 @@ def open_path(p: Path):
     if sys.platform == "win32":
         os.startfile(p)  # noqa: S606
     else:
-        subprocess.Popen(["xdg-open", str(p)])
+        subprocess.Popen(["/usr/bin/xdg-open", str(p)])  # noqa: S603 (solo desarrollo en Linux)
 
 
 class CheckTree(ttk.Treeview):
@@ -725,6 +726,8 @@ class App(tk.Tk):
             return
         if self.mp_target.get() not in (self.mp_target_cb["values"] or ()):
             self.mp_target.set(p.get("renderer_file") or (self.cfg.renderer_name or ""))
+        if self.mp_target.get() not in RENDERER_FILES:
+            self.mp_target.set("rendererDX11Monitor.ini")
         target = self.mp_target.get()
         if not (Path(self.cfg.directory) / target).is_file():
             self.mp_desc.set(f"{target} no existe en tu carpeta de iRacing. Arranca iRacing una vez con ese modo "
@@ -818,7 +821,11 @@ class App(tk.Tk):
         src = filedialog.askopenfilename(filetypes=[("Perfil", "*.json")])
         if src:
             try:
-                userprofiles.import_file(self.out_dir, src)
+                dst = userprofiles.import_file(self.out_dir, src)
+                d = userprofiles.validate(__import__("json").loads(Path(src).read_text(encoding="utf-8")))
+                if d.get("_dropped"):
+                    messagebox.showwarning(APP, f"Perfil importado en {dst.name}. Se descartaron {d['_dropped']} valores "
+                                                "que no parecían ajustes válidos de iRacing.")
             except Exception as e:
                 messagebox.showerror(APP, str(e))
                 return

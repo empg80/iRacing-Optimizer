@@ -39,7 +39,7 @@ Lee tu configuración de iRacing y de tu equipo y graba una sesión (mejor si es
 
 Descarga `iRacingOptimizer.exe` desde **[Releases](../../releases)** y ejecútalo: no necesita instalación ni Python.
 
-> Windows SmartScreen puede avisar porque el ejecutable no está firmado. Pulsa "Más información → Ejecutar de todas formas".
+> Windows SmartScreen puede avisar porque el ejecutable no está firmado. Pulsa "Más información → Ejecutar de todas formas". Puedes comprobar que el archivo es el original con el `SHA256SUMS.txt` de la release. Qué hace y qué no hace la app (sin conexión a internet, sin permisos de administrador, solo toca los `.ini` de iRacing y siempre con copia): ver [SECURITY.md](SECURITY.md).
 
 ## Uso
 
@@ -119,6 +119,7 @@ iroptimizer/
   userprofiles.py       perfiles guardados por el usuario (monitor, VR…)
   fov.py                geometría del FOV (plano, curvo, triples)
   apply.py              aplicar, copias y restaurar
+  safety.py             validaciones de seguridad (lista blanca de archivos, valores, rutas)
   iniio.py              lectura/escritura de .ini conservando comentarios
   config_reader.py      localiza Documentos\iRacing (respeta OneDrive)
   hardware.py           inventario del equipo

@@ -1,4 +1,5 @@
-pyirsdk>=1.3.5
-PyYAML>=6.0
-psutil>=5.9
-nvidia-ml-py>=12.0 ; platform_system == "Windows"
+# Versiones fijadas: el .exe se compila siempre con estas (actualizar a propósito, no por accidente)
+pyirsdk==1.3.7
+PyYAML==6.0.3
+psutil==7.2.2
+nvidia-ml-py==13.615.71 ; platform_system == "Windows"

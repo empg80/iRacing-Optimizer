@@ -9,6 +9,7 @@ from pathlib import Path
 import psutil
 
 from .iniio import IniFile
+from .safety import UnsafeInput, WRITABLE_FILES, safe_ini_target, safe_renderer, safe_stamp
 
 BACKUP_DIR = "iroptimizer_backups"
 BACKUP_FILES = ("rendererDX11Monitor.ini", "rendererDX11OpenXR.ini", "rendererDX11OpenVR.ini",
@@ -24,7 +25,9 @@ def iracing_running() -> bool:
 
 def backup(ini_dir: Path, label: str = "") -> Path:
     """Copia todos los .ini relevantes a iroptimizer_backups/<fecha>[_label]/."""
+    import re
     ini_dir = Path(ini_dir)
+    label = re.sub(r"[^\w\-]", "_", label, flags=re.UNICODE)[:40]
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S") + (f"_{label}" if label else "")
     bdir = ini_dir / BACKUP_DIR / stamp
     bdir.mkdir(parents=True, exist_ok=True)
@@ -41,11 +44,14 @@ def apply_changes(changes: list[dict], ini_dir: Path, renderer_file: str | None,
         return ["No hay cambios que aplicar."]
     if not dry_run and iracing_running():
         raise RuntimeError("Cierra iRacing antes de aplicar: el simulador reescribe los .ini al salir.")
-    files = {"renderer": renderer_file or "rendererDX11Monitor.ini", "app": "app.ini"}
+    files = {"renderer": safe_renderer(renderer_file), "app": "app.ini"}
     log, opened = [], {}
     for c in changes:
+        if c.get("file") not in files:
+            log.append(f"  ! tipo de archivo no permitido: {str(c.get('file'))[:20]}")
+            continue
         fname = files[c["file"]]
-        path = Path(ini_dir) / fname
+        path = safe_ini_target(ini_dir, fname)
         if not path.is_file():
             log.append(f"  ! {fname} no existe, se omite {c['key']}")
             continue
@@ -56,7 +62,11 @@ def apply_changes(changes: list[dict], ini_dir: Path, renderer_file: str | None,
             continue
         if str(before) == str(c["proposed"]):
             continue
-        ini.set(c["key"], c["proposed"], c.get("section"))
+        try:
+            ini.set(c["key"], c["proposed"], c.get("section"))
+        except UnsafeInput as e:
+            log.append(f"  ! {fname}: {c['key']} rechazado ({e})")
+            continue
         log.append(f"  {fname}: {c['key']} {before} → {c['proposed']}")
     if dry_run:
         return ["(simulación, no se ha escrito nada)"] + log
@@ -85,13 +95,15 @@ def restore(ini_dir: Path, stamp: str | None = None) -> list[str]:
     dirs = list_backups(ini_dir)
     if not dirs:
         raise FileNotFoundError("No hay copias de seguridad.")
-    src = (Path(ini_dir) / BACKUP_DIR / stamp) if stamp else dirs[0]
+    src = (Path(ini_dir) / BACKUP_DIR / safe_stamp(stamp)) if stamp else dirs[0]
     if not src.is_dir():
         raise FileNotFoundError(f"No existe la copia {stamp}")
     if iracing_running():
         raise RuntimeError("Cierra iRacing antes de restaurar.")
     out = []
     for f in src.iterdir():
-        shutil.copy2(f, Path(ini_dir) / f.name)
+        if f.name not in WRITABLE_FILES or not f.is_file() or f.is_symlink():
+            continue  # solo restauramos .ini conocidos de iRacing
+        shutil.copy2(f, safe_ini_target(ini_dir, f.name))
         out.append(f"Restaurado {f.name} desde {src.name}")
     return out
