@@ -21,6 +21,12 @@ BN = {"cap": "En el tope", "gpu": "GPU", "cpu": "CPU / motor", "mixed": "Mixto",
 CHECK, UNCHECK = "☑", "☐"
 
 
+def resource(name: str) -> Path:
+    """Ruta a un recurso, tanto en desarrollo como dentro del .exe de PyInstaller."""
+    base = getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent)
+    return Path(base) / "assets" / name
+
+
 def default_out_dir() -> Path:
     d = config_reader.documents_dir() / "iRacingOptimizer"
     d.mkdir(parents=True, exist_ok=True)
@@ -79,6 +85,13 @@ class App(tk.Tk):
         self.title(f"{APP} {__version__}")
         self.geometry("1180x760")
         self.minsize(980, 620)
+        try:
+            self._icon = tk.PhotoImage(file=str(resource("icon.png")))
+            self.iconphoto(True, self._icon)
+            if sys.platform == "win32":
+                self.iconbitmap(default=str(resource("icon.ico")))
+        except Exception:
+            pass
         self.q: queue.Queue = queue.Queue()
         self.cfg: config_reader.IRacingConfig | None = None
         self.hw: dict = {}
@@ -601,6 +614,7 @@ def main():
         try:  # nitidez en pantallas con escalado
             import ctypes
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("empg80.iRacingOptimizer")
         except Exception:
             pass
     App().mainloop()

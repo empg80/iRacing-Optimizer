@@ -33,7 +33,8 @@ jobs:
       - name: Compilar ejecutable
         run: >
           pyinstaller --noconfirm --onefile --windowed
-          --name iRacingOptimizer
+          --name iRacingOptimizer --icon assets/icon.ico
+          --add-data "assets/icon.png;assets" --add-data "assets/icon.ico;assets"
           --hidden-import irsdk --hidden-import pynvml --hidden-import yaml
           app.py
 

@@ -91,6 +91,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 8px;b
 th{color:#8a93a6;font-weight:500}.p1{color:#ff6b6b}.p2{color:#ffb703}.p3{color:#8a93a6}code{background:#1d2230;padding:1px 5px;border-radius:4px}
 .legend span{margin-right:14px;font-size:13px}.legend i{display:inline-block;width:12px;height:3px;margin-right:5px;vertical-align:middle}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.two{grid-template-columns:1fr}}
+.kpi li b{display:inline;font-size:inherit}
 .bar{display:flex;height:16px;border-radius:4px;overflow:hidden;margin:6px 0}.bar div{height:100%}
 """
 

@@ -1,6 +1,27 @@
+<p align="center"><img src="docs/logo.png" width="128" alt="iRacing Optimizer"></p>
+
 # iRacing Optimizer
 
 Lee tu configuración de iRacing y de tu equipo y graba una sesión (mejor si es una carrera). Con eso te dice **qué te limita** (CPU/motor, GPU o el tope de FPS) y propone valores concretos para los `.ini`. Los cambios se aplican con un botón y siempre se guarda antes una copia de seguridad.
+
+![Análisis y recomendaciones](docs/analisis.png)
+
+<details>
+<summary>Más capturas</summary>
+
+**Perfiles** (ajustados a la sesión medida)
+
+![Perfiles](docs/perfiles.png)
+
+**Informe HTML** (sesión real: carrera en Le Mans, 7800X3D + RTX 4090, 5120×1440)
+
+![Informe](docs/informe.png)
+
+**Equipo y configuración**
+
+![Equipo](docs/equipo.png)
+
+</details>
 
 ## Descarga
 
@@ -70,6 +91,8 @@ gh release create v0.3.1 --generate-notes
 
 ```
 app.py                  entrada del .exe (GUI sin argumentos, CLI con argumentos)
+assets/                 logo (SVG), icono .ico y .png
+docs/                   capturas del README
 iroptimizer/
   gui.py                interfaz tkinter
   monitor.py            grabación (pyirsdk + psutil + NVML)
