@@ -82,3 +82,32 @@ def test_diagnostics_and_live_watch(tmp_path):
     msgs += w.feed({"on_track": 1, "t": 11, "fps": 70, "chan_latency": 0.3, "chan_quality": 0.8})
     assert any("Tirón" in m for m in msgs) and any("latencia" in m for m in msgs)
     assert any("paquetes" in m for m in msgs)
+
+
+def test_fov_geometry():
+    from iroptimizer import fov
+    # 27" 16:9 a 60 cm ≈ 53° (referencia habitual)
+    r = fov.compute(fov.Setup(monitor_width=fov.width_from_diagonal(27), bezel=0, distance=600))
+    assert 52 <= r.fov_h <= 54
+    # curvo: más FOV que el plano equivalente
+    flat = fov.compute(fov.Setup(monitor_width=1156, bezel=4, distance=540)).fov_h
+    curved = fov.compute(fov.Setup(curved=True, monitor_width=1156, bezel=4, distance=540, radius=1000)).fov_h
+    assert curved > flat
+    # triples: ángulo ideal razonable y FOV total mayor que el central
+    t = fov.compute(fov.Setup(monitors=3, monitor_width=640, bezel=10, distance=650, side_angle=50))
+    assert 40 < t.ideal_side_angle < 65 and t.fov_h > t.fov_center * 2
+
+
+def test_user_profiles_roundtrip(tmp_path):
+    from iroptimizer import userprofiles
+    csv_path, ini_dir = _demo(tmp_path)
+    base = tmp_path / "out"
+    userprofiles.save(base, "Monitor", ini_dir, "rendererDX11Monitor.ini", ["graficos"])
+    ini = iniio.IniFile(ini_dir / "rendererDX11Monitor.ini")
+    ini.set("MaxCarsToDraw", 12)
+    ini.save()
+    prof = userprofiles.list_profiles(base)[0]
+    ch = userprofiles.changes_for(prof, ini_dir)
+    assert [c["key"] for c in ch] == ["MaxCarsToDraw"] and ch[0]["proposed"] == "40"
+    applier.apply_changes(ch, ini_dir, prof["renderer_file"], label="t")
+    assert iniio.IniFile(ini_dir / "rendererDX11Monitor.ini").get("MaxCarsToDraw") == "40"

@@ -13,6 +13,14 @@ Lee tu configuración de iRacing y de tu equipo y graba una sesión (mejor si es
 
 ![Diagnóstico](docs/diagnostico.png)
 
+**FOV** (triples planos con ángulo ideal)
+
+![FOV](docs/fov_triples.png)
+
+**Mis perfiles** (monitor y VR)
+
+![Mis perfiles](docs/misperfiles.png)
+
 **Perfiles** (ajustados a la sesión medida)
 
 ![Perfiles](docs/perfiles.png)
@@ -40,8 +48,10 @@ Descarga `iRacingOptimizer.exe` desde **[Releases](../../releases)** y ejecútal
 3. **Diagnóstico**: revisa por áreas (CPU, GPU, frametime, red, memoria y sistema) y marca cada comprobación como OK, aviso o problema. Para cada una explica qué significa y qué hacer, y lista los incidentes con su minuto y su posición en la vuelta.
 4. **Análisis y recomendaciones**: muestra los FPS medios, el 5 % y el 1 % peor, el porcentaje de tiempo bajo el objetivo, qué te limita y una lista de cambios priorizados (P1 aplicar ya, P2 recomendable, P3 opcional). Marca los que quieras y pulsa **Aplicar seleccionados**. Hay un informe HTML con gráficas.
 5. **Perfiles**: tres configuraciones de partida (Máximo rendimiento, Equilibrado y Calidad gráfica). Si has analizado una sesión, el tope de FPS y el LOD dinámico se ajustan a tu medición. Cada perfil muestra exactamente qué cambia antes de aplicarlo.
-6. **Comparar**: en Análisis, *Comparar con otra sesión…* enfrenta la sesión nueva con una anterior. Muestra los FPS según el tráfico (la comparación justa entre una práctica y una carrera) y qué ajustes cambiaron entre las dos.
-7. **Copias de seguridad**: lista las copias y restaura cualquiera con un clic.
+6. **Mis perfiles**: guarda tu configuración actual con un nombre ("Monitor carreras", "VR", "Grabar vídeos"…) y aplícala cuando la necesites. Puedes elegir qué guardar: gráficos, pantalla/monitores y FOV. Cada perfil recuerda su archivo gráfico (`rendererDX11Monitor.ini` para el monitor, `rendererDX11OpenXR.ini` para VR), así que alternar entre monitor y gafas es un clic. Antes de aplicar enseña exactamente qué cambia. Se pueden exportar e importar para compartirlos.
+7. **FOV**: calculadora visual para 1 monitor plano o curvo y para triples planos o curvos. Usa las mismas medidas que iRacing: ancho con biseles medido en recto, bisel de un lado, ángulo de los laterales o radio de curvatura, y distancia de los ojos a la pantalla. Dibuja el puesto visto desde arriba con el FOV resultante, lo compara con el que tienes en iRacing, calcula el ángulo ideal de los laterales y lo aplica (`[MonitorSetup]` + `drivingCamFOV`). Después puedes confirmarlo con *Compute* en el menú Monitor de iRacing.
+8. **Comparar**: en Análisis, *Comparar con otra sesión…* enfrenta la sesión nueva con una anterior. Muestra los FPS según el tráfico (la comparación justa entre una práctica y una carrera) y qué ajustes cambiaron entre las dos.
+9. **Copias de seguridad**: lista las copias y restaura cualquiera con un clic.
 
 Aplica los cambios **con iRacing cerrado**, porque el simulador reescribe los `.ini` al salir. La app lo comprueba antes de escribir.
 
@@ -106,6 +116,8 @@ iroptimizer/
   diagnostics.py        comprobaciones por área, incidentes y alertas en vivo
   recommender.py        reglas → cambios priorizados
   profiles.py           perfiles Rendimiento / Equilibrado / Calidad
+  userprofiles.py       perfiles guardados por el usuario (monitor, VR…)
+  fov.py                geometría del FOV (plano, curvo, triples)
   apply.py              aplicar, copias y restaurar
   iniio.py              lectura/escritura de .ini conservando comentarios
   config_reader.py      localiza Documentos\iRacing (respeta OneDrive)

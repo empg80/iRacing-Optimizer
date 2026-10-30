@@ -13,7 +13,9 @@ import webbrowser
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
-from . import __version__, apply as applier, config_reader, diagnostics, hardware, pipeline, profiles
+import math
+
+from . import __version__, apply as applier, config_reader, diagnostics, fov, hardware, pipeline, profiles, userprofiles
 
 APP = "iRacing Optimizer"
 PRIO_TAG = {1: "p1", 2: "p2", 3: "p3"}
@@ -170,6 +172,8 @@ class App(tk.Tk):
         self._tab_diagnostico()
         self._tab_analisis()
         self._tab_perfiles()
+        self._tab_misperfiles()
+        self._tab_fov()
         self._tab_copias()
 
         self.status_var = tk.StringVar(value="Listo")
@@ -403,6 +407,8 @@ class App(tk.Tk):
                     self.cfg_tree.insert("", "end", values=(sec, k, v))
         self._refresh_profiles()
         self._refresh_backups()
+        self._refresh_myprofiles()
+        self._fov_load_from_ini(silent=True)
         self.status(f"Configuración cargada: {c.renderer_name or 'sin archivo gráfico'}")
 
     def _refresh_hw(self):
@@ -653,6 +659,383 @@ class App(tk.Tk):
         ch = getattr(self, "_profiles", {}).get(name, [])
         if self._confirm_apply(ch, f"el perfil «{profiles.PROFILES[name]['title']}»"):
             self._do_apply(ch, f"perfil_{name}")
+
+
+    # ------------------------------------------------------------------ mis perfiles
+    def _tab_misperfiles(self):
+        f = ttk.Frame(self.nb, padding=10)
+        self.nb.add(f, text="Mis perfiles")
+        ttk.Label(f, text="Guarda tu configuración actual con un nombre (p. ej. «Monitor carreras», «VR», «Grabar vídeos») "
+                          "y aplícala cuando quieras. Útil si alternas monitor y gafas VR o distintos usos.",
+                  style="Muted.TLabel", wraplength=1100).pack(anchor="w")
+        row = ttk.Frame(f)
+        row.pack(fill="x", pady=8)
+        ttk.Button(row, text="Guardar configuración actual…", style="Accent.TButton", command=self.myprof_save).pack(side="left")
+        ttk.Button(row, text="Importar…", command=self.myprof_import).pack(side="left", padx=6)
+        ttk.Button(row, text="Exportar…", command=self.myprof_export).pack(side="left")
+        ttk.Button(row, text="Eliminar", command=self.myprof_delete).pack(side="left", padx=6)
+        body = ttk.PanedWindow(f, orient="horizontal")
+        body.pack(fill="both", expand=True)
+        left = ttk.Frame(body)
+        self.mp_tree = ttk.Treeview(left, columns=("name", "file", "inc", "date"), show="headings", height=14)
+        for c, t, w in (("name", "Perfil", 200), ("file", "Archivo gráfico", 190), ("inc", "Incluye", 200), ("date", "Guardado", 130)):
+            self.mp_tree.heading(c, text=t)
+            self.mp_tree.column(c, width=w, anchor="w")
+        self.mp_tree.pack(fill="both", expand=True)
+        self.mp_tree.bind("<<TreeviewSelect>>", lambda e: self._myprof_diff())
+        body.add(left, weight=3)
+        right = ttk.Frame(body, padding=(10, 0, 0, 0))
+        tr = ttk.Frame(right)
+        tr.pack(fill="x")
+        ttk.Label(tr, text="Aplicar sobre:").pack(side="left")
+        self.mp_target = tk.StringVar()
+        self.mp_target_cb = ttk.Combobox(tr, textvariable=self.mp_target, state="readonly", width=28)
+        self.mp_target_cb.pack(side="left", padx=6)
+        self.mp_target_cb.bind("<<ComboboxSelected>>", lambda e: self._myprof_diff())
+        self.mp_desc = tk.StringVar(value="Selecciona un perfil para ver qué cambiaría.")
+        ttk.Label(right, textvariable=self.mp_desc, style="Muted.TLabel", wraplength=480).pack(anchor="w", pady=6)
+        self.mp_diff = ttk.Treeview(right, columns=("file", "key", "cur", "new"), show="headings", height=12)
+        for c, t, w in (("file", "Archivo", 150), ("key", "Clave", 170), ("cur", "Actual", 80), ("new", "Perfil", 80)):
+            self.mp_diff.heading(c, text=t)
+            self.mp_diff.column(c, width=w, anchor="w")
+        self.mp_diff.pack(fill="both", expand=True)
+        ttk.Button(right, text="Aplicar perfil seleccionado (con copia de seguridad)", style="Accent.TButton",
+                   command=self.myprof_apply).pack(fill="x", pady=(6, 0))
+        body.add(right, weight=2)
+        self._mp_items: dict[str, dict] = {}
+
+    def _refresh_myprofiles(self):
+        self.mp_tree.delete(*self.mp_tree.get_children())
+        self._mp_items = {}
+        for p in userprofiles.list_profiles(self.out_dir):
+            inc = ", ".join(userprofiles.GROUPS[g]["label"].split(" (")[0] for g in p.get("groups", []) if g in userprofiles.GROUPS)
+            iid = self.mp_tree.insert("", "end", values=(p["name"], p.get("renderer_file", ""), inc, p.get("created", "")[:16].replace("T", " ")))
+            self._mp_items[iid] = p
+        if self.cfg:
+            self.mp_target_cb["values"] = [n for n, _ in self.cfg.renderer_candidates]
+
+    def _mp_selected(self):
+        sel = self.mp_tree.selection()
+        return self._mp_items.get(sel[0]) if sel else None
+
+    def _myprof_diff(self):
+        p = self._mp_selected()
+        self.mp_diff.delete(*self.mp_diff.get_children())
+        if not p or not self.cfg:
+            return
+        if self.mp_target.get() not in (self.mp_target_cb["values"] or ()):
+            self.mp_target.set(p.get("renderer_file") or (self.cfg.renderer_name or ""))
+        target = self.mp_target.get()
+        if not (Path(self.cfg.directory) / target).is_file():
+            self.mp_desc.set(f"{target} no existe en tu carpeta de iRacing. Arranca iRacing una vez con ese modo "
+                             "(monitor o VR) para que lo cree, o elige otro archivo.")
+            self._mp_changes = []
+            return
+        ch = userprofiles.changes_for(p, self.cfg.directory, target)
+        self._mp_changes = ch
+        for c in ch:
+            self.mp_diff.insert("", "end", values=(c["file_name"], c["key"], c["current"], c["proposed"]))
+        desc = p.get("description") or ""
+        self.mp_desc.set((desc + " · " if desc else "") + (f"{len(ch)} cambios respecto a tu configuración actual."
+                                                          if ch else "Tu configuración ya coincide con este perfil."))
+
+    def myprof_save(self):
+        if not self.cfg:
+            return
+        w = tk.Toplevel(self)
+        w.title("Guardar perfil")
+        w.transient(self)
+        w.grab_set()
+        frm = ttk.Frame(w, padding=14)
+        frm.pack(fill="both", expand=True)
+        ttk.Label(frm, text="Nombre:").grid(row=0, column=0, sticky="w")
+        name = tk.StringVar(value="Monitor carreras" if "Monitor" in (self.cfg.renderer_name or "") else "VR")
+        ttk.Entry(frm, textvariable=name, width=36).grid(row=0, column=1, sticky="we", pady=3)
+        ttk.Label(frm, text="Descripción:").grid(row=1, column=0, sticky="w")
+        desc = tk.StringVar()
+        ttk.Entry(frm, textvariable=desc, width=36).grid(row=1, column=1, sticky="we", pady=3)
+        ttk.Label(frm, text="Archivo gráfico:").grid(row=2, column=0, sticky="w")
+        rf = tk.StringVar(value=self.cfg.renderer_name or "")
+        ttk.Combobox(frm, textvariable=rf, state="readonly", width=34,
+                     values=[n for n, _ in self.cfg.renderer_candidates]).grid(row=2, column=1, sticky="we", pady=3)
+        ttk.Label(frm, text="Incluir:").grid(row=3, column=0, sticky="nw", pady=(8, 0))
+        gv = {}
+        for i, (g, spec) in enumerate(userprofiles.GROUPS.items()):
+            gv[g] = tk.BooleanVar(value=g != "pantalla")
+            ttk.Checkbutton(frm, text=spec["label"], variable=gv[g]).grid(row=3 + i, column=1, sticky="w", pady=(8 if i == 0 else 0, 0))
+
+        def ok():
+            groups = [g for g, v in gv.items() if v.get()]
+            if not name.get().strip() or not groups:
+                messagebox.showwarning(APP, "Pon un nombre y elige al menos un grupo.", parent=w)
+                return
+            existing = {p["name"].lower() for p in userprofiles.list_profiles(self.out_dir)}
+            if name.get().strip().lower() in existing and not messagebox.askyesno(APP, "Ya existe un perfil con ese nombre. ¿Sobrescribir?", parent=w):
+                return
+            userprofiles.save(self.out_dir, name.get().strip(), self.cfg.directory, rf.get(), groups, desc.get().strip())
+            w.destroy()
+            self._refresh_myprofiles()
+            self.status(f"Perfil «{name.get().strip()}» guardado")
+        ttk.Button(frm, text="Guardar", style="Accent.TButton", command=ok).grid(row=7, column=1, sticky="e", pady=(12, 0))
+
+    def myprof_apply(self):
+        p = self._mp_selected()
+        if not p or not self.cfg:
+            messagebox.showinfo(APP, "Selecciona un perfil.")
+            return
+        self._myprof_diff()
+        ch = getattr(self, "_mp_changes", [])
+        if self._confirm_apply(ch, f"el perfil «{p['name']}» sobre {self.mp_target.get()}"):
+            try:
+                log = applier.apply_changes(ch, self.cfg.directory, self.mp_target.get(), label=f"mi_perfil_{p['name']}")
+            except Exception as e:
+                messagebox.showerror(APP, str(e))
+                return
+            extra = ""
+            if "OpenXR" in self.mp_target.get() or "OpenVR" in self.mp_target.get() or "Oculus" in self.mp_target.get():
+                extra = "\n\nRecuerda elegir el modo VR en la pantalla de iRacing antes de entrar al simulador."
+            messagebox.showinfo(APP, "\n".join(log[:30]) + extra)
+            self._bg(self._load_cfg, "Recargando configuración…")
+
+    def myprof_delete(self):
+        p = self._mp_selected()
+        if p and messagebox.askyesno(APP, f"¿Eliminar el perfil «{p['name']}»?"):
+            userprofiles.delete(p["_path"])
+            self._refresh_myprofiles()
+
+    def myprof_export(self):
+        p = self._mp_selected()
+        if not p:
+            messagebox.showinfo(APP, "Selecciona un perfil.")
+            return
+        dst = filedialog.asksaveasfilename(defaultextension=".json", initialfile=Path(p["_path"]).name,
+                                           filetypes=[("Perfil", "*.json")])
+        if dst:
+            Path(dst).write_text(Path(p["_path"]).read_text(encoding="utf-8"), encoding="utf-8")
+            self.status(f"Exportado a {dst}")
+
+    def myprof_import(self):
+        src = filedialog.askopenfilename(filetypes=[("Perfil", "*.json")])
+        if src:
+            try:
+                userprofiles.import_file(self.out_dir, src)
+            except Exception as e:
+                messagebox.showerror(APP, str(e))
+                return
+            self._refresh_myprofiles()
+
+    # ------------------------------------------------------------------ FOV
+    def _tab_fov(self):
+        f = ttk.Frame(self.nb, padding=10)
+        self.nb.add(f, text="FOV")
+        left = ttk.Frame(f)
+        left.pack(side="left", fill="y")
+        right = ttk.Frame(f)
+        right.pack(side="left", fill="both", expand=True, padx=(12, 0))
+
+        self.fv = {k: tk.DoubleVar(value=v) for k, v in (("width", 620), ("bezel", 10), ("dist", 650), ("angle", 50),
+                                                         ("radius", 1000), ("diag", 27))}
+        self.fv_type = tk.StringVar(value="1 plano")
+        self.fv_3p = tk.BooleanVar(value=True)
+        self.fv_aspect = tk.StringVar(value="16:9")
+
+        lf = ttk.LabelFrame(left, text="Tu configuración", padding=8)
+        lf.pack(fill="x")
+        ttk.Label(lf, text="Monitores:").grid(row=0, column=0, sticky="w")
+        tf = ttk.Frame(lf)
+        tf.grid(row=0, column=1, sticky="w")
+        for t in ("1 plano", "1 curvo", "3 planos", "3 curvos"):
+            ttk.Radiobutton(tf, text=t, value=t, variable=self.fv_type, command=self._fov_update).pack(side="left")
+        r = 1
+
+        def field(label, key, hint="", frm=lf):
+            nonlocal r
+            ttk.Label(frm, text=label).grid(row=r, column=0, sticky="w", pady=2)
+            e = ttk.Spinbox(frm, from_=0, to=5000, increment=1, width=8, textvariable=self.fv[key], command=self._fov_update)
+            e.grid(row=r, column=1, sticky="w")
+            e.bind("<KeyRelease>", lambda ev: self._fov_update())
+            if hint:
+                ttk.Label(frm, text=hint, style="Muted.TLabel").grid(row=r, column=2, sticky="w", padx=4)
+            r += 1
+            return e
+        field("Ancho del monitor (mm)", "width", "con biseles, recto")
+        field("Bisel (mm, un lado)", "bezel")
+        self.fv_radius_w = field("Radio de curvatura (mm)", "radius", "1000R = 1000")
+        self.fv_angle_w = field("Ángulo de los laterales (°)", "angle")
+        ttk.Label(lf, text="Distancia ojos → pantalla (mm)").grid(row=r, column=0, sticky="w", pady=(8, 2))
+        sc = ttk.Scale(lf, from_=300, to=1300, length=230, variable=self.fv["dist"], command=lambda v: self._fov_update())
+        sc.grid(row=r, column=1, columnspan=2, sticky="we", pady=(8, 2))
+        r += 1
+        self.fv_dist_lbl = tk.StringVar()
+        ttk.Label(lf, textvariable=self.fv_dist_lbl, style="Muted.TLabel").grid(row=r, column=1, sticky="w")
+        r += 1
+        ttk.Checkbutton(lf, text="Render scene using 3 projections", variable=self.fv_3p,
+                        command=self._fov_update).grid(row=r, column=0, columnspan=3, sticky="w", pady=(6, 0))
+
+        hf = ttk.LabelFrame(left, text="¿No sabes el ancho? Calcúlalo desde las pulgadas", padding=8)
+        hf.pack(fill="x", pady=8)
+        ttk.Label(hf, text="Diagonal (\")").grid(row=0, column=0, sticky="w")
+        ttk.Spinbox(hf, from_=10, to=100, increment=1, width=6, textvariable=self.fv["diag"]).grid(row=0, column=1, sticky="w")
+        ttk.Label(hf, text="Formato").grid(row=0, column=2, padx=(10, 0))
+        ttk.Combobox(hf, textvariable=self.fv_aspect, values=list(fov.ASPECTS), width=6, state="readonly").grid(row=0, column=3)
+        ttk.Button(hf, text="Calcular ancho", command=self._fov_from_diag).grid(row=0, column=4, padx=8)
+        ttk.Label(hf, text="Da el ancho visible; súmale los dos biseles.", style="Muted.TLabel").grid(row=1, column=0, columnspan=5, sticky="w")
+
+        res = ttk.LabelFrame(left, text="Resultado", padding=8)
+        res.pack(fill="x")
+        self.fv_out = tk.StringVar(value="—")
+        ttk.Label(res, textvariable=self.fv_out, style="Big.TLabel").pack(anchor="w")
+        self.fv_detail = tk.StringVar()
+        ttk.Label(res, textvariable=self.fv_detail, wraplength=380, justify="left").pack(anchor="w", pady=(4, 0))
+        self.fv_warn = tk.StringVar()
+        ttk.Label(res, textvariable=self.fv_warn, foreground="#b9770e", wraplength=380, justify="left").pack(anchor="w", pady=(4, 0))
+        btns = ttk.Frame(left)
+        btns.pack(fill="x", pady=8)
+        ttk.Button(btns, text="Leer de iRacing", command=self._fov_load_from_ini).pack(side="left")
+        ttk.Button(btns, text="Usar ángulo ideal", command=self._fov_ideal).pack(side="left", padx=6)
+        ttk.Button(btns, text="Aplicar a iRacing", style="Accent.TButton", command=self._fov_apply).pack(side="right")
+
+        self.fv_canvas = tk.Canvas(right, background="#11151d", highlightthickness=0)
+        self.fv_canvas.pack(fill="both", expand=True)
+        self.fv_canvas.bind("<Configure>", lambda e: self._fov_update())
+        ttk.Label(right, text="Vista cenital: tus ojos abajo, pantallas a escala. En verde el FOV calculado; en gris "
+                              "discontinuo el FOV que tienes ahora en iRacing.", style="Muted.TLabel", wraplength=460).pack(anchor="w", pady=4)
+        self._fov_current = None
+        self._fov_result = None
+
+    def _fov_setup(self) -> fov.Setup:
+        t = self.fv_type.get()
+        g = lambda k: float(self.fv[k].get() or 0)
+        return fov.Setup(monitors=3 if t.startswith("3") else 1, curved="curvo" in t, monitor_width=g("width"),
+                         bezel=g("bezel"), distance=max(100.0, g("dist")), side_angle=g("angle"),
+                         radius=max(100.0, g("radius")), three_projections=self.fv_3p.get())
+
+    def _fov_update(self):
+        try:
+            s = self._fov_setup()
+            res = fov.compute(s)
+        except (tk.TclError, ValueError):
+            return
+        self._fov_result = res
+        t = self.fv_type.get()
+        state_r = "normal" if "curvo" in t else "disabled"
+        state_a = "normal" if t == "3 planos" else "disabled"
+        self.fv_radius_w.configure(state=state_r)
+        self.fv_angle_w.configure(state=state_a)
+        self.fv_dist_lbl.set(f"{s.distance:.0f} mm")
+        self.fv_out.set(f"FOV {res.fov_h:.0f}°")
+        det = [f"Pantalla visible: {s.screen_width:.0f} mm por monitor."]
+        if s.monitors == 3:
+            det.append(f"Monitor central: {res.fov_center:.0f}°.")
+        if res.ideal_side_angle is not None:
+            det.append(f"Ángulo ideal de los laterales: {res.ideal_side_angle:.0f}° (cada lateral mirando a tus ojos).")
+        if self._fov_current:
+            diff = self._fov_current - res.fov_h
+            det.append(f"Ahora en iRacing: {self._fov_current:.0f}° ({'+' if diff >= 0 else ''}{diff:.0f}°"
+                       + (", ves más de lo real: los coches parecen más lejos y lentos)." if diff > 3 else
+                          ", ves menos de lo real: todo parece más grande y rápido)." if diff < -3 else ", prácticamente correcto)."))
+        det.append("Tras aplicar, puedes confirmarlo en iRacing: Ajustes → Pantalla → Monitor → Compute.")
+        self.fv_detail.set(" ".join(det))
+        self.fv_warn.set("\n".join("⚠ " + w for w in res.warnings))
+        self._fov_draw(s, res)
+
+    def _fov_draw(self, s, res):
+        c = self.fv_canvas
+        c.delete("all")
+        W, H = max(200, c.winfo_width()), max(200, c.winfo_height())
+        pts = [p for poly in res.outline for p in poly] + [(0.0, 0.0)]
+        xs = [p[0] for p in pts]
+        zs = [p[1] for p in pts]
+        span_x = max(abs(min(xs)), abs(max(xs))) * 2 or 1
+        span_z = (max(zs) - min(min(zs), 0)) or 1
+        scale = min((W - 80) / span_x, (H - 120) / span_z)
+        zmin = min(min(zs), 0)
+        ox = W / 2
+        oy = H / 2 + (span_z * scale) / 2 + zmin * scale  # centra el dibujo en vertical
+
+        def P(x, z):
+            return ox + x * scale, oy - z * scale
+        # FOV actual (gris)
+        if self._fov_current:
+            L = max(span_x, span_z) * 1.2
+            for sgn in (-1, 1):
+                a = math.radians(self._fov_current / 2)
+                c.create_line(*P(0, 0), *P(sgn * L * math.sin(a), L * math.cos(a)), fill="#5a6378", dash=(5, 4))
+        # FOV calculado (verde)
+        (lx, lz), (rx, rz) = res.edges
+        c.create_polygon(*P(0, 0), *P(lx, lz), *P(rx, rz), fill="#173b2a", outline="")
+        for x, z in res.edges:
+            c.create_line(*P(0, 0), *P(x, z), fill="#4cd97b", width=2)
+        # pantallas
+        for poly in res.outline:
+            flat = [v for p in poly for v in P(*p)]
+            c.create_line(*flat, fill="#4cc9f0", width=6, capstyle="round")
+        # arco del ángulo
+        rr = 60
+        a0 = 90 - res.fov_h / 2
+        c.create_arc(ox - rr, oy - rr, ox + rr, oy + rr, start=a0, extent=res.fov_h, style="arc", outline="#4cd97b", width=2)
+        c.create_text(ox, oy - rr - 14, text=f"{res.fov_h:.0f}°", fill="#e8ecf4", font=("Segoe UI", 14, "bold"))
+        # ojos y cota
+        c.create_oval(ox - 9, oy - 6, ox + 9, oy + 6, fill="#e8ecf4", outline="")
+        c.create_text(ox, oy + 18, text="tus ojos", fill="#8a93a6")
+        c.create_line(ox + 30, oy, ox + 30, P(0, s.distance)[1], fill="#8a93a6", arrow="both")
+        c.create_text(ox + 36, (oy + P(0, s.distance)[1]) / 2, text=f"{s.distance:.0f} mm", fill="#8a93a6", anchor="w")
+
+    def _fov_from_diag(self):
+        try:
+            t = self.fv_type.get()
+            R = float(self.fv["radius"].get()) if "curvo" in t else None
+            w = fov.width_from_diagonal(float(self.fv["diag"].get()), self.fv_aspect.get(), R)
+            self.fv["width"].set(round(w + 2 * float(self.fv["bezel"].get() or 0)))
+            self._fov_update()
+        except (tk.TclError, ValueError):
+            pass
+
+    def _fov_ideal(self):
+        if self._fov_result and self._fov_result.ideal_side_angle is not None:
+            self.fv["angle"].set(round(self._fov_result.ideal_side_angle))
+            self._fov_update()
+        else:
+            messagebox.showinfo(APP, "El ángulo ideal solo aplica a 3 monitores planos.")
+
+    def _fov_load_from_ini(self, silent=False):
+        if not self.cfg or not self.cfg.renderer:
+            return
+        s, cur = fov.setup_from_ini(self.cfg.renderer.flat(), self.cfg.app.flat() if self.cfg.app else None)
+        self.fv_type.set(f"{s.monitors} {'curvo' if s.curved else 'plano'}{'s' if s.monitors == 3 else ''}")
+        for k, v in (("width", s.monitor_width), ("bezel", s.bezel), ("dist", s.distance), ("angle", s.side_angle),
+                     ("radius", s.radius)):
+            self.fv[k].set(round(v))
+        self.fv_3p.set(s.three_projections)
+        self._fov_current = cur
+        self._fov_update()
+        if not silent:
+            self.status("Valores de monitor leídos de iRacing")
+
+    def _fov_apply(self):
+        if not self.cfg or not self._fov_result:
+            return
+        s = self._fov_setup()
+        ch = fov.ini_changes(s, self._fov_result.fov_h)
+        flat_r = self.cfg.renderer.flat() if self.cfg.renderer else {}
+        flat_a = self.cfg.app.flat() if self.cfg.app else {}
+        changes = []
+        for c in ch:
+            src = flat_r if c["file"] == "renderer" else flat_a
+            cur = src.get(c["key"].lower())
+            if cur is None:
+                continue
+            try:
+                same = abs(float(cur) - float(c["proposed"])) < 0.05
+            except ValueError:
+                same = cur == c["proposed"]
+            if not same:
+                changes.append({**c, "current": cur, "proposed": c["proposed"] if c["key"] != "drivingCamFOV" else f"{float(c['proposed']):.6f}"})
+        if not changes:
+            messagebox.showinfo(APP, "Tu configuración ya coincide.")
+            return
+        if self._confirm_apply(changes, "la configuración de monitor y FOV"):
+            self._do_apply(changes, "fov")
 
     # ------------------------------------------------------------------ copias
     def backup_now(self):
