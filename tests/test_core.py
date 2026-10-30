@@ -53,3 +53,15 @@ def test_unknown_keys_are_skipped(tmp_path):
     log = applier.apply_changes([{"file": "renderer", "key": "NoExiste", "proposed": "1"}],
                                 ini_dir, "rendererDX11Monitor.ini", dry_run=True)
     assert "no existe" in log[1]
+
+
+def test_compare_detects_setting_changes(tmp_path):
+    csv_a, ini_dir = _demo(tmp_path / "a")
+    csv_b, _ = _demo(tmp_path / "b")
+    import json
+    meta = json.loads(csv_b.with_suffix(".json").read_text())
+    meta["config"]["renderer"]["Graphics Options"]["MaxCarsToDraw"] = "20"
+    csv_b.with_suffix(".json").write_text(json.dumps(meta))
+    c = pipeline.compare(csv_a, csv_b)
+    assert {"key": "maxcarstodraw", "a": "40", "b": "20"} in c["changed_settings"]
+    assert "MaxCarsToDraw".lower() in pipeline.compare_text(c)

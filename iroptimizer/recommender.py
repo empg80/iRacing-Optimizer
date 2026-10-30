@@ -103,10 +103,19 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
                   f"Con VRR conviene limitar unos fps por debajo de la frecuencia ({refresh:.0f} Hz) "
                   "para no salir del rango G-Sync y caer en V-Sync.")
         elif fps["p10"] < desired * 0.9 and holdable >= 60:
-            b.add("DesiredFPSLimit", holdable, 2, "frametime",
-                  f"Tu tope ({desired:.0f}) está muy por encima de lo que sostienes en {lbl} (p10 {fps['p10']:.0f}). "
-                  f"Bajarlo a {holdable} alisa el frametime. Mejor orden: aplica antes los recortes de CPU, vuelve a grabar "
-                  "y fija el tope con el nuevo p10.")
+            if bn["cap"] >= 20:
+                # Pasas bastante tiempo en el tope: bajarlo hasta p10 tiraría FPS útiles en las zonas limpias.
+                mid = _round_down(fps.get("p25") or fps["p10"])
+                if desired > mid * 1.15:
+                    b.add("DesiredFPSLimit", mid, 3, "frametime",
+                          f"Estás en el tope el {bn['cap']:.0f} % del tiempo y caes a {fps['p10']:.0f} en tráfico. "
+                          f"Un tope de {mid} (lo que mantienes el 75 % del tiempo) reduce la diferencia entre zonas "
+                          "limpias y pelotones sin renunciar a tanto. Con G-Sync es opcional.")
+            else:
+                b.add("DesiredFPSLimit", holdable, 2, "frametime",
+                      f"Tu tope ({desired:.0f}) está muy por encima de lo que sostienes en {lbl} (p10 {fps['p10']:.0f}). "
+                      f"Bajarlo a {holdable} alisa el frametime. Mejor orden: aplica antes los recortes de CPU, vuelve a grabar "
+                      "y fija el tope con el nuevo p10.")
 
     # ------------------------------------------------------------- CPU (hilo FG)
     # Se activa si la CPU domina en global o si provoca la mayoría de las peores caídas (salidas, pelotones)
@@ -249,8 +258,11 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
     if sca and sca > 35:
         b.info("Carga de CPU de fondo alta",
                f"Uso medio de todos los hilos: {sca:.0f} %" + (f" (≈ {sca/100*cores:.0f} de {cores} hilos ocupados)" if cores else "")
-               + ". iRacing usa pocos hilos; algo más está consumiendo CPU (OBS, SimHub, navegador, antivirus, RGB…). "
-               "Mira el Administrador de tareas con iRacing en pista y cierra lo que no uses: compite por la caché del X3D.", 1, "sistema")
+               + ". iRacing usa pocos hilos; algo más está consumiendo CPU. "
+               + (("Procesos que más consumieron (aparte de iRacing): "
+                   + ", ".join(f"{p['name']} {p['cpu_pct']:.0f} %" for p in a.get("top_processes", [])[:6]) + ". ")
+                  if a.get("top_processes") else "Mira el Administrador de tareas con iRacing en pista. ")
+               + "Cierra lo que no uses mientras corres: compite por la caché del X3D.", 1, "sistema")
     fp, ft = (g.get("fps_pit") or {}), (g.get("fps_track") or {})
     if fp.get("n", 0) > 40 and ft.get("mean") and fp["mean"] < ft["mean"] * 0.75:
         b.info("Caída en pit lane", f"{fp['mean']:.0f} fps en boxes frente a {ft['mean']:.0f} en pista. Lo atacan MaxPitObjsToDraw y PitObjectDetail.", 3, "cpu")

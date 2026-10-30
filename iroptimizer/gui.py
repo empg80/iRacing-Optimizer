@@ -220,6 +220,7 @@ class App(tk.Tk):
         ttk.Spinbox(row, from_=0, to=500, increment=5, width=6, textvariable=self.target_var).pack(side="left", padx=4)
         ttk.Button(row, text="Reanalizar", command=self.reanalyze).pack(side="left", padx=4)
         ttk.Button(row, text="Abrir informe HTML", command=self.open_report).pack(side="right")
+        ttk.Button(row, text="Comparar con otra sesión…", command=self.compare_sessions).pack(side="right", padx=6)
         self.session_var = tk.StringVar(value="Ninguna sesión cargada")
         ttk.Label(f, textvariable=self.session_var, style="Muted.TLabel").pack(anchor="w", pady=(6, 2))
 
@@ -497,6 +498,29 @@ class App(tk.Tk):
         if iid:
             v = self.rec_tree.item(iid, "values")
             messagebox.showinfo(v[3], v[6])
+
+    def compare_sessions(self):
+        if not self.result:
+            messagebox.showinfo(APP, "Primero abre o graba una sesión (será la sesión B, la nueva).")
+            return
+        p = filedialog.askopenfilename(title="Sesión ANTERIOR (A) para comparar", initialdir=self.out_dir,
+                                       filetypes=[("Sesiones", "session_*.csv"), ("CSV", "*.csv")])
+        if not p:
+            return
+        b = self._csv
+
+        def work():
+            txt = pipeline.compare_text(pipeline.compare(p, b))
+
+            def show():
+                w = tk.Toplevel(self)
+                w.title("Comparación de sesiones")
+                t = tk.Text(w, width=78, height=34, font=("Consolas", 10))
+                t.insert("1.0", txt)
+                t.configure(state="disabled")
+                t.pack(fill="both", expand=True, padx=8, pady=8)
+            self.ui(show)
+        self._bg(work, "Comparando…")
 
     def open_report(self):
         if self.result:

@@ -95,6 +95,10 @@ def cmd_profile(args):
         print(line)
 
 
+def cmd_compare(args):
+    print(pipeline.compare_text(pipeline.compare(args.a, args.b)))
+
+
 def cmd_restore(args):
     for line in applier.restore(config_reader.find_iracing_dir(args.ini_dir), args.stamp):
         print(line)
@@ -145,6 +149,11 @@ def main(argv=None):
     pr.add_argument("--from-session", help="CSV de una sesión para ajustar tope de FPS y LOD")
     pr.add_argument("--dry-run", action="store_true")
     pr.set_defaults(fn=cmd_profile)
+
+    c = sub.add_parser("compare", parents=[common], help="Compara dos sesiones (antes/después)")
+    c.add_argument("a", help="CSV de la sesión anterior")
+    c.add_argument("b", help="CSV de la sesión nueva")
+    c.set_defaults(fn=cmd_compare)
 
     r = sub.add_parser("restore", parents=[common])
     r.add_argument("--stamp", help="Copia concreta (carpeta en iroptimizer_backups)")

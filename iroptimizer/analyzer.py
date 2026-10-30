@@ -43,7 +43,7 @@ def summarize(values) -> dict:
     mean = sum(v) / len(v)
     sd = math.sqrt(sum((x - mean) ** 2 for x in v) / len(v))
     return {"n": len(v), "mean": mean, "median": pct(v, 50), "p1": pct(v, 1), "p5": pct(v, 5),
-            "p10": pct(v, 10), "p95": pct(v, 95), "min": min(v), "max": max(v), "sd": sd}
+            "p10": pct(v, 10), "p25": pct(v, 25), "p95": pct(v, 95), "min": min(v), "max": max(v), "sd": sd}
 
 
 def load_session(csv_path: str | Path) -> tuple[list[dict], dict]:
@@ -304,6 +304,7 @@ def analyze(rows: list[dict], meta: dict, presentmon: dict | None = None, target
         "traffic_corr": _corr([r.get("cars_near") for r in prim], [r["fps"] for r in prim]),
         "drops": _drops(prim, p["fps"]["median"], cap)[:12],
         "memory": memory,
+        "top_processes": meta.get("top_processes") or [],
         "network": network,
         "thermal": thermal,
         "presentmon": presentmon or None,

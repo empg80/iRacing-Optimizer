@@ -14,7 +14,8 @@ Descarga `iRacingOptimizer.exe` desde **[Releases](../../releases)** y ejecútal
 2. **Monitor de sesión**: pulsa *Iniciar grabación*, entra a pista (lo ideal es una carrera completa) y pulsa *Detener* al terminar. Al acabar, analiza la sesión.
 3. **Análisis y recomendaciones**: muestra los FPS medios, el 5 % y el 1 % peor, el porcentaje de tiempo bajo el objetivo, qué te limita y una lista de cambios priorizados (P1 aplicar ya, P2 recomendable, P3 opcional). Marca los que quieras y pulsa **Aplicar seleccionados**. Hay un informe HTML con gráficas.
 4. **Perfiles**: tres configuraciones de partida (Máximo rendimiento, Equilibrado y Calidad gráfica). Si has analizado una sesión, el tope de FPS y el LOD dinámico se ajustan a tu medición. Cada perfil muestra exactamente qué cambia antes de aplicarlo.
-5. **Copias de seguridad**: lista las copias y restaura cualquiera con un clic.
+5. **Comparar**: en Análisis, *Comparar con otra sesión…* enfrenta la sesión nueva con una anterior. Muestra los FPS según el tráfico (la comparación justa entre una práctica y una carrera) y qué ajustes cambiaron entre las dos.
+6. **Copias de seguridad**: lista las copias y restaura cualquiera con un clic.
 
 Aplica los cambios **con iRacing cerrado**, porque el simulador reescribe los `.ini` al salir. La app lo comprueba antes de escribir.
 
@@ -26,7 +27,7 @@ Aplica los cambios **con iRacing cerrado**, porque el simulador reescribe los `.
 |---|---|
 | SDK de iRacing (4 Hz) | `FrameRate`, `CpuUsageFG/BG`, red (`Chan*`), fallos de página, posición en la vuelta y coches a menos de 150 m |
 | Driver NVIDIA (NVML) | Uso real de GPU, VRAM, temperatura, frecuencia y consumo |
-| Sistema | CPU por núcleo y total, RAM y memoria del proceso de iRacing |
+| Sistema | CPU por núcleo y total, RAM, memoria del proceso de iRacing y los procesos que más CPU consumen mientras conduces |
 | `.ini` | `rendererDX11*.ini`, `app.ini`, `core.ini` (solo se modifican claves que ya existen) |
 
 Para saber qué te limita usa la carga real de la GPU:
@@ -45,6 +46,7 @@ iRacingOptimizer.exe monitor --analyze
 iRacingOptimizer.exe analyze sesion.csv [--target 165] [--presentmon pm.csv]
 iRacingOptimizer.exe apply sesion.recs.json --max-priority 1 [--dry-run]
 iRacingOptimizer.exe profile equilibrado [--from-session sesion.csv] [--dry-run]
+iRacingOptimizer.exe compare antes.csv despues.csv
 iRacingOptimizer.exe restore
 iRacingOptimizer.exe demo
 ```

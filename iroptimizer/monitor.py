@@ -40,6 +40,40 @@ class SystemSampler:
             self.nvml = None
         self.proc: psutil.Process | None = None
         psutil.cpu_percent(percpu=True)  # primera llamada inicializa el contador
+        self._proc_cpu: dict[str, float] = {}
+        self._proc_samples = 0
+        self._last_proc_scan = 0.0
+        self._ncpu = psutil.cpu_count() or 1
+
+    def scan_processes(self, every_s: float = 10.0):
+        """Acumula el % de CPU por nombre de proceso (sobre el total de hilos) cada `every_s` segundos."""
+        now = time.time()
+        if now - self._last_proc_scan < every_s:
+            return
+        first = self._last_proc_scan == 0.0
+        self._last_proc_scan = now
+        snap: dict[str, float] = {}
+        for p in psutil.process_iter(["name"]):
+            try:
+                v = p.cpu_percent(None)  # desde la llamada anterior para ese proceso
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+            n = p.info["name"] or "?"
+            if n.lower() in ("system idle process", "idle"):
+                continue
+            snap[n] = snap.get(n, 0.0) + v
+        if first:
+            return  # la primera pasada solo inicializa contadores
+        self._proc_samples += 1
+        for n, v in snap.items():
+            self._proc_cpu[n] = self._proc_cpu.get(n, 0.0) + v / self._ncpu
+
+    def top_processes(self, k: int = 10) -> list[dict]:
+        if not self._proc_samples:
+            return []
+        avg = sorted(((n, v / self._proc_samples) for n, v in self._proc_cpu.items()), key=lambda x: -x[1])
+        return [{"name": n, "cpu_pct": round(v, 1), "is_iracing": n.lower().startswith("iracing")}
+                for n, v in avg[:k] if v >= 0.3]
 
     def _find_proc(self):
         if self.proc and self.proc.is_running():
@@ -220,6 +254,8 @@ class SessionMonitor:
                     }
                     ir.unfreeze_var_buffer_latest()
                     row.update(self.sys.sample())
+                    if row["on_track"]:
+                        self.sys.scan_processes()
                     w.writerow(row)
                     rows += 1
                     if on_tick and rows % max(1, int(self.hz)) == 0:
@@ -233,6 +269,8 @@ class SessionMonitor:
                     time.sleep(max(0.0, period - (time.time() - tick)))
             except KeyboardInterrupt:
                 log("Grabación detenida.")
+        self.meta["top_processes"] = [p for p in self.sys.top_processes(12) if not p["is_iracing"]][:8]
+        self.meta["iracing_cpu_pct"] = next((p["cpu_pct"] for p in self.sys.top_processes(12) if p["is_iracing"]), None)
         self.meta["samples"] = rows
         self.meta["hz"] = self.hz
         self.meta["started"] = datetime.fromtimestamp(t0).isoformat(timespec="seconds")
