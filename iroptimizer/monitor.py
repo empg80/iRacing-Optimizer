@@ -23,6 +23,7 @@ FIELDS = [
     "chan_quality", "chan_partner_quality", "clock_skew", "page_faults", "soft_page_faults",
     "cars_in_world", "cars_near", "lap", "lap_pct", "sys_cpu_avg", "sys_cpu_max_core", "sys_ram_used_mb",
     "ir_rss_mb", "gpu_util", "gpu_mem_used_mb", "gpu_temp", "gpu_clock", "gpu_power_w",
+    "gpu_throttle", "disk_read_mbs", "disk_write_mbs", "disk_logging",
 ]
 
 NEAR_METERS = 150.0  # radio para contar coches "cerca" (los que más cuestan de dibujar)
@@ -44,6 +45,7 @@ class SystemSampler:
         self._proc_samples = 0
         self._last_proc_scan = 0.0
         self._ncpu = psutil.cpu_count() or 1
+        self._disk_prev = (time.time(), psutil.disk_io_counters())
 
     def scan_processes(self, every_s: float = 10.0):
         """Acumula el % de CPU por nombre de proceso (sobre el total de hilos) cada `every_s` segundos."""
@@ -95,6 +97,16 @@ class SystemSampler:
             "sys_ram_used_mb": (vm.total - vm.available) // (1024 * 1024),
             "ir_rss_mb": None,
         }
+        try:
+            now, io = time.time(), psutil.disk_io_counters()
+            t0, io0 = self._disk_prev
+            dt = max(1e-3, now - t0)
+            if io and io0:
+                d["disk_read_mbs"] = round((io.read_bytes - io0.read_bytes) / dt / 1e6, 1)
+                d["disk_write_mbs"] = round((io.write_bytes - io0.write_bytes) / dt / 1e6, 1)
+            self._disk_prev = (now, io)
+        except Exception:
+            pass
         p = self._find_proc()
         if p:
             try:
@@ -109,6 +121,10 @@ class SystemSampler:
                 d["gpu_temp"] = n.nvmlDeviceGetTemperature(h, n.NVML_TEMPERATURE_GPU)
                 d["gpu_clock"] = n.nvmlDeviceGetClockInfo(h, n.NVML_CLOCK_GRAPHICS)
                 d["gpu_power_w"] = round(n.nvmlDeviceGetPowerUsage(h) / 1000, 1)
+                fn = getattr(n, "nvmlDeviceGetCurrentClocksEventReasons", None) or \
+                    getattr(n, "nvmlDeviceGetCurrentClocksThrottleReasons", None)
+                if fn:
+                    d["gpu_throttle"] = int(fn(h))
             except Exception:
                 pass
         return d
@@ -192,7 +208,7 @@ class SessionMonitor:
         return in_world, near
 
     def run(self, duration_s: float | None = None, on_tick=None, stop_event=None,
-            log=print) -> tuple[Path | None, Path | None]:
+            log=print, on_row=None) -> tuple[Path | None, Path | None]:
         """Graba hasta Ctrl+C, `stop_event.set()`, fin de `duration_s` o cierre de iRacing."""
         stopped = (lambda: stop_event is not None and stop_event.is_set())
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -251,6 +267,7 @@ class SessionMonitor:
                         "cars_near": near,
                         "lap": ir["Lap"],
                         "lap_pct": ir["LapDistPct"],
+                        "disk_logging": int(bool(ir["IsDiskLoggingActive"])),
                     }
                     ir.unfreeze_var_buffer_latest()
                     row.update(self.sys.sample())
@@ -258,6 +275,8 @@ class SessionMonitor:
                         self.sys.scan_processes()
                     w.writerow(row)
                     rows += 1
+                    if on_row:
+                        on_row(row)
                     if on_tick and rows % max(1, int(self.hz)) == 0:
                         on_tick(row, rows)
                     if rows % int(self.hz * 5) == 0:

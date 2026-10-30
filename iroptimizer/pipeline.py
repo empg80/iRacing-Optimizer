@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import analyzer, config_reader, profiles, recommender, report
+from . import analyzer, config_reader, diagnostics, profiles, recommender, report
 
 
 @dataclass
@@ -12,6 +12,7 @@ class Result:
     analysis: dict
     recs: list[dict]
     profiles: dict[str, list[dict]]
+    diagnostics: dict
     meta: dict
     html_path: Path
     json_path: Path
@@ -33,8 +34,9 @@ def run(csv_path: str | Path, presentmon: str | None = None, target: float | Non
     recs = recommender.build(a, meta.get("config") or {})
     flat = current_renderer_flat or config_reader.flat_from_snapshot((meta.get("config") or {}).get("renderer", {}))
     profs = profiles_for(flat, meta.get("hardware") or {}, a)
-    html_p, json_p = report.write(a, recs, csv_path, profs)
-    return Result(a, recs, profs, meta, html_p, json_p)
+    diag = diagnostics.run(rows, meta, a)
+    html_p, json_p = report.write(a, recs, csv_path, profs, diag)
+    return Result(a, recs, profs, diag, meta, html_p, json_p)
 
 
 def compare(csv_a: str | Path, csv_b: str | Path) -> dict:

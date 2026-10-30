@@ -190,15 +190,6 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
                 b.add(key, new, pr, "gpu", f"GPU al límite el {gpu_share:.0f} % del tiempo en {lbl}. {why}")
                 budget -= 1
 
-    # ----------------------------------------------------------- "other": ni CPU ni GPU al límite
-    if deficit and bn["other"] > 40:
-        bg = (g.get("cpu_bg") or {}).get("p95")
-        b.info("Caídas sin CPU ni GPU saturadas",
-               f"El {bn['other']:.0f} % del tiempo estás por debajo del objetivo sin que el hilo principal ni la GPU estén al límite"
-               + (f" (CpuUsageBG p95 {bg:.0f} %)" if bg else "")
-               + ". Suele ser sincronización (V-Sync/tope del driver), overlays (SimHub, OBS, Discord) o procesos en segundo plano. "
-               "Prueba a cerrar overlays uno a uno y revisa que no haya un límite de FPS en el panel de NVIDIA.", 2)
-
     # ----------------------------------------------------------- Margen para subir calidad
     if not deficit and fps["p5"] >= target * 0.98:
         gp95 = (g.get("gpu") or {}).get("p95") or 100
@@ -225,10 +216,6 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
             b.add(m.get("sysmem_key", "MaxWorkingSetMB_64Bit"), int(min(rt * 0.5, 32768)), 2, "memoria",
                   f"Límite de memoria del sim ({wcfg:.0f} MB) bajo para tus {rt/1024:.0f} GB de RAM"
                   + (f"; el proceso llegó a {rss:.0f} MB." if rss else "."))
-    pf = m.get("page_faults_p95")
-    if pf and pf > 200:
-        b.info("Fallos de página altos", f"MemPageFaultSec p95 = {pf:.0f}/s. Indica paginación a disco: "
-               "revisa RAM libre, cierra programas pesados y sube MaxWorkingSetMB_64Bit.", 2, "memoria")
 
     # -------------------------------------------------------------- Red
     mc = _num(b.app.get("maxcars") or b.app.get("servertransmitmaxcars"))
@@ -236,51 +223,15 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
         b.add("serverTransmitMaxCars" if b.app.get("servertransmitmaxcars") is not None else "maxCars", 63, 2, "red",
               "Max Cars es un ajuste de red: limita los coches que te envía el servidor. Bajarlo deja sin datos a overlays "
               "y telemetría (relatives, estrategia de combustible). Para rendimiento usa MaxCarsToDraw.", file="app")
-    n = a["network"]
-    if (n.get("quality_p5") is not None and n["quality_p5"] < 90) or (n.get("latency_p95_ms") or 0) > 150:
-        b.info("Calidad de conexión", f"ChanQuality p5 {n.get('quality_p5') or 0:.0f} %, latencia p95 {n.get('latency_p95_ms') or 0:.0f} ms. "
-               "Usa cable, pausa descargas y comprueba el bitrate de OBS si emites.", 2, "red")
 
-    # -------------------------------------------------------------- Latencia / GPU de sobra / fondo
+    # -------------------------------------------------------------- Latencia y boxes
     if b.cur("NvReflexMode") == 0:
         b.add("NvReflexMode", 1, 2, "frametime",
               "NVIDIA Reflex desactivado. Al ir limitado por CPU, Reflex vacía la cola de render y reduce el input lag "
               "sin coste de FPS. Compatible con G-Sync y con el tope de iRacing.")
-    gp95 = (g.get("gpu") or {}).get("p95")
-    if cpu_share > 60 and gp95 is not None and gp95 < 75:
-        pw = (g.get("gpu_power") or {}).get("median")
-        b.info("GPU infrautilizada",
-               f"La GPU no pasa del {gp95:.0f} % (p95)" + (f" y consume ~{pw:.0f} W" if pw else "")
-               + ". No bajes ajustes de GPU (MSAA, sombras, shaders): no ganarías FPS. Al revés, tienes margen para subirlos "
-               "casi gratis una vez estabilices la CPU.", 2, "gpu")
-    sca = (g.get("sys_cpu_avg") or {}).get("median")
-    cores = ((a["hardware"].get("cpu") or {}).get("cores_logical")) or 0
-    if sca and sca > 35:
-        b.info("Carga de CPU de fondo alta",
-               f"Uso medio de todos los hilos: {sca:.0f} %" + (f" (≈ {sca/100*cores:.0f} de {cores} hilos ocupados)" if cores else "")
-               + ". iRacing usa pocos hilos; algo más está consumiendo CPU. "
-               + (("Procesos que más consumieron (aparte de iRacing): "
-                   + ", ".join(f"{p['name']} {p['cpu_pct']:.0f} %" for p in a.get("top_processes", [])[:6]) + ". ")
-                  if a.get("top_processes") else "Mira el Administrador de tareas con iRacing en pista. ")
-               + "Cierra lo que no uses mientras corres: compite por la caché del X3D.", 1, "sistema")
     fp, ft = (g.get("fps_pit") or {}), (g.get("fps_track") or {})
     if fp.get("n", 0) > 40 and ft.get("mean") and fp["mean"] < ft["mean"] * 0.75:
         b.info("Caída en pit lane", f"{fp['mean']:.0f} fps en boxes frente a {ft['mean']:.0f} en pista. Lo atacan MaxPitObjsToDraw y PitObjectDetail.", 3, "cpu")
-
-    # -------------------------------------------------------------- Sistema
-    win = a["hardware"].get("windows") or {}
-    pp = win.get("power_plan") or {}
-    if pp and pp.get("name") == "Economizador":
-        b.info("Plan de energía", "Estás en 'Economizador'. Cambia a 'Equilibrado' (Ryzen) o 'Alto rendimiento'.", 1)
-    if win.get("hags") is False:
-        b.info("Programación de GPU acelerada por hardware", "Está desactivada. Pruébala activada (requiere reinicio) y compara con otra sesión.", 3)
-    t = a["thermal"].get("gpu_temp_max")
-    if t and t >= 83:
-        b.info("Temperatura de GPU", f"Máxima {t:.0f} °C: posible bajada de frecuencias por temperatura. Revisa curva de ventiladores/flujo de aire.", 2, "sistema")
-    pm = a.get("presentmon")
-    if pm and pm.get("low1_fps") and pm["low1_fps"] < target * 0.75:
-        b.info("Stutter (PresentMon)", f"1 % low {pm['low1_fps']:.0f} fps frente a media {pm['avg_fps']:.0f}. "
-               "Los picos aislados suelen venir de carga de texturas o shaders: deja 1-2 vueltas de calentamiento y mira si persisten.", 2, "frametime")
 
     b.recs.sort(key=lambda r: (r["priority"], r.get("category") or ""))
     return b.recs

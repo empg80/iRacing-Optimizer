@@ -65,3 +65,20 @@ def test_compare_detects_setting_changes(tmp_path):
     c = pipeline.compare(csv_a, csv_b)
     assert {"key": "maxcarstodraw", "a": "40", "b": "20"} in c["changed_settings"]
     assert "MaxCarsToDraw".lower() in pipeline.compare_text(c)
+
+
+def test_diagnostics_and_live_watch(tmp_path):
+    from iroptimizer import diagnostics
+    csv_path, _ = _demo(tmp_path)
+    res = pipeline.run(csv_path)
+    d = res.diagnostics
+    areas = {c["area"] for c in d["checks"]}
+    assert {"CPU", "GPU", "Frametime", "Red", "Memoria"} <= areas
+    assert all(c["status"] in ("ok", "aviso", "problema", "info") for c in d["checks"])
+    w = diagnostics.LiveWatch()
+    msgs = []
+    for i in range(10):
+        msgs += w.feed({"on_track": 1, "t": i, "fps": 150, "chan_latency": 0.05})
+    msgs += w.feed({"on_track": 1, "t": 11, "fps": 70, "chan_latency": 0.3, "chan_quality": 0.8})
+    assert any("Tirón" in m for m in msgs) and any("latencia" in m for m in msgs)
+    assert any("paquetes" in m for m in msgs)

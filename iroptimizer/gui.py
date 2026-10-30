@@ -13,7 +13,7 @@ import webbrowser
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
-from . import __version__, apply as applier, config_reader, hardware, pipeline, profiles
+from . import __version__, apply as applier, config_reader, diagnostics, hardware, pipeline, profiles
 
 APP = "iRacing Optimizer"
 PRIO_TAG = {1: "p1", 2: "p2", 3: "p3"}
@@ -167,6 +167,7 @@ class App(tk.Tk):
         self.nb.pack(fill="both", expand=True, padx=10, pady=(0, 6))
         self._tab_equipo()
         self._tab_monitor()
+        self._tab_diagnostico()
         self._tab_analisis()
         self._tab_perfiles()
         self._tab_copias()
@@ -210,7 +211,7 @@ class App(tk.Tk):
         grid.pack(anchor="w", pady=10)
         self.live = {}
         for i, (k, t) in enumerate((("state", "Estado"), ("session", "Sesión"), ("fps", "FPS"), ("gpu", "GPU %"),
-                                    ("cpu", "CpuUsageFG"), ("near", "Coches cerca"), ("samples", "Muestras"),
+                                    ("bg", "Hilo física/red %"), ("lat", "Latencia ms"), ("near", "Coches cerca"),
                                     ("elapsed", "Tiempo"))):
             box = ttk.Frame(grid, padding=(0, 0, 28, 10))
             box.grid(row=i // 4, column=i % 4, sticky="w")
@@ -218,9 +219,77 @@ class App(tk.Tk):
             v = tk.StringVar(value="—")
             ttk.Label(box, textvariable=v, style="Big.TLabel").pack(anchor="w")
             self.live[k] = v
+        ttk.Label(f, text="Registro y alertas en vivo (tirones, latencia, pérdida de paquetes, hilo de física, temperatura de GPU…)",
+                  style="Muted.TLabel").pack(anchor="w", pady=(4, 0))
         self.mon_log = tk.Text(f, height=8, relief="flat", font=("Consolas", 9))
-        self.mon_log.pack(fill="both", expand=True, pady=(8, 0))
+        self.mon_log.tag_configure("alert", foreground="#c0392b")
+        self.mon_log.pack(fill="both", expand=True, pady=(4, 0))
         ttk.Label(f, text=f"Las sesiones se guardan en {self.out_dir}", style="Muted.TLabel").pack(anchor="w", pady=4)
+
+    def _tab_diagnostico(self):
+        f = ttk.Frame(self.nb, padding=10)
+        self.tab_diag = f
+        self.nb.add(f, text="Diagnóstico")
+        self.diag_head = tk.StringVar(value="Graba o abre una sesión para ver el diagnóstico de CPU, GPU, frametime, red, memoria y sistema.")
+        ttk.Label(f, textvariable=self.diag_head, font=("Segoe UI", 11, "bold")).pack(anchor="w")
+        pw = ttk.PanedWindow(f, orient="vertical")
+        pw.pack(fill="both", expand=True, pady=6)
+        top = ttk.Frame(pw)
+        self.diag_tree = ttk.Treeview(top, columns=("st", "area", "title", "metric"), show="headings", height=10)
+        for c, t, w in (("st", "Estado", 90), ("area", "Área", 90), ("title", "Comprobación", 270), ("metric", "Medición", 640)):
+            self.diag_tree.heading(c, text=t)
+            self.diag_tree.column(c, width=w, anchor="w", stretch=c == "metric")
+        for tag, col in (("problema", "#c0392b"), ("aviso", "#b9770e"), ("ok", "#2e7d4f"), ("info", "#1f618d")):
+            self.diag_tree.tag_configure(tag, foreground=col)
+        self.diag_tree.pack(fill="both", expand=True)
+        self.diag_tree.bind("<<TreeviewSelect>>", self._diag_select)
+        pw.add(top, weight=3)
+        mid = ttk.LabelFrame(pw, text="Qué significa y cómo solucionarlo", padding=6)
+        self.diag_text = tk.Text(mid, height=7, wrap="word", relief="flat", font=("Segoe UI", 10))
+        self.diag_text.pack(fill="both", expand=True)
+        pw.add(mid, weight=2)
+        bot = ttk.LabelFrame(pw, text="Incidentes detectados", padding=6)
+        self.ev_tree = ttk.Treeview(bot, columns=("ses", "min", "lap", "kind", "dur", "det"), show="headings", height=6)
+        for c, t, w in (("ses", "Sesión", 90), ("min", "Minuto", 70), ("lap", "Vuelta", 70), ("kind", "Tipo", 150),
+                        ("dur", "Duración", 80), ("det", "Detalle", 600)):
+            self.ev_tree.heading(c, text=t)
+            self.ev_tree.column(c, width=w, anchor="w", stretch=c == "det")
+        self.ev_tree.pack(fill="both", expand=True)
+        pw.add(bot, weight=2)
+
+    def _show_diag(self):
+        d = self.result.diagnostics
+        sm = d.get("summary", {})
+        self.diag_head.set(f"{sm.get('problema', 0)} problemas · {sm.get('aviso', 0)} avisos · {sm.get('info', 0)} info · "
+                           f"{sm.get('ok', 0)} correctos")
+        self.diag_tree.delete(*self.diag_tree.get_children())
+        self._diag_items = {}
+        icon = {"problema": "✖ Problema", "aviso": "▲ Aviso", "ok": "✔ OK", "info": "ℹ Info"}
+        for c in d["checks"]:
+            iid = self.diag_tree.insert("", "end", values=(icon[c["status"]], c["area"], c["title"], c["metric"]),
+                                        tags=(c["status"],))
+            self._diag_items[iid] = c
+        self.ev_tree.delete(*self.ev_tree.get_children())
+        for e in d.get("events", []):
+            lap = "" if e.get("lap_pct") is None else f"{e['lap_pct'] * 100:.0f} %"
+            self.ev_tree.insert("", "end", values=(e.get("session_type") or "", f"{(e.get('session_time') or 0) / 60:.1f}′",
+                                                   lap, e["kind"], f"{e['duration_s']} s", e["detail"]))
+        kids = self.diag_tree.get_children()
+        if kids:
+            self.diag_tree.selection_set(kids[0])
+
+    def _diag_select(self, _e=None):
+        sel = self.diag_tree.selection()
+        if not sel or sel[0] not in getattr(self, "_diag_items", {}):
+            return
+        c = self._diag_items[sel[0]]
+        txt = c["detail"]
+        if c["actions"]:
+            txt += "\n\nQué hacer:\n" + "\n".join(f"  • {x}" for x in c["actions"])
+        self.diag_text.configure(state="normal")
+        self.diag_text.delete("1.0", "end")
+        self.diag_text.insert("1.0", txt)
+        self.diag_text.configure(state="disabled")
 
     def _tab_analisis(self):
         f = ttk.Frame(self.nb, padding=10)
@@ -389,8 +458,10 @@ class App(tk.Tk):
             self._bg(self._load_cfg, "Cargando…")
 
     # ------------------------------------------------------------------ monitor
-    def _log(self, text):
-        self.ui(lambda: (self.mon_log.insert("end", time.strftime("%H:%M:%S ") + text + "\n"), self.mon_log.see("end")))
+    def _log(self, text, alert=False):
+        tag = ("alert",) if alert else ()
+        self.ui(lambda: (self.mon_log.insert("end", time.strftime("%H:%M:%S ") + ("⚠ " if alert else "") + text + "\n", tag),
+                         self.mon_log.see("end")))
 
     def start_monitor(self):
         if not self.cfg:
@@ -407,6 +478,11 @@ class App(tk.Tk):
         self.btn_stop.configure(state="normal")
         self.live["state"].set("Esperando")
         t0 = [None]
+        watch = diagnostics.LiveWatch(hz=float(self.hz_var.get() or 4))
+
+        def on_row(row):
+            for msg in watch.feed(row):
+                self._log(msg, alert=True)
 
         def tick(row, n):
             if t0[0] is None:
@@ -419,9 +495,11 @@ class App(tk.Tk):
                 self.live["fps"].set(f"{row.get('fps') or 0:.0f}")
                 g = row.get("gpu_util")
                 self.live["gpu"].set("—" if g is None else f"{g:.0f}")
-                self.live["cpu"].set(f"{(row.get('cpu_fg') or 0):.2f}")
+                bg = row.get("cpu_bg")
+                self.live["bg"].set("—" if bg is None else f"{bg * 100 if bg <= 1.5 else bg:.0f}")
+                lat = row.get("chan_latency")
+                self.live["lat"].set("—" if lat is None else f"{lat * 1000:.0f}")
                 self.live["near"].set(str(row.get("cars_near", "—")))
-                self.live["samples"].set(str(n))
                 self.live["elapsed"].set(f"{el // 60}:{el % 60:02d}")
             self.ui(upd)
 
@@ -429,7 +507,7 @@ class App(tk.Tk):
             from .monitor import SessionMonitor
             meta = {"hardware": self.hw, "config": config_reader.snapshot(self.cfg)}
             mon = SessionMonitor(self.out_dir, hz=float(self.hz_var.get() or 4), meta_extra=meta)
-            csv_path, _ = mon.run(on_tick=tick, stop_event=self.mon_stop, log=self._log)
+            csv_path, _ = mon.run(on_tick=tick, stop_event=self.mon_stop, log=self._log, on_row=on_row)
 
             def done():
                 self.btn_start.configure(state="normal")
@@ -503,7 +581,8 @@ class App(tk.Tk):
                 t.add([f"P{rec['priority']}", rec["category"], rec["title"], "", "", rec["reason"]],
                       checkable=False, tags=("info",))
         self._refresh_profiles()
-        self.nb.select(2)
+        self._show_diag()
+        self.nb.select(self.tab_diag)
         self.status(f"Análisis listo. Informe: {r.html_path}")
 
     def _show_rec(self, e):

@@ -92,13 +92,15 @@ th{color:#8a93a6;font-weight:500}.p1{color:#ff6b6b}.p2{color:#ffb703}.p3{color:#
 .legend span{margin-right:14px;font-size:13px}.legend i{display:inline-block;width:12px;height:3px;margin-right:5px;vertical-align:middle}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.two{grid-template-columns:1fr}}
 .kpi li b{display:inline;font-size:inherit}
+.pill{color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap}
+td ul{margin:4px 0 0;padding-left:18px;color:#c9cfdb}
 .bar{display:flex;height:16px;border-radius:4px;overflow:hidden;margin:6px 0}.bar div{height:100%}
 """
 
 BN_COL = {"cap": "#8ac926", "gpu": "#f72585", "cpu": "#ffb703", "mixed": "#fb8500", "other": "#5a6378"}
 
 
-def render_html(a: dict, recs: list[dict], profs: dict | None = None) -> str:
+def render_html(a: dict, recs: list[dict], profs: dict | None = None, diag: dict | None = None) -> str:
     g = a["groups"][a["primary"]]
     f = g["fps"]
     hw = a["hardware"]
@@ -149,6 +151,29 @@ def render_html(a: dict, recs: list[dict], profs: dict | None = None) -> str:
                       "<th>FPS medio</th><th>Coches cerca (media)</th></tr>" + "".join(
             f"<tr><td>{z['from_pct']:.1f}–{z['to_pct']:.1f} %</td><td>{z['track_m']:.0f} m</td><td>{z['fps_mean']:.0f}</td>"
             f"<td>{z['cars_near_mean']:.1f}</td></tr>" for z in zones) + "</table>")
+    diag_html = ""
+    if diag:
+        pill = {"ok": ("#2e7d4f", "OK"), "aviso": ("#b9770e", "AVISO"), "problema": ("#c0392b", "PROBLEMA"), "info": ("#1f618d", "INFO")}
+        rows_ = []
+        for c in diag["checks"]:
+            col, lab = pill[c["status"]]
+            acts = "".join(f"<li>{_e(x)}</li>" for x in c["actions"])
+            rows_.append(f"<tr><td><span class=pill style='background:{col}'>{lab}</span></td><td>{_e(c['area'])}</td>"
+                         f"<td><b>{_e(c['title'])}</b><br><span class=muted>{_e(c['metric'])}</span></td>"
+                         f"<td>{_e(c['detail'])}" + (f"<ul>{acts}</ul>" if acts else "") + "</td></tr>")
+        sm = diag.get("summary", {})
+        head = " · ".join(f"{sm.get(k, 0)} {t}" for k, t in (("problema", "problemas"), ("aviso", "avisos"), ("ok", "correctos")))
+        ev = diag.get("events") or []
+        ev_html = ""
+        if ev:
+            ev_html = ("<h3 style='font-size:15px;margin:18px 0 6px'>Incidentes</h3><table><tr><th>Sesión</th><th>Minuto</th>"
+                       "<th>Vuelta</th><th>Tipo</th><th>Duración</th><th>Detalle</th></tr>" + "".join(
+                f"<tr><td>{_e(e.get('session_type') or '')}</td><td>{(e.get('session_time') or 0) / 60:.1f}′</td>"
+                f"<td>{'' if e.get('lap_pct') is None else f'{e['lap_pct'] * 100:.0f} %'}</td><td>{_e(e['kind'])}</td>"
+                f"<td>{e['duration_s']} s</td><td>{_e(e['detail'])}</td></tr>" for e in ev[:40]) + "</table>")
+        diag_html = (f"<h2>Diagnóstico <span class=muted style='font-size:13px;font-weight:400'>{head}</span></h2>"
+                     "<table><tr><th></th><th>Área</th><th>Comprobación</th><th>Qué significa y qué hacer</th></tr>"
+                     + "".join(rows_) + "</table>" + ev_html)
     prof_html = ""
     if profs:
         from .profiles import PROFILES
@@ -172,7 +197,8 @@ def render_html(a: dict, recs: list[dict], profs: dict | None = None) -> str:
 <div class="muted">{_e(meta.get('started') or '')} · {_e(cpu)} · {_e(gpu)} · {_e(disp.get('width','?'))}×{_e(disp.get('height','?'))} @ {_e(disp.get('refresh','?'))} Hz · {_e(a.get('renderer_file') or '')}</div>
 <h2>Resumen ({_e(a['primary'])})</h2><div class="kpis">{kpis}</div>
 <p style="margin:14px 0 0">¿Qué te limita?</p><div class="bar">{bar}</div><div class="legend">{bn_leg}</div>
-<h2>Recomendaciones</h2>
+{diag_html}
+<h2>Recomendaciones de configuración</h2>
 <table><tr><th>Prio</th><th>Área</th><th>Cambio</th><th>Por qué</th></tr>{recs_html}</table>
 <p class="muted">Aplica con <code>python -m iroptimizer apply &lt;archivo&gt;.recs.json --max-priority 2</code> con iRacing cerrado. Se crea copia de seguridad.</p>
 {prof_html}
@@ -198,11 +224,12 @@ def render_html(a: dict, recs: list[dict], profs: dict | None = None) -> str:
 </body></html>"""
 
 
-def write(a: dict, recs: list[dict], base: Path, profs: dict | None = None) -> tuple[Path, Path]:
+def write(a: dict, recs: list[dict], base: Path, profs: dict | None = None,
+          diag: dict | None = None) -> tuple[Path, Path]:
     html_path = base.with_suffix(".report.html")
     json_path = base.with_suffix(".recs.json")
-    html_path.write_text(render_html(a, recs, profs), encoding="utf-8")
+    html_path.write_text(render_html(a, recs, profs, diag), encoding="utf-8")
     json_path.write_text(json.dumps({"renderer_file": a.get("renderer_file"), "recommendations": recs,
-                                     "profiles": profs or {}},
+                                     "profiles": profs or {}, "diagnostics": diag or {}},
                                     indent=2, ensure_ascii=False), encoding="utf-8")
     return html_path, json_path
