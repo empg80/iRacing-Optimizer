@@ -67,7 +67,15 @@ def cmd_monitor(args):
     from .monitor import SessionMonitor
     cfg = config_reader.load(args.ini_dir, args.renderer)
     meta = {"hardware": hardware.get_hardware(), "config": config_reader.snapshot(cfg)}
-    mon = SessionMonitor(_out_dir(args.out), hz=args.hz, meta_extra=meta)
+    pm_exe = None
+    if args.presentmon:
+        from . import presentmon
+        pm_exe = presentmon.find_exe([_out_dir(args.out) / "tools"])
+        if not pm_exe:
+            print("PresentMon no encontrado; se graba sin frametimes.")
+        elif not presentmon.can_capture():
+            print("Aviso: sin permiso para PresentMon (grupo Performance Log Users o administrador). Se intentará igualmente.")
+    mon = SessionMonitor(_out_dir(args.out), hz=args.hz, meta_extra=meta, presentmon_exe=pm_exe)
     csv_path, _ = mon.run(duration_s=args.duration)
     print(f"\nGuardado: {csv_path}")
     if args.analyze:
@@ -107,7 +115,7 @@ def cmd_restore(args):
 def cmd_demo(args):
     from . import demo
     out = _out_dir(args.out)
-    csv_path, ini_dir = demo.make(out)
+    csv_path, ini_dir = demo.make(out, with_presentmon=True)
     _, json_p = _run_analysis(csv_path, None, not args.no_browser)
     print(f"\nPrueba apply en los ini de demo:\n  python -m iroptimizer apply \"{json_p}\" --ini-dir \"{ini_dir}\" --dry-run")
 
@@ -126,6 +134,7 @@ def main(argv=None):
     m.add_argument("--hz", type=float, default=4.0, help="Muestras por segundo (4 por defecto)")
     m.add_argument("--duration", type=float, help="Segundos máximos de grabación")
     m.add_argument("--analyze", action="store_true", help="Analizar al terminar")
+    m.add_argument("--presentmon", action="store_true", help="Medir frametimes con PresentMon")
     m.add_argument("--no-browser", action="store_true")
     m.add_argument("--target", type=float, help="FPS objetivo (por defecto: tope de iRacing o Hz de la pantalla)")
     m.set_defaults(fn=cmd_monitor)

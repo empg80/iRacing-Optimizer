@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import analyzer, config_reader, diagnostics, profiles, recommender, report
+from . import analyzer, config_reader, diagnostics, presentmon, profiles, recommender, report
 
 
 @dataclass
@@ -24,12 +24,25 @@ def profiles_for(renderer_flat: dict, hardware: dict, analysis: dict | None) -> 
     return {n: profiles.build_profile(n, renderer_flat, refresh, analysis, nvidia) for n in profiles.ORDER}
 
 
+def load_pm(csv_path: Path, meta: dict, rows: list[dict], explicit: str | None = None) -> dict | None:
+    """Frametimes de PresentMon: el CSV indicado o el que grabó el monitor junto a la sesión."""
+    info = meta.get("presentmon") or {}
+    path = Path(explicit) if explicit else (csv_path.parent / Path(info["csv"]).name if info.get("csv") else None)
+    if not path or not path.is_file():
+        return None
+    try:
+        frames = presentmon.load_frames(path, info.get("t0"))
+        return presentmon.analyze(frames, rows) or None
+    except (OSError, ValueError):
+        return None
+
+
 def run(csv_path: str | Path, presentmon: str | None = None, target: float | None = None,
         current_renderer_flat: dict | None = None) -> Result:
     """Analiza el CSV. Los perfiles se calculan contra el ini *actual* si se pasa (si no, el del snapshot)."""
     csv_path = Path(csv_path)
     rows, meta = analyzer.load_session(csv_path)
-    pm = analyzer.load_presentmon(presentmon) if presentmon else None
+    pm = load_pm(csv_path, meta, rows, presentmon)
     a = analyzer.analyze(rows, meta, pm, target)
     recs = recommender.build(a, meta.get("config") or {})
     flat = current_renderer_flat or config_reader.flat_from_snapshot((meta.get("config") or {}).get("renderer", {}))

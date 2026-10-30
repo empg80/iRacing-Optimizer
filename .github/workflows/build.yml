@@ -40,11 +40,33 @@ jobs:
       - name: Vulnerabilidades conocidas en dependencias (pip-audit)
         run: python -m pip_audit -r requirements.txt
 
+      - name: Descargar PresentMon (Intel, MIT) y verificar su firma
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          New-Item -ItemType Directory -Force tools | Out-Null
+          $ok = $false
+          foreach ($tag in @("v2.6.0", "v2.3.1")) {
+            gh release download $tag -R GameTechDev/PresentMon -p "PresentMon-*-x64.exe" -D tools --clobber
+            if ($LASTEXITCODE -eq 0) { $ok = $true; Write-Host "PresentMon $tag"; break }
+          }
+          if (-not $ok) { throw "No se pudo descargar PresentMon" }
+          $exe = Get-ChildItem tools -Filter "PresentMon-*-x64.exe" | Select-Object -First 1
+          $sig = Get-AuthenticodeSignature $exe.FullName
+          Write-Host "Firma: $($sig.Status) - $($sig.SignerCertificate.Subject)"
+          if ($sig.Status -ne "Valid" -or $sig.SignerCertificate.Subject -notmatch "Intel Corporation") {
+            throw "Firma de PresentMon no válida"
+          }
+          (Get-FileHash $exe.FullName -Algorithm SHA256).Hash
+          Move-Item $exe.FullName tools\PresentMon.exe -Force
+
       - name: Compilar ejecutable
         run: >
           pyinstaller --noconfirm --onefile --windowed
           --name iRacingOptimizer --icon assets/icon.ico
           --add-data "assets/icon.png;assets" --add-data "assets/icon.ico;assets"
+          --add-data "tools/PresentMon.exe;tools" --add-data "THIRD_PARTY_NOTICES.md;."
           --hidden-import irsdk --hidden-import pynvml --hidden-import yaml
           app.py
 

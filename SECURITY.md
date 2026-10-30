@@ -8,7 +8,8 @@
 | **Permisos** | No necesita ni pide permisos de administrador. |
 | **Lee** | Los `.ini` de `Documentos\iRacing`, la telemetría en vivo de iRacing (memoria compartida, solo lectura) y datos del sistema (CPU, RAM, GPU vía driver NVIDIA, procesos en ejecución). |
 | **Escribe** | Solo en `Documentos\iRacing` (los `.ini` de iRacing que están en una lista cerrada, y sus copias de seguridad en `iroptimizer_backups`) y en `Documentos\iRacingOptimizer` (sesiones, informes y perfiles). |
-| **Ejecuta** | Solo `powercfg.exe` y `nvidia-smi.exe`, siempre desde su ruta del sistema (nunca desde la carpeta actual). |
+| **Ejecuta** | `powercfg.exe`, `nvidia-smi.exe` y `whoami.exe` desde su ruta del sistema (nunca desde la carpeta actual), y **PresentMon** (de Intel, incluido en el `.exe`) solo si activas la medición de frametimes. |
+| **Permiso opcional** | PresentMon necesita que tu usuario esté en el grupo de Windows *Performance Log Users* («Usuarios del registro de rendimiento»). Si no lo está, la app lo ofrece con el botón *Dar permiso…*: Windows pide confirmación (UAC) para ejecutar un único comando de PowerShell, `Add-LocalGroupMember -SID S-1-5-32-559 -Member <tu usuario>`. La app nunca se ejecuta como administrador. |
 
 ## Protecciones
 
@@ -19,6 +20,16 @@
 - **Perfiles importados**: se limpian al importarlos y se descarta lo que no parezca un ajuste válido. La app te avisa de cuántos valores ha descartado.
 - **Informes HTML**: todo el texto que procede de sesiones (nombres de circuito, coches, procesos…) se escapa, así que una sesión manipulada no puede inyectar código en el informe.
 - **Restaurar copias**: solo restaura `.ini` conocidos y no admite rutas.
+
+## PresentMon
+
+- Se descarga de la [release oficial de Intel](https://github.com/GameTechDev/PresentMon) durante la compilación en GitHub Actions. La compilación falla si su firma digital no es válida o no es de Intel Corporation.
+- Solo captura los procesos de iRacing (`--process_name iRacingSim64DX11.exe`) y escribe un CSV junto a la sesión.
+- Licencia MIT: ver [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Referencia de lo aplicado
+
+Para avisarte si iRacing cambia tu configuración, la app guarda los valores que aplicó en `Documentos\iRacingOptimizer\referencia_aplicada.json`. Ese archivo solo se usa para comparar y está sujeto a las mismas validaciones.
 
 ## Privacidad al compartir sesiones
 

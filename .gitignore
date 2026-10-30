@@ -11,3 +11,4 @@ session_*.json
 *.report.html
 *.recs.json
 demo_iracing_ini/
+tools/*.exe

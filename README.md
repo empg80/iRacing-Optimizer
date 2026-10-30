@@ -43,8 +43,8 @@ Descarga `iRacingOptimizer.exe` desde **[Releases](../../releases)** y ejecútal
 
 ## Uso
 
-1. **Equipo y configuración**: detecta la carpeta `Documentos\iRacing`, el archivo gráfico (`rendererDX11Monitor.ini` u OpenXR para VR), la CPU, la GPU, la RAM y la pantalla.
-2. **Monitor de sesión**: pulsa *Iniciar grabación*, entra a pista (lo ideal es una carrera completa) y pulsa *Detener* al terminar. Durante la grabación muestra en vivo FPS, GPU, hilo de física/red, latencia y coches cerca, y avisa al momento de tirones, picos de latencia, pérdida de paquetes, saturación del hilo de física o GPU caliente. Al acabar, analiza la sesión.
+1. **Equipo y configuración**: avisa si iRacing (por ejemplo tras una actualización) o tú desde el simulador habéis cambiado ajustes que la app había aplicado, y te deja volver a aplicarlos o quedarte con los nuevos. Además detecta la carpeta `Documentos\iRacing`, el archivo gráfico (`rendererDX11Monitor.ini` u OpenXR para VR), la CPU, la GPU, la RAM y la pantalla.
+2. **Monitor de sesión** (con **PresentMon** opcional para medir frametimes reales frame a frame): pulsa *Iniciar grabación*, entra a pista (lo ideal es una carrera completa) y pulsa *Detener* al terminar. Durante la grabación muestra en vivo FPS, GPU, hilo de física/red, latencia y coches cerca, y avisa al momento de tirones, picos de latencia, pérdida de paquetes, saturación del hilo de física o GPU caliente. Al acabar, analiza la sesión. Con PresentMon obtienes 1 % / 0,1 % lows reales y tirones de milisegundos, cada uno con su posición en la vuelta y si lo causó la CPU o la GPU. La primera vez puede pedirte un permiso de Windows (ver [SECURITY.md](SECURITY.md)).
 3. **Diagnóstico**: revisa por áreas (CPU, GPU, frametime, red, memoria y sistema) y marca cada comprobación como OK, aviso o problema. Para cada una explica qué significa y qué hacer, y lista los incidentes con su minuto y su posición en la vuelta.
 4. **Análisis y recomendaciones**: muestra los FPS medios, el 5 % y el 1 % peor, el porcentaje de tiempo bajo el objetivo, qué te limita y una lista de cambios priorizados (P1 aplicar ya, P2 recomendable, P3 opcional). Marca los que quieras y pulsa **Aplicar seleccionados**. Hay un informe HTML con gráficas.
 5. **Perfiles**: tres configuraciones de partida (Máximo rendimiento, Equilibrado y Calidad gráfica). Si has analizado una sesión, el tope de FPS y el LOD dinámico se ajustan a tu medición. Cada perfil muestra exactamente qué cambia antes de aplicarlo.
@@ -71,7 +71,7 @@ Para saber qué te limita usa la carga real de la GPU:
 - Al **90 % o más**, el límite es la GPU.
 - Por **debajo del 80 %**, la GPU está esperando frames y el límite es la CPU o el motor (hilo principal, draw calls).
 
-Los FPS del SDK son una media de 1 s. Para medir microstutter (1 % / 0,1 % lows reales) graba a la vez con PresentMon y analiza con `--presentmon`.
+Los FPS del SDK son una media de 1 s. Para medir microstutter (1 % / 0,1 % lows reales), activa PresentMon en el monitor (viene incluido en el `.exe`).
 
 ## Línea de comandos
 
@@ -79,7 +79,7 @@ El mismo `.exe`, o `python -m iroptimizer`, acepta subcomandos:
 
 ```
 iRacingOptimizer.exe scan
-iRacingOptimizer.exe monitor --analyze
+iRacingOptimizer.exe monitor --analyze --presentmon
 iRacingOptimizer.exe analyze sesion.csv [--target 165] [--presentmon pm.csv]
 iRacingOptimizer.exe apply sesion.recs.json --max-priority 1 [--dry-run]
 iRacingOptimizer.exe profile equilibrado [--from-session sesion.csv] [--dry-run]
@@ -119,6 +119,8 @@ iroptimizer/
   userprofiles.py       perfiles guardados por el usuario (monitor, VR…)
   fov.py                geometría del FOV (plano, curvo, triples)
   apply.py              aplicar, copias y restaurar
+  presentmon.py         captura y análisis de frametimes con PresentMon
+  drift.py              detección de cambios respecto a lo aplicado
   safety.py             validaciones de seguridad (lista blanca de archivos, valores, rutas)
   iniio.py              lectura/escritura de .ini conservando comentarios
   config_reader.py      localiza Documentos\iRacing (respeta OneDrive)

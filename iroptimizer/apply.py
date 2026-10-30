@@ -38,14 +38,14 @@ def backup(ini_dir: Path, label: str = "") -> Path:
 
 
 def apply_changes(changes: list[dict], ini_dir: Path, renderer_file: str | None,
-                  dry_run: bool = False, label: str = "") -> list[str]:
+                  dry_run: bool = False, label: str = "", state_base: Path | None = None) -> list[str]:
     """changes: [{file: 'renderer'|'app', key, proposed, section?}]. Solo toca claves existentes."""
     if not changes:
         return ["No hay cambios que aplicar."]
     if not dry_run and iracing_running():
         raise RuntimeError("Cierra iRacing antes de aplicar: el simulador reescribe los .ini al salir.")
     files = {"renderer": safe_renderer(renderer_file), "app": "app.ini"}
-    log, opened = [], {}
+    log, opened, applied = [], {}, []
     for c in changes:
         if c.get("file") not in files:
             log.append(f"  ! tipo de archivo no permitido: {str(c.get('file'))[:20]}")
@@ -61,18 +61,23 @@ def apply_changes(changes: list[dict], ini_dir: Path, renderer_file: str | None,
             log.append(f"  ! {fname}: {c['key']} no existe, se omite")
             continue
         if str(before) == str(c["proposed"]):
+            applied.append(c)
             continue
         try:
             ini.set(c["key"], c["proposed"], c.get("section"))
         except UnsafeInput as e:
             log.append(f"  ! {fname}: {c['key']} rechazado ({e})")
             continue
+        applied.append(c)
         log.append(f"  {fname}: {c['key']} {before} → {c['proposed']}")
     if dry_run:
         return ["(simulación, no se ha escrito nada)"] + log
     bdir = backup(ini_dir, label)
     for ini in opened.values():
         ini.save()
+    if state_base is not None:  # recordar lo aplicado para detectar cambios posteriores
+        from . import drift
+        drift.record(state_base, applied, renderer_file)
     return [f"Copia de seguridad: {bdir}"] + log
 
 

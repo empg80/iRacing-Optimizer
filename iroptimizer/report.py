@@ -189,7 +189,10 @@ def render_html(a: dict, recs: list[dict], profs: dict | None = None, diag: dict
     if pm:
         pm_html = (f"<h2>Frametimes (PresentMon)</h2><div class=kpis>{kpi(_n(pm['avg_fps']), 'FPS medio real')}"
                    f"{kpi(_n(pm['low1_fps']), '1 % low')}{kpi(_n(pm['low01_fps']), '0,1 % low')}"
-                   f"{kpi(_n(pm['frametime_max_ms'],1,' ms'), 'Frametime máx.')}{kpi(pm['stutters_over_2x'], 'Frames > 2× media')}</div>")
+                   f"{kpi(_n(pm['frametime_max_ms'],1,' ms'), 'Frametime máx.')}{kpi(pm['stutters_over_2x'], 'Tirones (frames > 2× mediana)')}"
+                   f"{kpi(_n(pm.get('stutters_per_min'),1,'/min'), 'Tirones por minuto')}"
+                   + (f"{kpi(_n(pm['bound_pct']['cpu'],0,' %'), 'Frames limitados por CPU')}" if pm.get('bound_pct') else "")
+                   + "</div>")
 
     return f"""<!doctype html><html lang="es"><meta charset="utf-8"><title>iRacing Optimizer – {_e(title)}</title>
 <style>{CSS}</style><body>

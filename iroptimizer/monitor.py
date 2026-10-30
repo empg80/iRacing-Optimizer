@@ -140,7 +140,8 @@ def _track_length_m(weekend: dict) -> float | None:
 
 
 class SessionMonitor:
-    def __init__(self, out_dir: Path, hz: float = 4.0, meta_extra: dict | None = None):
+    def __init__(self, out_dir: Path, hz: float = 4.0, meta_extra: dict | None = None,
+                 presentmon_exe: Path | None = None):
         import irsdk  # pyirsdk
         self.ir = irsdk.IRSDK()
         self.out_dir = Path(out_dir)
@@ -152,6 +153,7 @@ class SessionMonitor:
         self.player_idx = None
         self._sessions: list = []
         self._last_info = 0.0
+        self.presentmon_exe = presentmon_exe
 
     def _connected(self) -> bool:
         ir = self.ir
@@ -221,6 +223,18 @@ class SessionMonitor:
             time.sleep(1)
         log("Conectado. Grabando.")
         self._refresh_session_info(force=True)
+        cap = None
+        if self.presentmon_exe:
+            from .presentmon import Capture
+            cap = Capture(self.presentmon_exe, csv_path.with_suffix(".presentmon.csv"))
+            if cap.start():
+                self.meta["presentmon"] = {"csv": cap.out_csv.name, "t0": cap.started_at}
+                log("PresentMon midiendo frametimes.")
+            else:
+                self.meta["presentmon"] = {"error": cap.error}
+                log("PresentMon no pudo arrancar: " + ("falta permiso (grupo Performance Log Users o administrador)."
+                                                       if cap.error == "permiso" else str(cap.error)))
+                cap = None
         t0, last_ok, rows = time.time(), time.time(), 0
         period = 1.0 / self.hz
         ir = self.ir
@@ -288,6 +302,10 @@ class SessionMonitor:
                     time.sleep(max(0.0, period - (time.time() - tick)))
             except KeyboardInterrupt:
                 log("Grabación detenida.")
+            finally:
+                if cap:
+                    log("Cerrando PresentMon…")
+                    cap.stop()
         self.meta["top_processes"] = [p for p in self.sys.top_processes(12) if not p["is_iracing"]][:8]
         self.meta["iracing_cpu_pct"] = next((p["cpu_pct"] for p in self.sys.top_processes(12) if p["is_iracing"]), None)
         self.meta["samples"] = rows

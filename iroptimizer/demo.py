@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import os
 import json
 import math
 import random
@@ -66,7 +67,7 @@ def _row(t, st, stype, base_fps, near, rng):
     }
 
 
-def make(out_dir: Path) -> tuple[Path, Path]:
+def make(out_dir: Path, with_presentmon: bool = False) -> tuple[Path, Path]:
     out_dir = Path(out_dir)
     ini_dir = out_dir / "demo_iracing_ini"
     ini_dir.mkdir(parents=True, exist_ok=True)
@@ -102,6 +103,29 @@ def make(out_dir: Path) -> tuple[Path, Path]:
                      "windows": {"power_plan": {"name": "Equilibrado"}, "hags": True, "game_mode": True}},
         "config": config_reader.snapshot(config_reader.load(str(ini_dir))),
     }
+    # PresentMon sintético para la carrera: frames con tirones puntuales al llegar tráfico
+    pm_path = csv_path.with_suffix(".presentmon.csv")
+    from datetime import datetime as _dt
+    with (open(pm_path, "w", newline="", encoding="utf-8") if with_presentmon else open(os.devnull, "w")) as f:
+        w = csv.writer(f)
+        w.writerow(["Application", "ProcessID", "CPUStartDateTime", "MsBetweenPresents", "MsCPUBusy", "MsGPUBusy"])
+        for r in rows:
+            if not with_presentmon or r["session_type"] != "Race":
+                continue
+            fps = r["fps"]
+            t = r["t"]
+            n = max(1, int(fps * 0.25))
+            for k in range(n):
+                ft = 1000 / fps * rng.uniform(0.97, 1.03)
+                if rng.random() < 0.0004 + 0.0004 * r["cars_near"]:
+                    ft *= rng.uniform(2.5, 4)
+                cpu = ft * (0.55 + 0.04 * r["cars_near"]) if ft < 30 else ft * 0.9
+                gpu = ft * r["gpu_usage"] * 0.95
+                tt = t + k / n * 0.25
+                stamp = _dt.fromtimestamp(tt).strftime("%Y-%m-%d %H:%M:%S") + f".{int((tt % 1) * 1e9):09d}"
+                w.writerow(["iRacingSim64DX11.exe", 1234, stamp, f"{ft:.4f}", f"{min(cpu, ft):.4f}", f"{min(gpu, ft):.4f}"])
+    if with_presentmon:
+        meta["presentmon"] = {"csv": pm_path.name}
     meta_path = csv_path.with_suffix(".json")
     meta_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
     return csv_path, ini_dir

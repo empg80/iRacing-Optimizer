@@ -59,30 +59,6 @@ def load_session(csv_path: str | Path) -> tuple[list[dict], dict]:
     return rows, meta
 
 
-def load_presentmon(path: str | Path) -> dict:
-    """CSV de PresentMon (1.x: MsBetweenPresents, 2.x: FrameTime). Da 1 % / 0,1 % lows reales."""
-    ft = []
-    with open(path, newline="", encoding="utf-8", errors="replace") as f:
-        rd = csv.DictReader(f)
-        col = next((c for c in ("MsBetweenPresents", "FrameTime", "msBetweenPresents") if c in (rd.fieldnames or [])), None)
-        if not col:
-            raise ValueError("No encuentro la columna de frametime en el CSV de PresentMon")
-        for r in rd:
-            app = (r.get("Application") or r.get("ProcessName") or "").lower()
-            if app and not app.startswith("iracingsim"):
-                continue
-            v = _f(r.get(col))
-            if v and v > 0:
-                ft.append(v)
-    if not ft:
-        return {}
-    p99, p999 = pct(ft, 99), pct(ft, 99.9)
-    mean = sum(ft) / len(ft)
-    return {"frames": len(ft), "avg_fps": 1000 / mean, "low1_fps": 1000 / p99, "low01_fps": 1000 / p999,
-            "frametime_p99_ms": p99, "frametime_max_ms": max(ft),
-            "stutters_over_2x": sum(1 for x in ft if x > 2 * mean)}
-
-
 def _norm_pct(rows, key):
     vals = [r[key] for r in rows if r.get(key) is not None]
     if vals and pct(vals, 95) <= 1.5:  # el SDK da fracciones (0..1, a veces >1 en picos)

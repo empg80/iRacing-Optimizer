@@ -16,7 +16,7 @@ from tkinter import filedialog, messagebox, ttk
 import math
 
 from .safety import RENDERER_FILES
-from . import __version__, apply as applier, config_reader, diagnostics, fov, hardware, pipeline, profiles, userprofiles
+from . import __version__, apply as applier, config_reader, diagnostics, drift, fov, hardware, pipeline, presentmon, profiles, userprofiles
 
 APP = "iRacing Optimizer"
 PRIO_TAG = {1: "p1", 2: "p2", 3: "p3"}
@@ -183,8 +183,15 @@ class App(tk.Tk):
     def _tab_equipo(self):
         f = ttk.Frame(self.nb, padding=10)
         self.nb.add(f, text="Equipo y configuración")
-        self.hw_text = tk.Text(f, height=9, wrap="word", relief="flat", font=("Segoe UI", 10))
+        self.hw_text = tk.Text(f, height=7, wrap="word", relief="flat", font=("Segoe UI", 10))
         self.hw_text.pack(fill="x")
+        dr = ttk.Frame(f)
+        dr.pack(fill="x", pady=(6, 0))
+        self.drift_var = tk.StringVar(value="")
+        ttk.Label(dr, textvariable=self.drift_var).pack(side="left")
+        self.btn_drift = ttk.Button(dr, text="Revisar cambios…", command=lambda: self._drift_dialog(self._drift_diffs))
+        self._drift_diffs: list = []
+        self._drift_prompted = False
         ttk.Label(f, text="Ajustes actuales del archivo gráfico").pack(anchor="w", pady=(10, 4))
         self.cfg_tree = ttk.Treeview(f, columns=("sec", "key", "val"), show="headings")
         for c, t, w in (("sec", "Sección", 180), ("key", "Clave", 280), ("val", "Valor", 200)):
@@ -212,6 +219,13 @@ class App(tk.Tk):
         self.hz_var = tk.DoubleVar(value=4.0)
         ttk.Spinbox(row, from_=1, to=10, increment=1, width=4, textvariable=self.hz_var).pack(side="left", padx=4)
 
+        pmrow = ttk.Frame(f)
+        pmrow.pack(anchor="w")
+        self.use_pm = tk.BooleanVar(value=True)
+        ttk.Checkbutton(pmrow, text="Medir frametimes reales con PresentMon (recomendado)", variable=self.use_pm).pack(side="left")
+        self.pm_status = tk.StringVar(value="")
+        ttk.Label(pmrow, textvariable=self.pm_status, style="Muted.TLabel").pack(side="left", padx=10)
+        self.btn_pm_perm = ttk.Button(pmrow, text="Dar permiso…", command=self.pm_grant)
         grid = ttk.Frame(f)
         grid.pack(anchor="w", pady=10)
         self.live = {}
@@ -410,7 +424,68 @@ class App(tk.Tk):
         self._refresh_backups()
         self._refresh_myprofiles()
         self._fov_load_from_ini(silent=True)
+        self._pm_refresh_status()
+        self._drift_check()
         self.status(f"Configuración cargada: {c.renderer_name or 'sin archivo gráfico'}")
+
+    def _drift_check(self):
+        try:
+            diffs = drift.check(self.out_dir, self.cfg.directory)
+        except Exception:
+            diffs = []
+        self._drift_diffs = diffs
+        self.btn_drift.pack_forget()
+        if not drift.load(self.out_dir).get("files"):
+            self.drift_var.set("")
+            return
+        if diffs:
+            self.drift_var.set(f"⚠ {len(diffs)} ajustes han cambiado desde la última vez que los aplicaste.")
+            self.btn_drift.pack(side="left", padx=8)
+            if not self._drift_prompted:
+                self._drift_prompted = True
+                self.after(300, lambda: self._drift_dialog(diffs))
+        else:
+            self.drift_var.set("✔ Tu configuración coincide con la última que aplicaste.")
+
+    def _drift_dialog(self, diffs):
+        if not diffs:
+            return
+        w = tk.Toplevel(self)
+        w.title("Tu configuración ha cambiado")
+        w.transient(self)
+        frm = ttk.Frame(w, padding=12)
+        frm.pack(fill="both", expand=True)
+        ttk.Label(frm, text=f"{len(diffs)} ajustes no coinciden con lo último que aplicaste. Suele pasar tras una actualización "
+                            "de iRacing o si los cambiaste desde el simulador.", wraplength=620).pack(anchor="w")
+        tv = ttk.Treeview(frm, columns=("file", "key", "exp", "cur"), show="headings", height=min(14, len(diffs)))
+        for c, t, wd in (("file", "Archivo", 190), ("key", "Clave", 200), ("exp", "Aplicado", 90), ("cur", "Ahora", 90)):
+            tv.heading(c, text=t)
+            tv.column(c, width=wd, anchor="w")
+        for d in diffs:
+            tv.insert("", "end", values=(d["file_name"], d["key"], d["expected"], d["current"]))
+        tv.pack(fill="both", expand=True, pady=8)
+        row = ttk.Frame(frm)
+        row.pack(fill="x")
+
+        def reapply():
+            if applier.iracing_running():
+                messagebox.showwarning(APP, "Cierra iRacing antes de aplicar cambios.", parent=w)
+                return
+            log = []
+            for fname, ch in drift.reapply_changes(diffs).items():
+                rend = fname if fname != "app.ini" else self.cfg.renderer_name
+                log += applier.apply_changes(ch, self.cfg.directory, rend, label="reaplicar", state_base=self.out_dir)
+            w.destroy()
+            messagebox.showinfo(APP, "\n".join(log[:30]))
+            self._bg(self._load_cfg, "Recargando…")
+
+        def accept():
+            drift.accept_current(self.out_dir, self.cfg.directory)
+            w.destroy()
+            self._drift_check()
+        ttk.Button(row, text="Volver a aplicar los míos", style="Accent.TButton", command=reapply).pack(side="left")
+        ttk.Button(row, text="Quedarme con los actuales", command=accept).pack(side="left", padx=6)
+        ttk.Button(row, text="Ahora no", command=w.destroy).pack(side="right")
 
     def _refresh_hw(self):
         h = self.hw
@@ -470,6 +545,34 @@ class App(tk.Tk):
         self.ui(lambda: (self.mon_log.insert("end", time.strftime("%H:%M:%S ") + ("⚠ " if alert else "") + text + "\n", tag),
                          self.mon_log.see("end")))
 
+    def _pm_refresh_status(self):
+        exe = presentmon.find_exe([self.out_dir / "tools"])
+        self._pm_exe = exe
+        self.btn_pm_perm.pack_forget()
+        if not exe:
+            self.pm_status.set("PresentMon no encontrado (viene incluido en el .exe; en desarrollo, ponlo en tools/).")
+        elif presentmon.can_capture():
+            self.pm_status.set("Listo.")
+        else:
+            self.pm_status.set("Falta permiso de Windows para medir frametimes.")
+            self.btn_pm_perm.pack(side="left")
+
+    def pm_grant(self):
+        if not messagebox.askyesno(APP, "PresentMon usa el registro de eventos de Windows (ETW). Para usarlo sin ser "
+                                        "administrador, tu usuario debe estar en el grupo «Usuarios del registro de "
+                                        "rendimiento» (Performance Log Users).\n\nWindows te pedirá confirmación una sola vez "
+                                        "para añadirte. Después tienes que cerrar sesión y volver a entrar.\n\n¿Continuar?"):
+            return
+        try:
+            ok = presentmon.request_group_membership()
+        except Exception as e:
+            messagebox.showerror(APP, str(e))
+            return
+        if ok:
+            messagebox.showinfo(APP, "Hecho. Cierra sesión en Windows y vuelve a entrar para que el permiso se active.")
+        else:
+            messagebox.showwarning(APP, "No se pudo lanzar la petición. Alternativa: ejecuta iRacing Optimizer como administrador.")
+
     def start_monitor(self):
         if not self.cfg:
             messagebox.showwarning(APP, "Primero carga la carpeta de iRacing.")
@@ -480,6 +583,14 @@ class App(tk.Tk):
         except ImportError:
             messagebox.showerror(APP, "Falta pyirsdk (pip install pyirsdk).")
             return
+        pm_exe = None
+        if self.use_pm.get():
+            self._pm_refresh_status()
+            if self._pm_exe and presentmon.can_capture():
+                pm_exe = self._pm_exe
+            elif self._pm_exe and not messagebox.askyesno(APP, "PresentMon necesita un permiso de Windows que aún no tienes "
+                                                             "(botón «Dar permiso…»).\n\n¿Grabar ahora sin PresentMon?"):
+                return
         self.mon_stop.clear()
         self.btn_start.configure(state="disabled")
         self.btn_stop.configure(state="normal")
@@ -513,7 +624,7 @@ class App(tk.Tk):
         def run():
             from .monitor import SessionMonitor
             meta = {"hardware": self.hw, "config": config_reader.snapshot(self.cfg)}
-            mon = SessionMonitor(self.out_dir, hz=float(self.hz_var.get() or 4), meta_extra=meta)
+            mon = SessionMonitor(self.out_dir, hz=float(self.hz_var.get() or 4), meta_extra=meta, presentmon_exe=pm_exe)
             csv_path, _ = mon.run(on_tick=tick, stop_event=self.mon_stop, log=self._log, on_row=on_row)
 
             def done():
@@ -640,7 +751,8 @@ class App(tk.Tk):
 
     def _do_apply(self, changes, label):
         try:
-            log = applier.apply_changes(changes, self.cfg.directory, self.cfg.renderer_name, label=label)
+            log = applier.apply_changes(changes, self.cfg.directory, self.cfg.renderer_name, label=label,
+                                        state_base=self.out_dir)
         except Exception as e:
             messagebox.showerror(APP, str(e))
             return
@@ -790,7 +902,8 @@ class App(tk.Tk):
         ch = getattr(self, "_mp_changes", [])
         if self._confirm_apply(ch, f"el perfil «{p['name']}» sobre {self.mp_target.get()}"):
             try:
-                log = applier.apply_changes(ch, self.cfg.directory, self.mp_target.get(), label=f"mi_perfil_{p['name']}")
+                log = applier.apply_changes(ch, self.cfg.directory, self.mp_target.get(), label=f"mi_perfil_{p['name']}",
+                                            state_base=self.out_dir)
             except Exception as e:
                 messagebox.showerror(APP, str(e))
                 return
@@ -1065,6 +1178,7 @@ class App(tk.Tk):
         try:
             applier.backup(self.cfg.directory, "antes_de_restaurar")
             log = applier.restore(self.cfg.directory, stamp)
+            drift.clear(self.out_dir)  # la referencia anterior ya no aplica
         except Exception as e:
             messagebox.showerror(APP, str(e))
             return

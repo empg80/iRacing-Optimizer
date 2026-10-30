@@ -160,8 +160,10 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
     cpu_share = bn["cpu"] + bn["mixed"] / 2
     below = g["below_target_pct"]
     st = BAD if cpu_share >= 60 and below > 30 else WARN if cpu_share >= 40 and below > 15 else OK
+    pmb = (a.get("presentmon") or {}).get("bound_pct")
     add("CPU", "Límite de CPU / motor", st,
-        f"{cpu_share:.0f} % del tiempo limitado por CPU · {below:.0f} % bajo objetivo",
+        f"{cpu_share:.0f} % del tiempo limitado por CPU · {below:.0f} % bajo objetivo"
+        + (f" · PresentMon: CPU {pmb['cpu']:.0f} % / GPU {pmb['gpu']:.0f} % de los frames" if pmb else ""),
         "La GPU está esperando frames: el hilo principal de iRacing (lógica + preparar el dibujo) marca el ritmo. "
         "Es lo normal en iRacing con parrillas grandes; se combate reduciendo lo que hay que dibujar.",
         ["Aplica las recomendaciones de CPU de la pestaña Análisis (coches dibujados, espejos, objetos de boxes, gradas, LOD dinámico).",
@@ -246,9 +248,36 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
              "Baja calidad de texturas o desactiva CarPaint2048x2048."] if st != OK else [])
 
     # ------------------------------------------------------------- frametime
+    pm = a.get("presentmon") or {}
+    if pm:
+        spm = pm["stutters_per_min"]
+        ratio = pm["low1_fps"] / pm["avg_fps"] if pm.get("avg_fps") else 1
+        st = BAD if spm >= 3 or ratio < 0.5 else WARN if spm >= 1 or ratio < 0.65 else OK
+        pm_causes = Counter(e["cause"] for e in pm.get("stutter_events", []))
+        acts = []
+        if pm_causes.get("CPU"):
+            acts.append("Tirones de CPU: el hilo principal tardó en preparar el frame. Revisa coches dibujados, "
+                        "objetos de boxes y procesos en segundo plano.")
+        if pm_causes.get("GPU"):
+            acts.append("Tirones de GPU: frames puntuales muy pesados (sombras, reflejos, espejos en alto). Baja esos ajustes.")
+        if pm_causes.get("espera/sincronización"):
+            acts.append("Tirones sin CPU ni GPU ocupadas: carga de texturas/shaders, V-Sync o procesos que bloquean. "
+                        "Deja 1-2 vueltas de calentamiento, usa SSD y cierra overlays.")
+        add("Frametime", "Tirones reales (PresentMon)", st,
+            f"{pm['stutters_over_2x']} frames > 2× la mediana · {spm:.1f}/min · 1 % low {pm['low1_fps']:.0f} "
+            f"de {pm['avg_fps']:.0f} fps de media · peor frame {pm['frametime_max_ms']:.0f} ms",
+            "Medido frame a frame con PresentMon: es la medida más fiable de la suavidad. Un 1 % low muy por "
+            "debajo de la media se nota como tirones aunque los FPS medios sean altos.", acts)
+        for ev in pm.get("stutter_events", []):
+            events.append({"kind": f"tirón ({ev['cause']})", "session_time": ev.get("session_time"),
+                           "session_type": ev.get("session_type"), "lap_pct": ev.get("lap_pct"),
+                           "duration_s": round(((ev.get("t_end") or 0) - (ev.get("t") or 0)), 2),
+                           "detail": f"frame de {ev['max_ft']:.0f} ms (normal {ev['base']:.1f} ms) · {ev['frames']} frames"
+                                     + (f" · {int(ev['cars_near'])} coches cerca" if ev.get("cars_near") is not None else "")})
     rows_sorted = sorted(valid, key=lambda r: r["t"])
     hitches = _hitches(rows_sorted, hz)
-    events += hitches
+    if not pm:
+        events += hitches
     rate = len(hitches) / dur_h
     st = BAD if rate >= 20 else WARN if rate >= 6 else OK
     causes = Counter(h["cause"] for h in hitches)
@@ -266,10 +295,12 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
                     "Si persisten tras 2 vueltas, actualiza el driver de GPU y mide con PresentMon.")
     if causes.get("boxes"):
         acts.append("Tirones en boxes: baja MaxPitObjsToDraw y PitObjectDetail.")
-    add("Frametime", "Tirones (caídas bruscas y breves)", st,
-        f"{len(hitches)} tirones · {rate:.1f}/hora" + (" · " + ", ".join(f"{k}: {v}" for k, v in causes.most_common(3)) if causes else ""),
-        "Una caída repentina de más del 30 % que se recupera en pocos segundos. Molesta más que unos FPS medios bajos.",
-        acts if st != OK else acts[:2])
+    if not pm:
+        add("Frametime", "Tirones (caídas bruscas y breves)", st,
+            f"{len(hitches)} tirones · {rate:.1f}/hora" + (" · " + ", ".join(f"{k}: {v}" for k, v in causes.most_common(3)) if causes else ""),
+            "Caída repentina de la media de FPS del SDK (aprox.: el SDK promedia 1 s). Para medirlos frame a frame "
+            "activa PresentMon en el monitor.",
+            acts if st != OK else acts[:2])
 
     drops = a.get("drops") or []
     if drops:

@@ -111,3 +111,48 @@ def test_user_profiles_roundtrip(tmp_path):
     assert [c["key"] for c in ch] == ["MaxCarsToDraw"] and ch[0]["proposed"] == "40"
     applier.apply_changes(ch, ini_dir, prof["renderer_file"], label="t")
     assert iniio.IniFile(ini_dir / "rendererDX11Monitor.ini").get("MaxCarsToDraw") == "40"
+
+
+def test_presentmon_analysis(tmp_path):
+    csv_path, _ = demo.make(tmp_path, with_presentmon=True)
+    res = pipeline.run(csv_path)
+    pm = res.analysis["presentmon"]
+    assert pm and pm["aligned"] and pm["frames"] > 10000
+    assert pm["low1_fps"] < pm["avg_fps"] and pm["stutter_events"]
+    assert any(c["title"].startswith("Tirones reales") for c in res.diagnostics["checks"])
+    assert any(e["kind"].startswith("tirón (") and e["session_type"] == "Race" for e in res.diagnostics["events"])
+
+
+def test_presentmon_column_aliases(tmp_path):
+    from iroptimizer import presentmon
+    p = tmp_path / "pm.csv"
+    p.write_text("Application,TimeInSeconds,MsBetweenPresents\n" +
+                 "".join(f"iRacingSim64DX11.exe,{i/100},{10 if i % 50 else 40}\n" for i in range(500)) +
+                 "otro.exe,1,5\n")
+    fr = presentmon.load_frames(p)
+    assert len(fr) == 500 and fr[1][1] == 10
+    a = presentmon.analyze(fr)
+    assert a["stutters_over_2x"] >= 5 and 90 < a["avg_fps"] < 100
+
+
+def test_drift_detection(tmp_path):
+    from iroptimizer import drift
+    _, ini_dir = _demo(tmp_path)
+    base = tmp_path / "out"
+    applier.apply_changes([{"file": "renderer", "key": "MaxCarsToDraw", "proposed": "22", "section": "Graphics Options"},
+                           {"file": "renderer", "key": "NoExiste", "proposed": "1"}],
+                          ini_dir, "rendererDX11Monitor.ini", state_base=base)
+    assert drift.check(base, ini_dir) == []
+    ini = iniio.IniFile(ini_dir / "rendererDX11Monitor.ini")
+    ini.set("MaxCarsToDraw", 40)  # simula que iRacing lo resetea
+    ini.save()
+    d = drift.check(base, ini_dir)
+    assert len(d) == 1 and d[0]["expected"] == "22" and d[0]["current"] == "40"
+    for fname, ch in drift.reapply_changes(d).items():
+        applier.apply_changes(ch, ini_dir, fname, state_base=base)
+    assert drift.check(base, ini_dir) == []
+    ini = iniio.IniFile(ini_dir / "rendererDX11Monitor.ini")
+    ini.set("MaxCarsToDraw", 30)
+    ini.save()
+    drift.accept_current(base, ini_dir)
+    assert drift.check(base, ini_dir) == []
