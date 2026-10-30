@@ -1,6 +1,8 @@
 """Localiza Documentos\\iRacing y carga renderer*.ini, app.ini y core.ini."""
 from __future__ import annotations
 
+from .i18n import _
+
 import os
 import sys
 from dataclasses import dataclass, field
@@ -61,7 +63,7 @@ class IRacingConfig:
 def load(ini_dir: str | None = None, renderer: str | None = None) -> IRacingConfig:
     d = find_iracing_dir(ini_dir)
     if not d.is_dir():
-        raise FileNotFoundError(f"No encuentro la carpeta de iRacing: {d}  (usa --ini-dir)")
+        raise FileNotFoundError(_("No encuentro la carpeta de iRacing: {d}  (usa --ini-dir)", d=d))
     cfg = IRacingConfig(directory=d)
 
     cands = [(n, (d / n).stat().st_mtime) for n in RENDERER_FILES if (d / n).is_file()]
@@ -70,7 +72,7 @@ def load(ini_dir: str | None = None, renderer: str | None = None) -> IRacingConf
         cfg.renderer = IniFile(d / safe_renderer(renderer))
     else:
         # Prioridad: Monitor si existe (pantalla plana); si no, el modificado más reciente.
-        names = [n for n, _ in cfg.renderer_candidates]
+        names = [n for n, _mt in cfg.renderer_candidates]
         pick = "rendererDX11Monitor.ini" if "rendererDX11Monitor.ini" in names else (names[0] if names else None)
         if pick:
             cfg.renderer = IniFile(d / pick)

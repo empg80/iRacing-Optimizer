@@ -1,6 +1,8 @@
 """Flujo común para CLI y GUI: analizar una sesión y calcular recomendaciones y perfiles."""
 from __future__ import annotations
 
+from .i18n import _
+
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -89,16 +91,16 @@ def compare_text(c: dict) -> str:
     lines = [f"A: {c['a']['name']}  ({c['a']['session']}, {c['a']['track']})",
              f"B: {c['b']['name']}  ({c['b']['session']}, {c['b']['track']})"]
     if not c["same_track"]:
-        lines.append("¡Ojo! Circuitos distintos: la comparación es orientativa.")
+        lines.append(_("¡Ojo! Circuitos distintos: la comparación es orientativa."))
     lines += ["", f"{'':14}{'A':>8}{'B':>8}"]
-    for k, lab in (("mean", "FPS medio"), ("p5", "FPS p5"), ("p1", "FPS p1")):
+    for k, lab in (("mean", _("FPS medio")), ("p5", "FPS p5"), ("p1", "FPS p1")):
         lines.append(f"{lab:14}{fa[k]:8.0f}{fb[k]:8.0f}")
     if c["traffic"]:
-        lines += ["", "FPS por coches cerca (<150 m) — comparación justa:",
-                  f"{'coches':14}{'A':>8}{'B':>8}{'Δ':>9}"]
+        lines += ["", _("FPS por coches cerca (<150 m) — comparación justa:"),
+                  f"{_('coches'):14}{'A':>8}{'B':>8}{'Δ':>9}"]
         for t in c["traffic"]:
             lines.append(f"{t['bucket']:14}{t['a']:8.0f}{t['b']:8.0f}{t['delta_pct']:+8.0f}%")
     if c["changed_settings"]:
-        lines += ["", "Ajustes distintos entre A y B:"]
+        lines += ["", _("Ajustes distintos entre A y B:")]
         lines += [f"  {x['key']}: {x['a']} → {x['b']}" for x in c["changed_settings"]]
     return "\n".join(lines)

@@ -2,6 +2,8 @@
 
 # iRacing Optimizer
 
+[English](README.en.md) · **Español**
+
 Lee tu configuración de iRacing y de tu equipo y graba una sesión (mejor si es una carrera). Con eso te dice **qué te limita** (CPU/motor, GPU o el tope de FPS) y propone valores concretos para los `.ini`. Los cambios se aplican con un botón y siempre se guarda antes una copia de seguridad.
 
 ![Análisis y recomendaciones](docs/analisis.png)
@@ -40,6 +42,8 @@ Lee tu configuración de iRacing y de tu equipo y graba una sesión (mejor si es
 Descarga `iRacingOptimizer.exe` desde **[Releases](../../releases)** y ejecútalo: no necesita instalación ni Python.
 
 > Windows SmartScreen puede avisar porque el ejecutable no está firmado. Pulsa "Más información → Ejecutar de todas formas". Puedes comprobar que el archivo es el original con el `SHA256SUMS.txt` de la release. Qué hace y qué no hace la app (sin conexión a internet, sin permisos de administrador, solo toca los `.ini` de iRacing y siempre con copia): ver [SECURITY.md](SECURITY.md).
+
+La interfaz está en **español e inglés**: sigue el idioma de Windows y se puede cambiar con el selector 🌐 de arriba a la derecha (requiere reiniciar).
 
 ## Uso
 
@@ -100,7 +104,7 @@ build.bat            :: genera dist\iRacingOptimizer.exe
 GitHub Actions compila el `.exe` en cada push a `main`; está disponible como *artifact* del workflow. Al publicar una Release (o subir una etiqueta `vX.Y.Z`), el workflow compila y adjunta el ejecutable:
 
 ```
-gh release create v0.3.1 --generate-notes
+gh release create v0.7.0 --generate-notes
 ```
 
 ### Estructura
@@ -126,6 +130,7 @@ iroptimizer/
   config_reader.py      localiza Documentos\iRacing (respeta OneDrive)
   hardware.py           inventario del equipo
   report.py             informe HTML
+  i18n.py, locale_en.py traducción (textos en español con _(), catálogo en inglés)
 ```
 
 ## Limitaciones
@@ -136,4 +141,4 @@ iroptimizer/
 
 ## Licencia
 
-MIT
+MIT. Componentes de terceros: ver [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

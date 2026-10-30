@@ -1,13 +1,15 @@
 """Informe HTML autocontenido (sin dependencias ni CDN) + JSON de recomendaciones."""
 from __future__ import annotations
 
+from .i18n import _
+
 import html
 import json
 from pathlib import Path
 
-CAT = {"cpu": "CPU (hilo principal)", "gpu": "GPU", "frametime": "Frametime", "memoria": "Memoria",
-       "red": "Red", "sistema": "Sistema", "calidad": "Subir calidad"}
-BN = {"cap": "En el tope", "gpu": "GPU", "cpu": "CPU / motor", "mixed": "Mixto", "other": "Sin datos GPU"}
+CAT = {"cpu": _("CPU (hilo principal)"), "gpu": "GPU", "frametime": "Frametime", "memoria": _("Memoria"),
+       "red": _("Red"), "sistema": _("Sistema"), "calidad": _("Subir calidad")}
+BN = {"cap": _("En el tope"), "gpu": "GPU", "cpu": _("CPU / motor"), "mixed": _("Mixto"), "other": _("Sin datos GPU")}
 COL = {"fps": "#4cc9f0", "gpu": "#f72585", "cpu_fg": "#ffb703", "target": "#8ac926"}
 
 
@@ -60,7 +62,7 @@ def _line_chart(series, keys, y_max, target=None, w=960, h=260, right_keys=()):
 
 def _bars(traffic, target, w=480, h=220):
     if not traffic:
-        return "<p class='muted'>Sin datos de tráfico.</p>"
+        return _("<p class='muted'>Sin datos de tráfico.</p>")
     pad_l, pad_b, pad_t = 40, 34, 10
     top = max(max(t["fps_mean"] for t in traffic), target or 0) * 1.1
     bw = (w - pad_l - 10) / len(traffic)
@@ -108,16 +110,16 @@ def render_html(a: dict, recs: list[dict], profs: dict | None = None, diag: dict
     gpu = ((hw.get("gpus") or [{}])[0]).get("name", "?")
     disp = hw.get("display") or {}
     meta = a["meta"]
-    title = " · ".join(str(x) for x in (meta.get("track"), meta.get("car")) if x) or "Sesión"
+    title = " · ".join(str(x) for x in (meta.get("track"), meta.get("car")) if x) or _("Sesión")
 
     kpi = lambda v, l: f'<div class="kpi"><b>{v}</b><span>{l}</span></div>'
     kpis = "".join([
-        kpi(_n(f["mean"]), f"FPS medio ({_e(a['primary'])})"),
-        kpi(_n(f["p5"]), "FPS p5 (5 % peor)"),
+        kpi(_n(f["mean"]), _("FPS medio ({p0})", p0=_e(a['primary']))),
+        kpi(_n(f["p5"]), _("FPS p5 (5 % peor)")),
         kpi(_n(f["p1"]), "FPS p1"),
-        kpi(_n(a["target_fps"]), "Objetivo" + (" (tope)" if a["capped"] else " (Hz pantalla)")),
-        kpi(_n(g["below_target_pct"], 0, " %"), "Tiempo bajo objetivo"),
-        kpi(_n(a.get("traffic_drop_pct"), 0, " %"), "Pérdida con tráfico"),
+        kpi(_n(a["target_fps"]), _("Objetivo") + (_(" (tope)") if a["capped"] else _(" (Hz pantalla)"))),
+        kpi(_n(g["below_target_pct"], 0, " %"), _("Tiempo bajo objetivo")),
+        kpi(_n(a.get("traffic_drop_pct"), 0, " %"), _("Pérdida con tráfico")),
     ])
     bar = "".join(f'<div style="width:{g["bottleneck"][k]:.1f}%;background:{BN_COL[k]}" title="{BN[k]} {g["bottleneck"][k]:.0f}%"></div>'
                   for k in BN)
@@ -131,7 +133,7 @@ def render_html(a: dict, recs: list[dict], profs: dict | None = None, diag: dict
     drops = "".join(
         f"<tr><td>{_e(d['session_type'])}</td><td>{_n((d['session_time'] or 0)/60,1)}′</td><td>{d['duration_s']} s</td>"
         f"<td>{_n(d['min_fps'])}</td><td>{d['cars_near_max']}</td><td>{BN.get(d['bottleneck'], d['bottleneck'])}</td></tr>"
-        for d in a["drops"]) or "<tr><td colspan=6 class=muted>Sin caídas relevantes.</td></tr>"
+        for d in a["drops"]) or _("<tr><td colspan=6 class=muted>Sin caídas relevantes.</td></tr>")
 
     rec_rows = []
     for r in recs:
@@ -142,13 +144,12 @@ def render_html(a: dict, recs: list[dict], profs: dict | None = None, diag: dict
             what = f"<b>{_e(r['title'])}</b>"
         rec_rows.append(f"<tr><td class='p{r['priority']}'>P{r['priority']}</td><td>{_e(CAT.get(r['category'], r['category']))}</td>"
                         f"<td>{what}</td><td>{_e(r['reason'])}</td></tr>")
-    recs_html = "".join(rec_rows) or "<tr><td colspan=4 class=muted>Nada que cambiar: vas sobrado.</td></tr>"
+    recs_html = "".join(rec_rows) or _("<tr><td colspan=4 class=muted>Nada que cambiar: vas sobrado.</td></tr>")
 
     zones = a.get("slow_zones") or []
     zones_html = ""
     if zones:
-        zones_html = ("<h2>Zonas más lentas del circuito</h2><table><tr><th>Tramo (% vuelta)</th><th>Metros desde meta</th>"
-                      "<th>FPS medio</th><th>Coches cerca (media)</th></tr>" + "".join(
+        zones_html = (_("<h2>Zonas más lentas del circuito</h2><table><tr><th>Tramo (% vuelta)</th><th>Metros desde meta</th><th>FPS medio</th><th>Coches cerca (media)</th></tr>") + "".join(
             f"<tr><td>{z['from_pct']:.1f}–{z['to_pct']:.1f} %</td><td>{z['track_m']:.0f} m</td><td>{z['fps_mean']:.0f}</td>"
             f"<td>{z['cars_near_mean']:.1f}</td></tr>" for z in zones) + "</table>")
     diag_html = ""
@@ -162,17 +163,15 @@ def render_html(a: dict, recs: list[dict], profs: dict | None = None, diag: dict
                          f"<td><b>{_e(c['title'])}</b><br><span class=muted>{_e(c['metric'])}</span></td>"
                          f"<td>{_e(c['detail'])}" + (f"<ul>{acts}</ul>" if acts else "") + "</td></tr>")
         sm = diag.get("summary", {})
-        head = " · ".join(f"{sm.get(k, 0)} {t}" for k, t in (("problema", "problemas"), ("aviso", "avisos"), ("ok", "correctos")))
+        head = " · ".join(f"{sm.get(k, 0)} {t}" for k, t in (("problema", _("problemas")), ("aviso", _("avisos")), ("ok", _("correctos"))))
         ev = diag.get("events") or []
         ev_html = ""
         if ev:
-            ev_html = ("<h3 style='font-size:15px;margin:18px 0 6px'>Incidentes</h3><table><tr><th>Sesión</th><th>Minuto</th>"
-                       "<th>Vuelta</th><th>Tipo</th><th>Duración</th><th>Detalle</th></tr>" + "".join(
+            ev_html = (_("<h3 style='font-size:15px;margin:18px 0 6px'>Incidentes</h3><table><tr><th>Sesión</th><th>Minuto</th><th>Vuelta</th><th>Tipo</th><th>Duración</th><th>Detalle</th></tr>") + "".join(
                 f"<tr><td>{_e(e.get('session_type') or '')}</td><td>{(e.get('session_time') or 0) / 60:.1f}′</td>"
                 f"<td>{'' if e.get('lap_pct') is None else f'{e['lap_pct'] * 100:.0f} %'}</td><td>{_e(e['kind'])}</td>"
                 f"<td>{e['duration_s']} s</td><td>{_e(e['detail'])}</td></tr>" for e in ev[:40]) + "</table>")
-        diag_html = (f"<h2>Diagnóstico <span class=muted style='font-size:13px;font-weight:400'>{head}</span></h2>"
-                     "<table><tr><th></th><th>Área</th><th>Comprobación</th><th>Qué significa y qué hacer</th></tr>"
+        diag_html = (_("<h2>Diagnóstico <span class=muted style='font-size:13px;font-weight:400'>{head}</span></h2><table><tr><th></th><th>Área</th><th>Comprobación</th><th>Qué significa y qué hacer</th></tr>", head=head)
                      + "".join(rows_) + "</table>" + ev_html)
     prof_html = ""
     if profs:
@@ -180,51 +179,21 @@ def render_html(a: dict, recs: list[dict], profs: dict | None = None, diag: dict
         cols = []
         for name, ch in profs.items():
             items = "".join(f"<li><code>{_e(c['key'])}</code> {_e(c['current'])} → <b>{_e(c['proposed'])}</b></li>" for c in ch) \
-                or "<li class=muted>Ya coincide con tu configuración.</li>"
+                or _("<li class=muted>Ya coincide con tu configuración.</li>")
             cols.append(f"<div class=kpi><b style='font-size:16px'>{_e(PROFILES[name]['title'])}</b>"
                         f"<span>{_e(PROFILES[name]['desc'])}</span><ul style='padding-left:18px;font-size:13px'>{items}</ul></div>")
         prof_html = "<h2>Perfiles</h2><div class=kpis style='grid-template-columns:repeat(auto-fit,minmax(280px,1fr))'>" + "".join(cols) + "</div>"
     m, n, pm = a["memory"], a["network"], a.get("presentmon")
     pm_html = ""
     if pm:
-        pm_html = (f"<h2>Frametimes (PresentMon)</h2><div class=kpis>{kpi(_n(pm['avg_fps']), 'FPS medio real')}"
+        pm_html = (f"<h2>Frametimes (PresentMon)</h2><div class=kpis>{kpi(_n(pm['avg_fps']), _('FPS medio real'))}"
                    f"{kpi(_n(pm['low1_fps']), '1 % low')}{kpi(_n(pm['low01_fps']), '0,1 % low')}"
-                   f"{kpi(_n(pm['frametime_max_ms'],1,' ms'), 'Frametime máx.')}{kpi(pm['stutters_over_2x'], 'Tirones (frames > 2× mediana)')}"
-                   f"{kpi(_n(pm.get('stutters_per_min'),1,'/min'), 'Tirones por minuto')}"
-                   + (f"{kpi(_n(pm['bound_pct']['cpu'],0,' %'), 'Frames limitados por CPU')}" if pm.get('bound_pct') else "")
+                   f"{kpi(_n(pm['frametime_max_ms'],1,' ms'), _('Frametime máx.'))}{kpi(pm['stutters_over_2x'], _('Tirones (frames > 2× mediana)'))}"
+                   f"{kpi(_n(pm.get('stutters_per_min'),1,'/min'), _('Tirones por minuto'))}"
+                   + (f"{kpi(_n(pm['bound_pct']['cpu'],0,' %'), _('Frames limitados por CPU'))}" if pm.get('bound_pct') else "")
                    + "</div>")
 
-    return f"""<!doctype html><html lang="es"><meta charset="utf-8"><title>iRacing Optimizer – {_e(title)}</title>
-<style>{CSS}</style><body>
-<h1>{_e(title)}</h1>
-<div class="muted">{_e(meta.get('started') or '')} · {_e(cpu)} · {_e(gpu)} · {_e(disp.get('width','?'))}×{_e(disp.get('height','?'))} @ {_e(disp.get('refresh','?'))} Hz · {_e(a.get('renderer_file') or '')}</div>
-<h2>Resumen ({_e(a['primary'])})</h2><div class="kpis">{kpis}</div>
-<p style="margin:14px 0 0">¿Qué te limita?</p><div class="bar">{bar}</div><div class="legend">{bn_leg}</div>
-{diag_html}
-<h2>Recomendaciones de configuración</h2>
-<table><tr><th>Prio</th><th>Área</th><th>Cambio</th><th>Por qué</th></tr>{recs_html}</table>
-<p class="muted">Aplica con <code>python -m iroptimizer apply &lt;archivo&gt;.recs.json --max-priority 2</code> con iRacing cerrado. Se crea copia de seguridad.</p>
-{prof_html}
-<h2>Evolución</h2>
-<div class="legend"><span><i style="background:{COL['fps']}"></i>FPS</span><span><i style="background:{COL['gpu']}"></i>GPU %</span>
-<span><i style="background:{COL['cpu_fg']}"></i>CpuUsageFG (SDK)</span><span><i style="background:{COL['target']}"></i>Objetivo</span></div>
-{_line_chart(a['series'], ['gpu','cpu_fg','fps'], max(f['max'], a['target_fps']) * 1.1, a['target_fps'], right_keys=('gpu','cpu_fg'))}
-<div class="two"><div><h2>FPS según coches a &lt;150 m</h2>{_bars(a['traffic'], a['target_fps'])}</div>
-<div><h2>Memoria, red y temperatura</h2><table>
-<tr><td>VRAM usada máx. / total</td><td>{_n(m['vram_used_max_mb'])} / {_n(m['vram_total_mb'])} MB</td></tr>
-<tr><td>VRAM asignada a iRacing</td><td>{_n(m['vidmem_cfg_mb'])} MB</td></tr>
-<tr><td>RAM iRacing máx. / asignada</td><td>{_n(m['ir_rss_max_mb'])} / {_n(m['maxworkingset_cfg_mb'])} MB</td></tr>
-<tr><td>Fallos de página p95</td><td>{_n(m['page_faults_p95'])}/s</td></tr>
-<tr><td>Calidad conexión media / p5</td><td>{_n(n['quality_mean'])} / {_n(n['quality_p5'])} %</td></tr>
-<tr><td>Latencia p95</td><td>{_n(n['latency_p95_ms'])} ms</td></tr>
-<tr><td>GPU temp. máx. / potencia máx.</td><td>{_n(a['thermal']['gpu_temp_max'])} °C / {_n(a['thermal']['gpu_power_max_w'])} W</td></tr>
-</table></div></div>
-{zones_html}
-{pm_html}
-<h2>Por tipo de sesión</h2><table><tr><th>Sesión</th><th>Duración</th><th>FPS medio</th><th>p5</th><th>p1</th><th>CPU FG p95</th><th>GPU p95</th></tr>{groups_rows}</table>
-<h2>Peores caídas</h2><table><tr><th>Sesión</th><th>Minuto</th><th>Duración</th><th>FPS mín.</th><th>Coches cerca</th><th>Límite</th></tr>{drops}</table>
-<p class="muted">FPS del SDK = media de 1 s: para 1 % lows reales importa un CSV de PresentMon con <code>--presentmon</code>. Clasificación heurística con la carga real de GPU (NVML): ≥ 90 % limita la GPU, &lt; 80 % la GPU espera → limita CPU/motor.</p>
-</body></html>"""
+    return _("<!doctype html><html lang=\"es\"><meta charset=\"utf-8\"><title>iRacing Optimizer – {p0}</title>\n<style>{CSS}</style><body>\n<h1>{p2}</h1>\n<div class=\"muted\">{p3} · {p4} · {p5} · {p6}×{p7} @ {p8} Hz · {p9}</div>\n<h2>Resumen ({p10})</h2><div class=\"kpis\">{kpis}</div>\n<p style=\"margin:14px 0 0\">¿Qué te limita?</p><div class=\"bar\">{bar}</div><div class=\"legend\">{bn_leg}</div>\n{diag_html}\n<h2>Recomendaciones de configuración</h2>\n<table><tr><th>Prio</th><th>Área</th><th>Cambio</th><th>Por qué</th></tr>{recs_html}</table>\n<p class=\"muted\">Aplica con <code>python -m iroptimizer apply &lt;archivo&gt;.recs.json --max-priority 2</code> con iRacing cerrado. Se crea copia de seguridad.</p>\n{prof_html}\n<h2>Evolución</h2>\n<div class=\"legend\"><span><i style=\"background:{p17}\"></i>FPS</span><span><i style=\"background:{p18}\"></i>GPU %</span>\n<span><i style=\"background:{p19}\"></i>CpuUsageFG (SDK)</span><span><i style=\"background:{p20}\"></i>Objetivo</span></div>\n{p21}\n<div class=\"two\"><div><h2>FPS según coches a &lt;150 m</h2>{p22}</div>\n<div><h2>Memoria, red y temperatura</h2><table>\n<tr><td>VRAM usada máx. / total</td><td>{p23} / {p24} MB</td></tr>\n<tr><td>VRAM asignada a iRacing</td><td>{p25} MB</td></tr>\n<tr><td>RAM iRacing máx. / asignada</td><td>{p26} / {p27} MB</td></tr>\n<tr><td>Fallos de página p95</td><td>{p28}/s</td></tr>\n<tr><td>Calidad conexión media / p5</td><td>{p29} / {p30} %</td></tr>\n<tr><td>Latencia p95</td><td>{p31} ms</td></tr>\n<tr><td>GPU temp. máx. / potencia máx.</td><td>{p32} °C / {p33} W</td></tr>\n</table></div></div>\n{zones_html}\n{pm_html}\n<h2>Por tipo de sesión</h2><table><tr><th>Sesión</th><th>Duración</th><th>FPS medio</th><th>p5</th><th>p1</th><th>CPU FG p95</th><th>GPU p95</th></tr>{groups_rows}</table>\n<h2>Peores caídas</h2><table><tr><th>Sesión</th><th>Minuto</th><th>Duración</th><th>FPS mín.</th><th>Coches cerca</th><th>Límite</th></tr>{drops}</table>\n<p class=\"muted\">FPS del SDK = media de 1 s: para 1 % lows reales importa un CSV de PresentMon con <code>--presentmon</code>. Clasificación heurística con la carga real de GPU (NVML): ≥ 90 % limita la GPU, &lt; 80 % la GPU espera → limita CPU/motor.</p>\n</body></html>", p0=_e(title), CSS=CSS, p2=_e(title), p3=_e(meta.get('started') or ''), p4=_e(cpu), p5=_e(gpu), p6=_e(disp.get('width','?')), p7=_e(disp.get('height','?')), p8=_e(disp.get('refresh','?')), p9=_e(a.get('renderer_file') or ''), p10=_e(a['primary']), kpis=kpis, bar=bar, bn_leg=bn_leg, diag_html=diag_html, recs_html=recs_html, prof_html=prof_html, p17=COL['fps'], p18=COL['gpu'], p19=COL['cpu_fg'], p20=COL['target'], p21=_line_chart(a['series'], ['gpu','cpu_fg','fps'], max(f['max'], a['target_fps']) * 1.1, a['target_fps'], right_keys=('gpu','cpu_fg')), p22=_bars(a['traffic'], a['target_fps']), p23=_n(m['vram_used_max_mb']), p24=_n(m['vram_total_mb']), p25=_n(m['vidmem_cfg_mb']), p26=_n(m['ir_rss_max_mb']), p27=_n(m['maxworkingset_cfg_mb']), p28=_n(m['page_faults_p95']), p29=_n(n['quality_mean']), p30=_n(n['quality_p5']), p31=_n(n['latency_p95_ms']), p32=_n(a['thermal']['gpu_temp_max']), p33=_n(a['thermal']['gpu_power_max_w']), zones_html=zones_html, pm_html=pm_html, groups_rows=groups_rows, drops=drops)
 
 
 def write(a: dict, recs: list[dict], base: Path, profs: dict | None = None,

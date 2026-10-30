@@ -19,6 +19,8 @@ Claves en rendererDX11*.ini → [MonitorSetup]:
 """
 from __future__ import annotations
 
+from .i18n import _
+
 import math
 from dataclasses import asdict, dataclass
 
@@ -84,7 +86,7 @@ def compute(s: Setup) -> Result:
     if s.curved:
         R = s.radius
         if R <= 0:
-            raise ValueError("Radio de curvatura no válido")
+            raise ValueError(_("Radio de curvatura no válido"))
         # Centro de la pantalla central en z = d; centro de curvatura en z = d - R (detrás o delante del ojo).
         cz = d - R
         half_vis = math.asin(min(1.0, (sw / 2) / R))          # semiángulo visible (desde el centro de curvatura)
@@ -96,7 +98,7 @@ def compute(s: Setup) -> Result:
             step = 2 * half_mon
             angs = [(k * step - half_vis, k * step + half_vis) for k in (-1, 0, 1)]
             if step + half_vis >= math.pi / 2:
-                warns.append("Con este radio y ancho, los laterales quedan casi de lado: revisa el radio.")
+                warns.append(_("Con este radio y ancho, los laterales quedan casi de lado: revisa el radio."))
         outline = [[(R * math.sin(a0 + (a1 - a0) * i / 40), cz + R * math.cos(a0 + (a1 - a0) * i / 40))
                     for i in range(41)] for a0, a1 in angs]
         left, right = outline[0][0], outline[-1][-1]
@@ -105,7 +107,7 @@ def compute(s: Setup) -> Result:
         fov_h = 2 * math.degrees(math.atan2(abs(right[0]), right[1]))
         ideal = None
         if d < R * 0.3:
-            warns.append("Estás muy cerca para este radio: revisa la distancia.")
+            warns.append(_("Estás muy cerca para este radio: revisa la distancia."))
     else:
         # Planos. Central centrado en z = d.
         c_left, c_right = (-sw / 2, d), (sw / 2, d)
@@ -127,7 +129,7 @@ def compute(s: Setup) -> Result:
             fov_h = 2 * math.degrees(math.atan2(abs(x), z))
             # ángulo ideal: el centro del lateral mirando a los ojos (perpendicular a la línea de visión)
             lo, hi = 0.0, math.radians(89)
-            for _ in range(60):
+            for _it in range(60):
                 mid = (lo + hi) / 2
                 p0, p1 = side(1, mid)
                 cxs, czs = (p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2
@@ -139,15 +141,15 @@ def compute(s: Setup) -> Result:
                     hi = mid
             ideal = math.degrees((lo + hi) / 2)
             if not s.three_projections:
-                warns.append("Sin «3 proyecciones» iRacing ignora el ángulo de los laterales y la imagen se deforma en ellos.")
+                warns.append(_("Sin «3 proyecciones» iRacing ignora el ángulo de los laterales y la imagen se deforma en ellos."))
             if abs(s.side_angle - ideal) > 8:
-                warns.append(f"El ángulo de los laterales ({s.side_angle:.0f}°) está lejos del ideal ({ideal:.0f}°).")
+                warns.append(_("El ángulo de los laterales ({p0:.0f}°) está lejos del ideal ({ideal:.0f}°).", p0=s.side_angle, ideal=ideal))
         else:
             fov_h = fov_center
         left, right = outline[0][0], outline[-1][-1]
 
     if s.monitors == 1 and not s.curved and fov_h > 100:
-        warns.append("FOV muy alto para un monitor plano: probablemente la distancia es demasiado corta o el ancho está mal.")
+        warns.append(_("FOV muy alto para un monitor plano: probablemente la distancia es demasiado corta o el ancho está mal."))
     return Result(round(fov_h, 1), round(fov_center, 1), None if vfov is None else round(vfov, 1),
                   None if ideal is None else round(ideal, 1), outline, (left, right), warns)
 

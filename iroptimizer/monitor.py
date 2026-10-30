@@ -8,6 +8,8 @@ Además: CPU por núcleo, RAM, RSS del proceso de iRacing y GPU vía NVML (si ha
 """
 from __future__ import annotations
 
+from .i18n import _
+
 import csv
 import json
 import re
@@ -232,7 +234,7 @@ class SessionMonitor:
                 log("PresentMon midiendo frametimes.")
             else:
                 self.meta["presentmon"] = {"error": cap.error}
-                log("PresentMon no pudo arrancar: " + ("falta permiso (grupo Performance Log Users o administrador)."
+                log(_("PresentMon no pudo arrancar: ") + ("falta permiso (grupo Performance Log Users o administrador)."
                                                        if cap.error == "permiso" else str(cap.error)))
                 cap = None
         t0, last_ok, rows = time.time(), time.time(), 0
@@ -248,7 +250,7 @@ class SessionMonitor:
                         break
                     if not self._connected():
                         if tick - last_ok > 10:
-                            log("iRacing desconectado. Fin de la grabación.")
+                            log(_("iRacing desconectado. Fin de la grabación."))
                             break
                         time.sleep(1)
                         continue
@@ -298,10 +300,10 @@ class SessionMonitor:
                         if not on_tick:
                             print(f"\r{row['session_type']:<12} fps {row['fps'] or 0:6.1f} | "
                                   f"cpuFG {row['cpu_fg'] or 0:.2f} | gpu {row.get('gpu_util') or 0} % | "
-                                  f"coches cerca {near:2d} | muestras {rows}", end="", flush=True)
+                                  f"cars {near:2d} | samples {rows}", end="", flush=True)
                     time.sleep(max(0.0, period - (time.time() - tick)))
             except KeyboardInterrupt:
-                log("Grabación detenida.")
+                log(_("Grabación detenida."))
             finally:
                 if cap:
                     log("Cerrando PresentMon…")

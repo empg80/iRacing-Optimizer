@@ -4,6 +4,8 @@ Todo es best-effort: si algo no se puede leer se devuelve None y el análisis lo
 """
 from __future__ import annotations
 
+from .i18n import _
+
 import platform
 import re
 import subprocess
@@ -17,7 +19,7 @@ POWER_PLANS = {
     "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c": "Alto rendimiento",
     "381b4222-f694-41f0-9685-ff5bb260df2e": "Equilibrado",
     "a1841308-3541-4fab-bc81-f71556f20b4a": "Economizador",
-    "e9a42b02-d5df-448d-aa00-03f14749eb61": "Máximo rendimiento",
+    "e9a42b02-d5df-448d-aa00-03f14749eb61": _("Máximo rendimiento"),
 }
 
 

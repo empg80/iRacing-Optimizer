@@ -9,6 +9,8 @@ Principios:
 """
 from __future__ import annotations
 
+from .i18n import _
+
 import os
 import re
 from pathlib import Path
@@ -34,7 +36,7 @@ class UnsafeInput(ValueError):
 def safe_value(v) -> str:
     s = str(v).strip()
     if not _VALUE_RE.match(s):
-        raise UnsafeInput(f"Valor no permitido para un .ini: {s[:40]!r}")
+        raise UnsafeInput(_("Valor no permitido para un .ini: {p0!r}", p0=s[:40]))
     return s
 
 
@@ -51,23 +53,23 @@ def safe_renderer(name: str | None) -> str:
         return "rendererDX11Monitor.ini"
     base = os.path.basename(str(name))
     if base != str(name) or base not in RENDERER_FILES:
-        raise UnsafeInput(f"Archivo gráfico no permitido: {str(name)[:60]!r}")
+        raise UnsafeInput(_("Archivo gráfico no permitido: {p0!r}", p0=str(name)[:60]))
     return base
 
 
 def safe_ini_target(ini_dir: Path, name: str) -> Path:
     """Ruta a un .ini permitido dentro de ini_dir (sin escapar de la carpeta)."""
     if os.path.basename(name) != name or name not in WRITABLE_FILES:
-        raise UnsafeInput(f"Archivo no permitido: {name[:60]!r}")
+        raise UnsafeInput(_("Archivo no permitido: {p0!r}", p0=name[:60]))
     p = (Path(ini_dir) / name).resolve()
     if p.parent != Path(ini_dir).resolve():
-        raise UnsafeInput("Ruta fuera de la carpeta de iRacing")
+        raise UnsafeInput(_("Ruta fuera de la carpeta de iRacing"))
     return p
 
 
 def safe_stamp(name: str) -> str:
     if not _STAMP_RE.match(name or ""):
-        raise UnsafeInput(f"Nombre de copia no válido: {str(name)[:60]!r}")
+        raise UnsafeInput(_("Nombre de copia no válido: {p0!r}", p0=str(name)[:60]))
     return name
 
 

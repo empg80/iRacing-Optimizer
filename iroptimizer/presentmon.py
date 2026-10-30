@@ -11,6 +11,8 @@ una sola vez (pide confirmación de Windows/UAC) y después funciona sin adminis
 """
 from __future__ import annotations
 
+from .i18n import _
+
 import csv
 import math
 import os
@@ -93,7 +95,7 @@ def request_group_membership() -> bool:
     domain = os.environ.get("USERDOMAIN", "")
     member = f"{domain}\\{user}" if domain else user
     if not re.fullmatch(r"[\w .\-$\\]{1,120}", member, flags=re.UNICODE):
-        raise ValueError("Nombre de usuario no válido para añadir al grupo.")
+        raise ValueError(_("Nombre de usuario no válido para añadir al grupo."))
     ps = system_exe(r"WindowsPowerShell\v1.0\powershell.exe")
     if not ps:
         return False
@@ -186,7 +188,7 @@ def load_frames(path: str | Path, t0: float | None = None) -> list[tuple]:
         fields = rd.fieldnames or []
         c_ft = _col(fields, COL_FRAMETIME)
         if not c_ft:
-            raise ValueError("No encuentro la columna de frametime en el CSV de PresentMon")
+            raise ValueError(_("No encuentro la columna de frametime en el CSV de PresentMon"))
         c_cpu, c_gpu = _col(fields, COL_CPU), _col(fields, COL_GPU)
         c_dt, c_s, c_ms = _col(fields, COL_TIME_DATE), _col(fields, COL_TIME_S), _col(fields, COL_TIME_MS)
         c_app = _col(fields, COL_APP)
@@ -265,7 +267,7 @@ def analyze(frames: list[tuple], telemetry: list[dict] | None = None) -> dict:
                 elif gpu is not None and gpu >= 0.8 * ft:
                     cause = "GPU"
                 else:
-                    cause = "espera/sincronización"
+                    cause = _("espera/sincronización")
                 stutters.append({"t": t, "ft": ft, "base": med, "cause": cause, "row": r})
         win.append(ft)
     # agrupar tirones cercanos (< 1 s) en incidentes
@@ -289,7 +291,7 @@ def analyze(frames: list[tuple], telemetry: list[dict] | None = None) -> dict:
     # quién limita frame a frame (si PresentMon da CPU/GPU busy)
     bound = {"cpu": 0, "gpu": 0}
     n_b = 0
-    for (t, ft, cpu, gpu), _ in use:
+    for (t, ft, cpu, gpu), _row in use:
         if gpu is None or cpu is None:
             continue
         n_b += 1

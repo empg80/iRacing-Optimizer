@@ -1,6 +1,8 @@
 """Aplica cambios a los .ini con copia de seguridad, y restaura."""
 from __future__ import annotations
 
+from .i18n import _
+
 import json
 import shutil
 from datetime import datetime
@@ -41,24 +43,24 @@ def apply_changes(changes: list[dict], ini_dir: Path, renderer_file: str | None,
                   dry_run: bool = False, label: str = "", state_base: Path | None = None) -> list[str]:
     """changes: [{file: 'renderer'|'app', key, proposed, section?}]. Solo toca claves existentes."""
     if not changes:
-        return ["No hay cambios que aplicar."]
+        return [_("No hay cambios que aplicar.")]
     if not dry_run and iracing_running():
-        raise RuntimeError("Cierra iRacing antes de aplicar: el simulador reescribe los .ini al salir.")
+        raise RuntimeError(_("Cierra iRacing antes de aplicar: el simulador reescribe los .ini al salir."))
     files = {"renderer": safe_renderer(renderer_file), "app": "app.ini"}
     log, opened, applied = [], {}, []
     for c in changes:
         if c.get("file") not in files:
-            log.append(f"  ! tipo de archivo no permitido: {str(c.get('file'))[:20]}")
+            log.append(_("  ! tipo de archivo no permitido: {p0}", p0=str(c.get('file'))[:20]))
             continue
         fname = files[c["file"]]
         path = safe_ini_target(ini_dir, fname)
         if not path.is_file():
-            log.append(f"  ! {fname} no existe, se omite {c['key']}")
+            log.append(_("  ! {fname} no existe, se omite {p1}", fname=fname, p1=c['key']))
             continue
         ini = opened.get(fname) or opened.setdefault(fname, IniFile(path))
         before = ini.get(c["key"], c.get("section"))
         if before is None:
-            log.append(f"  ! {fname}: {c['key']} no existe, se omite")
+            log.append(_("  ! {fname}: {p1} no existe, se omite", fname=fname, p1=c['key']))
             continue
         if str(before) == str(c["proposed"]):
             applied.append(c)
@@ -71,14 +73,14 @@ def apply_changes(changes: list[dict], ini_dir: Path, renderer_file: str | None,
         applied.append(c)
         log.append(f"  {fname}: {c['key']} {before} → {c['proposed']}")
     if dry_run:
-        return ["(simulación, no se ha escrito nada)"] + log
+        return [_("(simulación, no se ha escrito nada)")] + log
     bdir = backup(ini_dir, label)
     for ini in opened.values():
         ini.save()
     if state_base is not None:  # recordar lo aplicado para detectar cambios posteriores
         from . import drift
         drift.record(state_base, applied, renderer_file)
-    return [f"Copia de seguridad: {bdir}"] + log
+    return [_("Copia de seguridad: {bdir}", bdir=bdir)] + log
 
 
 def apply(recs_path: Path, ini_dir: Path, max_priority: int = 2, only_keys: list[str] | None = None,
@@ -99,12 +101,12 @@ def list_backups(ini_dir: Path) -> list[Path]:
 def restore(ini_dir: Path, stamp: str | None = None) -> list[str]:
     dirs = list_backups(ini_dir)
     if not dirs:
-        raise FileNotFoundError("No hay copias de seguridad.")
+        raise FileNotFoundError(_("No hay copias de seguridad."))
     src = (Path(ini_dir) / BACKUP_DIR / safe_stamp(stamp)) if stamp else dirs[0]
     if not src.is_dir():
-        raise FileNotFoundError(f"No existe la copia {stamp}")
+        raise FileNotFoundError(_("No existe la copia {stamp}", stamp=stamp))
     if iracing_running():
-        raise RuntimeError("Cierra iRacing antes de restaurar.")
+        raise RuntimeError(_("Cierra iRacing antes de restaurar."))
     out = []
     for f in src.iterdir():
         if f.name not in WRITABLE_FILES or not f.is_file() or f.is_symlink():

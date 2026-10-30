@@ -1,6 +1,8 @@
 """Interfaz gráfica (tkinter, sin dependencias extra) para iRacing Optimizer."""
 from __future__ import annotations
 
+from .i18n import _
+
 import os
 import queue
 import subprocess
@@ -15,12 +17,13 @@ from tkinter import filedialog, messagebox, ttk
 
 import math
 
+from .report import CAT
 from .safety import RENDERER_FILES
-from . import __version__, apply as applier, config_reader, diagnostics, drift, fov, hardware, pipeline, presentmon, profiles, userprofiles
+from . import __version__, i18n, apply as applier, config_reader, diagnostics, drift, fov, hardware, pipeline, presentmon, profiles, userprofiles
 
 APP = "iRacing Optimizer"
 PRIO_TAG = {1: "p1", 2: "p2", 3: "p3"}
-BN = {"cap": "En el tope", "gpu": "GPU", "cpu": "CPU / motor", "mixed": "Mixto", "other": "Sin datos GPU"}
+BN = {"cap": _("En el tope"), "gpu": "GPU", "cpu": _("CPU / motor"), "mixed": _("Mixto"), "other": _("Sin datos GPU")}
 CHECK, UNCHECK = "☑", "☐"
 
 
@@ -107,7 +110,7 @@ class App(tk.Tk):
         self._style()
         self._build()
         self.after(100, self._poll)
-        self._bg(self._load_all, "Cargando equipo y configuración…")
+        self._bg(self._load_all, _("Cargando equipo y configuración…"))
 
     # ------------------------------------------------------------------ infra
     def _style(self):
@@ -128,7 +131,7 @@ class App(tk.Tk):
             try:
                 fn()
             except Exception as e:  # mostrar cualquier error en la UI
-                self.q.put(("error", f"{e}\n\n{traceback.format_exc(limit=3)}"))
+                self.q.put(("error", _("{e}\n\n{p1}", e=e, p1=traceback.format_exc(limit=3))))
         threading.Thread(target=run, daemon=True).start()
 
     def _poll(self):
@@ -136,7 +139,7 @@ class App(tk.Tk):
             while True:
                 kind, payload = self.q.get_nowait()
                 if kind == "error":
-                    self.status("Error")
+                    self.status(_("Error"))
                     messagebox.showerror(APP, payload)
                 elif kind == "call":
                     payload()
@@ -155,16 +158,21 @@ class App(tk.Tk):
     def _build(self):
         top = ttk.Frame(self, padding=(10, 8))
         top.pack(fill="x")
-        ttk.Label(top, text="Carpeta de iRacing:").pack(side="left")
+        ttk.Label(top, text=_("Carpeta de iRacing:")).pack(side="left")
         self.dir_var = tk.StringVar(value="—")
         ttk.Label(top, textvariable=self.dir_var, style="Muted.TLabel").pack(side="left", padx=6)
-        ttk.Button(top, text="Cambiar…", command=self.choose_dir).pack(side="left")
-        ttk.Label(top, text="   Archivo gráfico:").pack(side="left")
+        ttk.Button(top, text=_("Cambiar…"), command=self.choose_dir).pack(side="left")
+        ttk.Label(top, text=_("   Archivo gráfico:")).pack(side="left")
         self.renderer_var = tk.StringVar()
         self.renderer_cb = ttk.Combobox(top, textvariable=self.renderer_var, state="readonly", width=28)
         self.renderer_cb.pack(side="left", padx=6)
-        self.renderer_cb.bind("<<ComboboxSelected>>", lambda e: self._bg(self._load_cfg, "Cargando…"))
-        ttk.Button(top, text="Recargar", command=lambda: self._bg(self._load_cfg, "Recargando…")).pack(side="left")
+        self.renderer_cb.bind("<<ComboboxSelected>>", lambda e: self._bg(self._load_cfg, _("Cargando…")))
+        ttk.Button(top, text=_("Recargar"), command=lambda: self._bg(self._load_cfg, _("Recargando…"))).pack(side="left")
+        self.lang_var = tk.StringVar(value="English" if i18n.LANG == "en" else "Español")
+        lang_cb = ttk.Combobox(top, textvariable=self.lang_var, values=["Español", "English"], state="readonly", width=9)
+        lang_cb.pack(side="right")
+        ttk.Label(top, text="🌐").pack(side="right", padx=4)
+        lang_cb.bind("<<ComboboxSelected>>", self._change_lang)
 
         self.nb = ttk.Notebook(self)
         self.nb.pack(fill="both", expand=True, padx=10, pady=(0, 6))
@@ -177,24 +185,24 @@ class App(tk.Tk):
         self._tab_fov()
         self._tab_copias()
 
-        self.status_var = tk.StringVar(value="Listo")
+        self.status_var = tk.StringVar(value=_("Listo"))
         ttk.Label(self, textvariable=self.status_var, anchor="w", padding=(10, 3), relief="sunken").pack(fill="x")
 
     def _tab_equipo(self):
         f = ttk.Frame(self.nb, padding=10)
-        self.nb.add(f, text="Equipo y configuración")
+        self.nb.add(f, text=_("Equipo y configuración"))
         self.hw_text = tk.Text(f, height=7, wrap="word", relief="flat", font=("Segoe UI", 10))
         self.hw_text.pack(fill="x")
         dr = ttk.Frame(f)
         dr.pack(fill="x", pady=(6, 0))
         self.drift_var = tk.StringVar(value="")
         ttk.Label(dr, textvariable=self.drift_var).pack(side="left")
-        self.btn_drift = ttk.Button(dr, text="Revisar cambios…", command=lambda: self._drift_dialog(self._drift_diffs))
+        self.btn_drift = ttk.Button(dr, text=_("Revisar cambios…"), command=lambda: self._drift_dialog(self._drift_diffs))
         self._drift_diffs: list = []
         self._drift_prompted = False
-        ttk.Label(f, text="Ajustes actuales del archivo gráfico").pack(anchor="w", pady=(10, 4))
+        ttk.Label(f, text=_("Ajustes actuales del archivo gráfico")).pack(anchor="w", pady=(10, 4))
         self.cfg_tree = ttk.Treeview(f, columns=("sec", "key", "val"), show="headings")
-        for c, t, w in (("sec", "Sección", 180), ("key", "Clave", 280), ("val", "Valor", 200)):
+        for c, t, w in (("sec", _("Sección"), 180), ("key", _("Clave"), 280), ("val", _("Valor"), 200)):
             self.cfg_tree.heading(c, text=t)
             self.cfg_tree.column(c, width=w, anchor="w")
         sb = ttk.Scrollbar(f, orient="vertical", command=self.cfg_tree.yview)
@@ -204,58 +212,58 @@ class App(tk.Tk):
 
     def _tab_monitor(self):
         f = ttk.Frame(self.nb, padding=14)
-        self.nb.add(f, text="Monitor de sesión")
-        ttk.Label(f, text="Arranca la grabación y entra a pista (mejor en carrera). Detén al terminar.",
+        self.nb.add(f, text=_("Monitor de sesión"))
+        ttk.Label(f, text=_("Arranca la grabación y entra a pista (mejor en carrera). Detén al terminar."),
                   style="Muted.TLabel").pack(anchor="w")
         row = ttk.Frame(f)
         row.pack(anchor="w", pady=10)
-        self.btn_start = ttk.Button(row, text="▶  Iniciar grabación", style="Accent.TButton", command=self.start_monitor)
+        self.btn_start = ttk.Button(row, text=_("▶  Iniciar grabación"), style="Accent.TButton", command=self.start_monitor)
         self.btn_start.pack(side="left")
-        self.btn_stop = ttk.Button(row, text="■  Detener", command=self.stop_monitor, state="disabled")
+        self.btn_stop = ttk.Button(row, text=_("■  Detener"), command=self.stop_monitor, state="disabled")
         self.btn_stop.pack(side="left", padx=8)
         self.auto_analyze = tk.BooleanVar(value=True)
-        ttk.Checkbutton(row, text="Analizar al terminar", variable=self.auto_analyze).pack(side="left", padx=12)
-        ttk.Label(row, text="Muestras/s:").pack(side="left")
+        ttk.Checkbutton(row, text=_("Analizar al terminar"), variable=self.auto_analyze).pack(side="left", padx=12)
+        ttk.Label(row, text=_("Muestras/s:")).pack(side="left")
         self.hz_var = tk.DoubleVar(value=4.0)
         ttk.Spinbox(row, from_=1, to=10, increment=1, width=4, textvariable=self.hz_var).pack(side="left", padx=4)
 
         pmrow = ttk.Frame(f)
         pmrow.pack(anchor="w")
         self.use_pm = tk.BooleanVar(value=True)
-        ttk.Checkbutton(pmrow, text="Medir frametimes reales con PresentMon (recomendado)", variable=self.use_pm).pack(side="left")
+        ttk.Checkbutton(pmrow, text=_("Medir frametimes reales con PresentMon (recomendado)"), variable=self.use_pm).pack(side="left")
         self.pm_status = tk.StringVar(value="")
         ttk.Label(pmrow, textvariable=self.pm_status, style="Muted.TLabel").pack(side="left", padx=10)
-        self.btn_pm_perm = ttk.Button(pmrow, text="Dar permiso…", command=self.pm_grant)
+        self.btn_pm_perm = ttk.Button(pmrow, text=_("Dar permiso…"), command=self.pm_grant)
         grid = ttk.Frame(f)
         grid.pack(anchor="w", pady=10)
         self.live = {}
-        for i, (k, t) in enumerate((("state", "Estado"), ("session", "Sesión"), ("fps", "FPS"), ("gpu", "GPU %"),
-                                    ("bg", "Hilo física/red %"), ("lat", "Latencia ms"), ("near", "Coches cerca"),
-                                    ("elapsed", "Tiempo"))):
+        for i, (k, t) in enumerate((("state", _("Estado")), ("session", _("Sesión")), ("fps", _("FPS")), ("gpu", _("GPU %")),
+                                    ("bg", _("Hilo física/red %")), ("lat", _("Latencia ms")), ("near", _("Coches cerca")),
+                                    ("elapsed", _("Tiempo")))):
             box = ttk.Frame(grid, padding=(0, 0, 28, 10))
             box.grid(row=i // 4, column=i % 4, sticky="w")
             ttk.Label(box, text=t, style="Muted.TLabel").pack(anchor="w")
             v = tk.StringVar(value="—")
             ttk.Label(box, textvariable=v, style="Big.TLabel").pack(anchor="w")
             self.live[k] = v
-        ttk.Label(f, text="Registro y alertas en vivo (tirones, latencia, pérdida de paquetes, hilo de física, temperatura de GPU…)",
+        ttk.Label(f, text=_("Registro y alertas en vivo (tirones, latencia, pérdida de paquetes, hilo de física, temperatura de GPU…)"),
                   style="Muted.TLabel").pack(anchor="w", pady=(4, 0))
         self.mon_log = tk.Text(f, height=8, relief="flat", font=("Consolas", 9))
         self.mon_log.tag_configure("alert", foreground="#c0392b")
         self.mon_log.pack(fill="both", expand=True, pady=(4, 0))
-        ttk.Label(f, text=f"Las sesiones se guardan en {self.out_dir}", style="Muted.TLabel").pack(anchor="w", pady=4)
+        ttk.Label(f, text=_("Las sesiones se guardan en {p0}", p0=self.out_dir), style="Muted.TLabel").pack(anchor="w", pady=4)
 
     def _tab_diagnostico(self):
         f = ttk.Frame(self.nb, padding=10)
         self.tab_diag = f
-        self.nb.add(f, text="Diagnóstico")
-        self.diag_head = tk.StringVar(value="Graba o abre una sesión para ver el diagnóstico de CPU, GPU, frametime, red, memoria y sistema.")
+        self.nb.add(f, text=_("Diagnóstico"))
+        self.diag_head = tk.StringVar(value=_("Graba o abre una sesión para ver el diagnóstico de CPU, GPU, frametime, red, memoria y sistema."))
         ttk.Label(f, textvariable=self.diag_head, font=("Segoe UI", 11, "bold")).pack(anchor="w")
         pw = ttk.PanedWindow(f, orient="vertical")
         pw.pack(fill="both", expand=True, pady=6)
         top = ttk.Frame(pw)
         self.diag_tree = ttk.Treeview(top, columns=("st", "area", "title", "metric"), show="headings", height=10)
-        for c, t, w in (("st", "Estado", 90), ("area", "Área", 90), ("title", "Comprobación", 270), ("metric", "Medición", 640)):
+        for c, t, w in (("st", _("Estado"), 90), ("area", _("Área"), 90), ("title", _("Comprobación"), 270), ("metric", _("Medición"), 640)):
             self.diag_tree.heading(c, text=t)
             self.diag_tree.column(c, width=w, anchor="w", stretch=c == "metric")
         for tag, col in (("problema", "#c0392b"), ("aviso", "#b9770e"), ("ok", "#2e7d4f"), ("info", "#1f618d")):
@@ -263,14 +271,14 @@ class App(tk.Tk):
         self.diag_tree.pack(fill="both", expand=True)
         self.diag_tree.bind("<<TreeviewSelect>>", self._diag_select)
         pw.add(top, weight=3)
-        mid = ttk.LabelFrame(pw, text="Qué significa y cómo solucionarlo", padding=6)
+        mid = ttk.LabelFrame(pw, text=_("Qué significa y cómo solucionarlo"), padding=6)
         self.diag_text = tk.Text(mid, height=7, wrap="word", relief="flat", font=("Segoe UI", 10))
         self.diag_text.pack(fill="both", expand=True)
         pw.add(mid, weight=2)
-        bot = ttk.LabelFrame(pw, text="Incidentes detectados", padding=6)
+        bot = ttk.LabelFrame(pw, text=_("Incidentes detectados"), padding=6)
         self.ev_tree = ttk.Treeview(bot, columns=("ses", "min", "lap", "kind", "dur", "det"), show="headings", height=6)
-        for c, t, w in (("ses", "Sesión", 90), ("min", "Minuto", 70), ("lap", "Vuelta", 70), ("kind", "Tipo", 150),
-                        ("dur", "Duración", 80), ("det", "Detalle", 600)):
+        for c, t, w in (("ses", _("Sesión"), 90), ("min", _("Minuto"), 70), ("lap", _("Vuelta"), 70), ("kind", _("Tipo"), 150),
+                        ("dur", _("Duración"), 80), ("det", _("Detalle"), 600)):
             self.ev_tree.heading(c, text=t)
             self.ev_tree.column(c, width=w, anchor="w", stretch=c == "det")
         self.ev_tree.pack(fill="both", expand=True)
@@ -279,11 +287,11 @@ class App(tk.Tk):
     def _show_diag(self):
         d = self.result.diagnostics
         sm = d.get("summary", {})
-        self.diag_head.set(f"{sm.get('problema', 0)} problemas · {sm.get('aviso', 0)} avisos · {sm.get('info', 0)} info · "
-                           f"{sm.get('ok', 0)} correctos")
+        self.diag_head.set(_("{p} problemas · {a} avisos · {i} info · {o} correctos", p=sm.get('problema', 0),
+                             a=sm.get('aviso', 0), i=sm.get('info', 0), o=sm.get('ok', 0)))
         self.diag_tree.delete(*self.diag_tree.get_children())
         self._diag_items = {}
-        icon = {"problema": "✖ Problema", "aviso": "▲ Aviso", "ok": "✔ OK", "info": "ℹ Info"}
+        icon = {"problema": _("✖ Problema"), "aviso": _("▲ Aviso"), "ok": "✔ OK", "info": "ℹ Info"}
         for c in d["checks"]:
             iid = self.diag_tree.insert("", "end", values=(icon[c["status"]], c["area"], c["title"], c["metric"]),
                                         tags=(c["status"],))
@@ -304,7 +312,7 @@ class App(tk.Tk):
         c = self._diag_items[sel[0]]
         txt = c["detail"]
         if c["actions"]:
-            txt += "\n\nQué hacer:\n" + "\n".join(f"  • {x}" for x in c["actions"])
+            txt += _("\n\nQué hacer:\n") + "\n".join(f"  • {x}" for x in c["actions"])
         self.diag_text.configure(state="normal")
         self.diag_text.delete("1.0", "end")
         self.diag_text.insert("1.0", txt)
@@ -312,24 +320,24 @@ class App(tk.Tk):
 
     def _tab_analisis(self):
         f = ttk.Frame(self.nb, padding=10)
-        self.nb.add(f, text="Análisis y recomendaciones")
+        self.nb.add(f, text=_("Análisis y recomendaciones"))
         row = ttk.Frame(f)
         row.pack(fill="x")
-        ttk.Button(row, text="Abrir sesión (.csv)…", command=self.open_session).pack(side="left")
-        ttk.Label(row, text="   FPS objetivo (0 = auto):").pack(side="left")
+        ttk.Button(row, text=_("Abrir sesión (.csv)…"), command=self.open_session).pack(side="left")
+        ttk.Label(row, text=_("   FPS objetivo (0 = auto):")).pack(side="left")
         self.target_var = tk.IntVar(value=0)
         ttk.Spinbox(row, from_=0, to=500, increment=5, width=6, textvariable=self.target_var).pack(side="left", padx=4)
-        ttk.Button(row, text="Reanalizar", command=self.reanalyze).pack(side="left", padx=4)
-        ttk.Button(row, text="Abrir informe HTML", command=self.open_report).pack(side="right")
-        ttk.Button(row, text="Comparar con otra sesión…", command=self.compare_sessions).pack(side="right", padx=6)
-        self.session_var = tk.StringVar(value="Ninguna sesión cargada")
+        ttk.Button(row, text=_("Reanalizar"), command=self.reanalyze).pack(side="left", padx=4)
+        ttk.Button(row, text=_("Abrir informe HTML"), command=self.open_report).pack(side="right")
+        ttk.Button(row, text=_("Comparar con otra sesión…"), command=self.compare_sessions).pack(side="right", padx=6)
+        self.session_var = tk.StringVar(value=_("Ninguna sesión cargada"))
         ttk.Label(f, textvariable=self.session_var, style="Muted.TLabel").pack(anchor="w", pady=(6, 2))
 
         kp = ttk.Frame(f)
         kp.pack(fill="x", pady=6)
         self.kpi = {}
-        for k, t in (("mean", "FPS medio"), ("p5", "FPS p5"), ("p1", "FPS p1"), ("target", "Objetivo"),
-                     ("below", "Bajo objetivo"), ("limit", "Te limita")):
+        for k, t in (("mean", _("FPS medio")), ("p5", _("FPS p5")), ("p1", _("FPS p1")), ("target", _("Objetivo")),
+                     ("below", _("Bajo objetivo")), ("limit", _("Te limita"))):
             box = ttk.Frame(kp, padding=(0, 0, 26, 0))
             box.pack(side="left")
             ttk.Label(box, text=t, style="Muted.TLabel").pack(anchor="w")
@@ -337,7 +345,7 @@ class App(tk.Tk):
             ttk.Label(box, textvariable=v, style="Big.TLabel").pack(anchor="w")
             self.kpi[k] = v
 
-        self.rec_tree = CheckTree(f, ["Prio", "Área", "Clave", "Actual", "Propuesto", "Motivo"],
+        self.rec_tree = CheckTree(f, [_("Prio"), _("Área"), _("Clave"), _("Actual"), _("Propuesto"), _("Motivo")],
                                   [50, 110, 210, 80, 90, 520], height=12)
         self.rec_tree.tag_configure("p1", foreground="#c0392b")
         self.rec_tree.tag_configure("p2", foreground="#b9770e")
@@ -347,17 +355,17 @@ class App(tk.Tk):
         self.rec_tree.bind("<Double-1>", self._show_rec)
         btns = ttk.Frame(f)
         btns.pack(fill="x")
-        ttk.Button(btns, text="Marcar P1", command=lambda: self.rec_tree.set_all(lambda r: r["priority"] == 1)).pack(side="left")
-        ttk.Button(btns, text="Marcar P1 + P2", command=lambda: self.rec_tree.set_all(lambda r: r["priority"] <= 2)).pack(side="left", padx=4)
-        ttk.Button(btns, text="Desmarcar todo", command=lambda: self.rec_tree.set_all(lambda r: False)).pack(side="left")
-        ttk.Label(btns, text="  Doble clic: ver motivo completo", style="Muted.TLabel").pack(side="left")
-        ttk.Button(btns, text="Aplicar seleccionados (con copia de seguridad)", style="Accent.TButton",
+        ttk.Button(btns, text=_("Marcar P1"), command=lambda: self.rec_tree.set_all(lambda r: r["priority"] == 1)).pack(side="left")
+        ttk.Button(btns, text=_("Marcar P1 + P2"), command=lambda: self.rec_tree.set_all(lambda r: r["priority"] <= 2)).pack(side="left", padx=4)
+        ttk.Button(btns, text=_("Desmarcar todo"), command=lambda: self.rec_tree.set_all(lambda r: False)).pack(side="left")
+        ttk.Label(btns, text=_("  Doble clic: ver motivo completo"), style="Muted.TLabel").pack(side="left")
+        ttk.Button(btns, text=_("Aplicar seleccionados (con copia de seguridad)"), style="Accent.TButton",
                    command=self.apply_selected).pack(side="right")
 
     def _tab_perfiles(self):
         f = ttk.Frame(self.nb, padding=10)
-        self.nb.add(f, text="Perfiles")
-        self.prof_hint = tk.StringVar(value="Perfiles genéricos. Si cargas una sesión, el tope de FPS y el LOD dinámico se ajustan a tu medición.")
+        self.nb.add(f, text=_("Perfiles"))
+        self.prof_hint = tk.StringVar(value=_("Perfiles genéricos. Si cargas una sesión, el tope de FPS y el LOD dinámico se ajustan a tu medición."))
         ttk.Label(f, textvariable=self.prof_hint, style="Muted.TLabel", wraplength=1100).pack(anchor="w", pady=(0, 8))
         cols = ttk.Frame(f)
         cols.pack(fill="both", expand=True)
@@ -370,26 +378,26 @@ class App(tk.Tk):
             cols.rowconfigure(0, weight=1)
             ttk.Label(lf, text=p["desc"], wraplength=330).pack(anchor="w")
             tv = ttk.Treeview(lf, columns=("key", "cur", "new"), show="headings", height=16)
-            for c, t, w in (("key", "Clave", 170), ("cur", "Actual", 60), ("new", "Nuevo", 60)):
+            for c, t, w in (("key", _("Clave"), 170), ("cur", _("Actual"), 60), ("new", _("Nuevo"), 60)):
                 tv.heading(c, text=t)
                 tv.column(c, width=w, anchor="w")
             tv.pack(fill="both", expand=True, pady=6)
-            ttk.Button(lf, text=f"Aplicar «{p['title']}»", style="Accent.TButton",
+            ttk.Button(lf, text=_("Aplicar «{p0}»", p0=p['title']), style="Accent.TButton",
                        command=lambda n=name: self.apply_profile(n)).pack(fill="x")
             self.prof_trees[name] = tv
 
     def _tab_copias(self):
         f = ttk.Frame(self.nb, padding=10)
-        self.nb.add(f, text="Copias de seguridad")
-        ttk.Label(f, text="Cada vez que aplicas cambios se guarda una copia de todos los .ini de iRacing.",
+        self.nb.add(f, text=_("Copias de seguridad"))
+        ttk.Label(f, text=_("Cada vez que aplicas cambios se guarda una copia de todos los .ini de iRacing."),
                   style="Muted.TLabel").pack(anchor="w")
         self.bk_list = tk.Listbox(f, height=14, font=("Consolas", 10))
         self.bk_list.pack(fill="both", expand=True, pady=8)
         row = ttk.Frame(f)
         row.pack(fill="x")
-        ttk.Button(row, text="Restaurar seleccionada", style="Accent.TButton", command=self.restore_selected).pack(side="left")
-        ttk.Button(row, text="Crear copia ahora", command=self.backup_now).pack(side="left", padx=6)
-        ttk.Button(row, text="Abrir carpeta", command=self.open_backups).pack(side="left")
+        ttk.Button(row, text=_("Restaurar seleccionada"), style="Accent.TButton", command=self.restore_selected).pack(side="left")
+        ttk.Button(row, text=_("Crear copia ahora"), command=self.backup_now).pack(side="left", padx=6)
+        ttk.Button(row, text=_("Abrir carpeta"), command=self.open_backups).pack(side="left")
 
     # ------------------------------------------------------------------ carga
     def _load_all(self):
@@ -402,7 +410,7 @@ class App(tk.Tk):
             cfg = config_reader.load(self.ini_dir_override, renderer)
         except FileNotFoundError as e:
             msg = str(e)
-            self.ui(lambda: (self.status(msg), messagebox.showwarning(APP, f"{msg}\n\nUsa «Cambiar…» para indicar la carpeta.")))
+            self.ui(lambda: (self.status(msg), messagebox.showwarning(APP, _("{msg}\n\nUsa «Cambiar…» para indicar la carpeta.", msg=msg))))
             self.ui(self._refresh_hw)
             return
         self.cfg = cfg
@@ -412,7 +420,7 @@ class App(tk.Tk):
         self._refresh_hw()
         c = self.cfg
         self.dir_var.set(str(c.directory))
-        self.renderer_cb["values"] = [n for n, _ in c.renderer_candidates]
+        self.renderer_cb["values"] = [n for n, _mt in c.renderer_candidates]
         if c.renderer_name:
             self.renderer_var.set(c.renderer_name)
         self.cfg_tree.delete(*self.cfg_tree.get_children())
@@ -426,7 +434,7 @@ class App(tk.Tk):
         self._fov_load_from_ini(silent=True)
         self._pm_refresh_status()
         self._drift_check()
-        self.status(f"Configuración cargada: {c.renderer_name or 'sin archivo gráfico'}")
+        self.status(_("Configuración cargada: {p0}", p0=c.renderer_name or _("sin archivo gráfico")))
 
     def _drift_check(self):
         try:
@@ -439,37 +447,36 @@ class App(tk.Tk):
             self.drift_var.set("")
             return
         if diffs:
-            self.drift_var.set(f"⚠ {len(diffs)} ajustes han cambiado desde la última vez que los aplicaste.")
+            self.drift_var.set(_("⚠ {p0} ajustes han cambiado desde la última vez que los aplicaste.", p0=len(diffs)))
             self.btn_drift.pack(side="left", padx=8)
             if not self._drift_prompted:
                 self._drift_prompted = True
                 self.after(300, lambda: self._drift_dialog(diffs))
         else:
-            self.drift_var.set("✔ Tu configuración coincide con la última que aplicaste.")
+            self.drift_var.set(_("✔ Tu configuración coincide con la última que aplicaste."))
 
     def _drift_dialog(self, diffs):
         if not diffs:
             return
         w = tk.Toplevel(self)
-        w.title("Tu configuración ha cambiado")
+        w.title(_("Tu configuración ha cambiado"))
         w.transient(self)
         frm = ttk.Frame(w, padding=12)
         frm.pack(fill="both", expand=True)
-        ttk.Label(frm, text=f"{len(diffs)} ajustes no coinciden con lo último que aplicaste. Suele pasar tras una actualización "
-                            "de iRacing o si los cambiaste desde el simulador.", wraplength=620).pack(anchor="w")
+        ttk.Label(frm, text=_("{p0} ajustes no coinciden con lo último que aplicaste. Suele pasar tras una actualización de iRacing o si los cambiaste desde el simulador.", p0=len(diffs)), wraplength=620).pack(anchor="w")
         tv = ttk.Treeview(frm, columns=("file", "key", "exp", "cur"), show="headings", height=min(14, len(diffs)))
-        for c, t, wd in (("file", "Archivo", 190), ("key", "Clave", 200), ("exp", "Aplicado", 90), ("cur", "Ahora", 90)):
+        for c, t, wd in (("file", _("Archivo"), 190), ("key", _("Clave"), 200), ("exp", _("Aplicado"), 90), ("cur", _("Ahora"), 90)):
             tv.heading(c, text=t)
             tv.column(c, width=wd, anchor="w")
         for d in diffs:
-            tv.insert("", "end", values=(d["file_name"], d["key"], d["expected"], d["current"]))
+            tv.insert("", "end", values=(d["file_name"], d["key"], d["expected"], _(d["current"])))
         tv.pack(fill="both", expand=True, pady=8)
         row = ttk.Frame(frm)
         row.pack(fill="x")
 
         def reapply():
             if applier.iracing_running():
-                messagebox.showwarning(APP, "Cierra iRacing antes de aplicar cambios.", parent=w)
+                messagebox.showwarning(APP, _("Cierra iRacing antes de aplicar cambios."), parent=w)
                 return
             log = []
             for fname, ch in drift.reapply_changes(diffs).items():
@@ -477,15 +484,15 @@ class App(tk.Tk):
                 log += applier.apply_changes(ch, self.cfg.directory, rend, label="reaplicar", state_base=self.out_dir)
             w.destroy()
             messagebox.showinfo(APP, "\n".join(log[:30]))
-            self._bg(self._load_cfg, "Recargando…")
+            self._bg(self._load_cfg, _("Recargando…"))
 
         def accept():
             drift.accept_current(self.out_dir, self.cfg.directory)
             w.destroy()
             self._drift_check()
-        ttk.Button(row, text="Volver a aplicar los míos", style="Accent.TButton", command=reapply).pack(side="left")
-        ttk.Button(row, text="Quedarme con los actuales", command=accept).pack(side="left", padx=6)
-        ttk.Button(row, text="Ahora no", command=w.destroy).pack(side="right")
+        ttk.Button(row, text=_("Volver a aplicar los míos"), style="Accent.TButton", command=reapply).pack(side="left")
+        ttk.Button(row, text=_("Quedarme con los actuales"), command=accept).pack(side="left", padx=6)
+        ttk.Button(row, text=_("Ahora no"), command=w.destroy).pack(side="right")
 
     def _refresh_hw(self):
         h = self.hw
@@ -495,11 +502,11 @@ class App(tk.Tk):
         d = h.get("display") or {}
         w = h.get("windows") or {}
         lines = [
-            f"CPU: {h['cpu']['name']}  ({h['cpu']['cores_physical']} núcleos / {h['cpu']['cores_logical']} hilos)",
+            _("CPU: {p0}  ({p1} núcleos / {p2} hilos)", p0=h['cpu']['name'], p1=h['cpu']['cores_physical'], p2=h['cpu']['cores_logical']),
             f"RAM: {h['ram_mb'] / 1024:.0f} GB",
-            f"GPU: {g.get('name', 'no detectada')}  {g.get('vram_mb', 0) / 1024:.0f} GB VRAM  · driver {g.get('driver', '?')}",
-            f"Pantalla principal: {d.get('width', '?')}×{d.get('height', '?')} @ {d.get('refresh', '?')} Hz",
-            f"Plan de energía: {(w.get('power_plan') or {}).get('name', '?')}   ·   Sistema: {h.get('os', '')}",
+            f"GPU: {g.get('name', _('no detectada'))}  {g.get('vram_mb', 0) / 1024:.0f} GB VRAM  · driver {g.get('driver', '?')}",
+            _("Pantalla principal: {w}×{h} @ {hz} Hz", w=d.get('width', '?'), h=d.get('height', '?'), hz=d.get('refresh', '?')),
+            _("Plan de energía: {p0}   ·   Sistema: {p1}", p0=_((w.get('power_plan') or {}).get('name', '?')), p1=h.get('os', '')),
         ]
         self.hw_text.configure(state="normal")
         self.hw_text.delete("1.0", "end")
@@ -516,13 +523,12 @@ class App(tk.Tk):
             tv.delete(*tv.get_children())
             ch = profs[name]
             if not ch:
-                tv.insert("", "end", values=("(ya coincide)", "", ""))
+                tv.insert("", "end", values=(_("(ya coincide)"), "", ""))
             for c in ch:
                 tv.insert("", "end", values=(c["key"], c["current"], c["proposed"]))
         if analysis:
             f = analysis["groups"][analysis["primary"]]["fps"]
-            self.prof_hint.set(f"Ajustados a tu sesión: mantienes {f['p10']:.0f} fps el 90 % del tiempo (mediana {f['median']:.0f}). "
-                               "Tras aplicar un perfil, graba otra sesión para afinar el tope.")
+            self.prof_hint.set(_("Ajustados a tu sesión: mantienes {p0:.0f} fps el 90 % del tiempo (mediana {p1:.0f}). Tras aplicar un perfil, graba otra sesión para afinar el tope.", p0=f['p10'], p1=f['median']))
 
     def _refresh_backups(self):
         self.bk_list.delete(0, "end")
@@ -532,12 +538,19 @@ class App(tk.Tk):
             files = ", ".join(sorted(p.name for p in d.iterdir()))
             self.bk_list.insert("end", f"{d.name:<38} {files}")
 
+    def _change_lang(self, _ev=None):
+        lang = "en" if self.lang_var.get() == "English" else "es"
+        if lang == i18n.LANG:
+            return
+        i18n.set_lang(lang)
+        messagebox.showinfo(APP, "Reinicia la aplicación para cambiar el idioma.\nRestart the app to change the language.")
+
     def choose_dir(self):
-        d = filedialog.askdirectory(title="Carpeta Documentos\\iRacing")
+        d = filedialog.askdirectory(title=_("Carpeta Documentos\\iRacing"))
         if d:
             self.ini_dir_override = d
             self.renderer_var.set("")
-            self._bg(self._load_cfg, "Cargando…")
+            self._bg(self._load_cfg, _("Cargando…"))
 
     # ------------------------------------------------------------------ monitor
     def _log(self, text, alert=False):
@@ -550,18 +563,15 @@ class App(tk.Tk):
         self._pm_exe = exe
         self.btn_pm_perm.pack_forget()
         if not exe:
-            self.pm_status.set("PresentMon no encontrado (viene incluido en el .exe; en desarrollo, ponlo en tools/).")
+            self.pm_status.set(_("PresentMon no encontrado (viene incluido en el .exe; en desarrollo, ponlo en tools/)."))
         elif presentmon.can_capture():
-            self.pm_status.set("Listo.")
+            self.pm_status.set(_("Listo."))
         else:
-            self.pm_status.set("Falta permiso de Windows para medir frametimes.")
+            self.pm_status.set(_("Falta permiso de Windows para medir frametimes."))
             self.btn_pm_perm.pack(side="left")
 
     def pm_grant(self):
-        if not messagebox.askyesno(APP, "PresentMon usa el registro de eventos de Windows (ETW). Para usarlo sin ser "
-                                        "administrador, tu usuario debe estar en el grupo «Usuarios del registro de "
-                                        "rendimiento» (Performance Log Users).\n\nWindows te pedirá confirmación una sola vez "
-                                        "para añadirte. Después tienes que cerrar sesión y volver a entrar.\n\n¿Continuar?"):
+        if not messagebox.askyesno(APP, _("PresentMon usa el registro de eventos de Windows (ETW). Para usarlo sin ser administrador, tu usuario debe estar en el grupo «Usuarios del registro de rendimiento» (Performance Log Users).\n\nWindows te pedirá confirmación una sola vez para añadirte. Después tienes que cerrar sesión y volver a entrar.\n\n¿Continuar?")):
             return
         try:
             ok = presentmon.request_group_membership()
@@ -569,13 +579,13 @@ class App(tk.Tk):
             messagebox.showerror(APP, str(e))
             return
         if ok:
-            messagebox.showinfo(APP, "Hecho. Cierra sesión en Windows y vuelve a entrar para que el permiso se active.")
+            messagebox.showinfo(APP, _("Hecho. Cierra sesión en Windows y vuelve a entrar para que el permiso se active."))
         else:
-            messagebox.showwarning(APP, "No se pudo lanzar la petición. Alternativa: ejecuta iRacing Optimizer como administrador.")
+            messagebox.showwarning(APP, _("No se pudo lanzar la petición. Alternativa: ejecuta iRacing Optimizer como administrador."))
 
     def start_monitor(self):
         if not self.cfg:
-            messagebox.showwarning(APP, "Primero carga la carpeta de iRacing.")
+            messagebox.showwarning(APP, _("Primero carga la carpeta de iRacing."))
             return
         try:
             import irsdk  # noqa: F401  (solo comprobar que está)
@@ -588,13 +598,12 @@ class App(tk.Tk):
             self._pm_refresh_status()
             if self._pm_exe and presentmon.can_capture():
                 pm_exe = self._pm_exe
-            elif self._pm_exe and not messagebox.askyesno(APP, "PresentMon necesita un permiso de Windows que aún no tienes "
-                                                             "(botón «Dar permiso…»).\n\n¿Grabar ahora sin PresentMon?"):
+            elif self._pm_exe and not messagebox.askyesno(APP, _("PresentMon necesita un permiso de Windows que aún no tienes (botón «Dar permiso…»).\n\n¿Grabar ahora sin PresentMon?")):
                 return
         self.mon_stop.clear()
         self.btn_start.configure(state="disabled")
         self.btn_stop.configure(state="normal")
-        self.live["state"].set("Esperando")
+        self.live["state"].set(_("Esperando"))
         t0 = [None]
         watch = diagnostics.LiveWatch(hz=float(self.hz_var.get() or 4))
 
@@ -608,7 +617,7 @@ class App(tk.Tk):
             el = int(time.time() - t0[0])
 
             def upd():
-                self.live["state"].set("Grabando")
+                self.live["state"].set(_("Grabando"))
                 self.live["session"].set(row.get("session_type") or "—")
                 self.live["fps"].set(f"{row.get('fps') or 0:.0f}")
                 g = row.get("gpu_util")
@@ -625,12 +634,12 @@ class App(tk.Tk):
             from .monitor import SessionMonitor
             meta = {"hardware": self.hw, "config": config_reader.snapshot(self.cfg)}
             mon = SessionMonitor(self.out_dir, hz=float(self.hz_var.get() or 4), meta_extra=meta, presentmon_exe=pm_exe)
-            csv_path, _ = mon.run(on_tick=tick, stop_event=self.mon_stop, log=self._log, on_row=on_row)
+            csv_path, _meta = mon.run(on_tick=tick, stop_event=self.mon_stop, log=self._log, on_row=on_row)
 
             def done():
                 self.btn_start.configure(state="normal")
                 self.btn_stop.configure(state="disabled")
-                self.live["state"].set("Parado")
+                self.live["state"].set(_("Parado"))
                 if csv_path:
                     self._log(f"Guardado: {csv_path}")
                     if self.auto_analyze.get():
@@ -639,23 +648,23 @@ class App(tk.Tk):
 
         self.mon_thread = threading.Thread(target=lambda: self._safe(run), daemon=True)
         self.mon_thread.start()
-        self.status("Monitor activo")
+        self.status(_("Monitor activo"))
 
     def _safe(self, fn):
         try:
             fn()
         except Exception as e:
-            self.q.put(("error", f"{e}\n\n{traceback.format_exc(limit=3)}"))
+            self.q.put(("error", _("{e}\n\n{p1}", e=e, p1=traceback.format_exc(limit=3))))
             self.ui(lambda: (self.btn_start.configure(state="normal"), self.btn_stop.configure(state="disabled")))
 
     def stop_monitor(self):
         self.mon_stop.set()
-        self.status("Deteniendo…")
+        self.status(_("Deteniendo…"))
 
     # ------------------------------------------------------------------ análisis
     def open_session(self):
-        p = filedialog.askopenfilename(title="Sesión grabada", initialdir=self.out_dir,
-                                       filetypes=[("Sesiones", "session_*.csv"), ("CSV", "*.csv")])
+        p = filedialog.askopenfilename(title=_("Sesión grabada"), initialdir=self.out_dir,
+                                       filetypes=[(_("Sesiones"), "session_*.csv"), ("CSV", "*.csv")])
         if p:
             self.analyze(Path(p))
 
@@ -672,7 +681,7 @@ class App(tk.Tk):
             res = pipeline.run(self._csv, None, target, flat)
             self.result = res
             self.ui(self._show_result)
-        self._bg(work, f"Analizando {self._csv.name}…")
+        self._bg(work, _("Analizando {p0}…", p0=self._csv.name))
 
     def _show_result(self):
         r = self.result
@@ -693,15 +702,15 @@ class App(tk.Tk):
         t.clear()
         for rec in r.recs:
             if rec.get("key"):
-                t.add([f"P{rec['priority']}", rec["category"], rec["key"], rec["current"], rec["proposed"], rec["reason"]],
+                t.add([f"P{rec['priority']}", CAT.get(rec["category"], rec["category"]), rec["key"], rec["current"], rec["proposed"], rec["reason"]],
                       data=rec, checked=rec["priority"] == 1, tags=(PRIO_TAG[rec["priority"]],))
             else:
-                t.add([f"P{rec['priority']}", rec["category"], rec["title"], "", "", rec["reason"]],
+                t.add([f"P{rec['priority']}", CAT.get(rec["category"], rec["category"]), rec["title"], "", "", rec["reason"]],
                       checkable=False, tags=("info",))
         self._refresh_profiles()
         self._show_diag()
         self.nb.select(self.tab_diag)
-        self.status(f"Análisis listo. Informe: {r.html_path}")
+        self.status(_("Análisis listo. Informe: {p0}", p0=r.html_path))
 
     def _show_rec(self, e):
         iid = self.rec_tree.identify_row(e.y)
@@ -711,10 +720,10 @@ class App(tk.Tk):
 
     def compare_sessions(self):
         if not self.result:
-            messagebox.showinfo(APP, "Primero abre o graba una sesión (será la sesión B, la nueva).")
+            messagebox.showinfo(APP, _("Primero abre o graba una sesión (será la sesión B, la nueva)."))
             return
-        p = filedialog.askopenfilename(title="Sesión ANTERIOR (A) para comparar", initialdir=self.out_dir,
-                                       filetypes=[("Sesiones", "session_*.csv"), ("CSV", "*.csv")])
+        p = filedialog.askopenfilename(title=_("Sesión ANTERIOR (A) para comparar"), initialdir=self.out_dir,
+                                       filetypes=[(_("Sesiones"), "session_*.csv"), ("CSV", "*.csv")])
         if not p:
             return
         b = self._csv
@@ -724,13 +733,13 @@ class App(tk.Tk):
 
             def show():
                 w = tk.Toplevel(self)
-                w.title("Comparación de sesiones")
+                w.title(_("Comparación de sesiones"))
                 t = tk.Text(w, width=78, height=34, font=("Consolas", 10))
                 t.insert("1.0", txt)
                 t.configure(state="disabled")
                 t.pack(fill="both", expand=True, padx=8, pady=8)
             self.ui(show)
-        self._bg(work, "Comparando…")
+        self._bg(work, _("Comparando…"))
 
     def open_report(self):
         if self.result:
@@ -739,15 +748,14 @@ class App(tk.Tk):
     # ------------------------------------------------------------------ aplicar
     def _confirm_apply(self, changes, what) -> bool:
         if not changes:
-            messagebox.showinfo(APP, "No hay cambios que aplicar.")
+            messagebox.showinfo(APP, _("No hay cambios que aplicar."))
             return False
         if applier.iracing_running():
-            messagebox.showwarning(APP, "Cierra iRacing antes de aplicar cambios: el simulador reescribe los .ini al salir.")
+            messagebox.showwarning(APP, _("Cierra iRacing antes de aplicar cambios: el simulador reescribe los .ini al salir."))
             return False
         listado = "\n".join(f"• {c['key']}: {c['current']} → {c['proposed']}" for c in changes[:25])
-        extra = f"\n… y {len(changes) - 25} más" if len(changes) > 25 else ""
-        return messagebox.askyesno(APP, f"Aplicar {what} ({len(changes)} cambios)?\n\n{listado}{extra}\n\n"
-                                        "Se hará antes una copia de seguridad de todos los .ini.")
+        extra = _("\n… y {p0} más", p0=len(changes) - 25) if len(changes) > 25 else ""
+        return messagebox.askyesno(APP, _("Aplicar {what} ({p1} cambios)?\n\n{listado}{extra}\n\nSe hará antes una copia de seguridad de todos los .ini.", what=what, p1=len(changes), listado=listado, extra=extra))
 
     def _do_apply(self, changes, label):
         try:
@@ -757,41 +765,40 @@ class App(tk.Tk):
             messagebox.showerror(APP, str(e))
             return
         messagebox.showinfo(APP, "\n".join(log[:30]))
-        self._bg(self._load_cfg, "Recargando configuración…")
+        self._bg(self._load_cfg, _("Recargando configuración…"))
 
     def apply_selected(self):
         if not self.cfg:
             return
         ch = self.rec_tree.checked()
-        if self._confirm_apply(ch, "las recomendaciones marcadas"):
+        if self._confirm_apply(ch, _("las recomendaciones marcadas")):
             self._do_apply(ch, "recomendaciones")
 
     def apply_profile(self, name):
         if not self.cfg:
             return
         ch = getattr(self, "_profiles", {}).get(name, [])
-        if self._confirm_apply(ch, f"el perfil «{profiles.PROFILES[name]['title']}»"):
+        if self._confirm_apply(ch, _("el perfil «{p0}»", p0=profiles.PROFILES[name]['title'])):
             self._do_apply(ch, f"perfil_{name}")
 
 
     # ------------------------------------------------------------------ mis perfiles
     def _tab_misperfiles(self):
         f = ttk.Frame(self.nb, padding=10)
-        self.nb.add(f, text="Mis perfiles")
-        ttk.Label(f, text="Guarda tu configuración actual con un nombre (p. ej. «Monitor carreras», «VR», «Grabar vídeos») "
-                          "y aplícala cuando quieras. Útil si alternas monitor y gafas VR o distintos usos.",
+        self.nb.add(f, text=_("Mis perfiles"))
+        ttk.Label(f, text=_("Guarda tu configuración actual con un nombre (p. ej. «Monitor carreras», «VR», «Grabar vídeos») y aplícala cuando quieras. Útil si alternas monitor y gafas VR o distintos usos."),
                   style="Muted.TLabel", wraplength=1100).pack(anchor="w")
         row = ttk.Frame(f)
         row.pack(fill="x", pady=8)
-        ttk.Button(row, text="Guardar configuración actual…", style="Accent.TButton", command=self.myprof_save).pack(side="left")
-        ttk.Button(row, text="Importar…", command=self.myprof_import).pack(side="left", padx=6)
-        ttk.Button(row, text="Exportar…", command=self.myprof_export).pack(side="left")
-        ttk.Button(row, text="Eliminar", command=self.myprof_delete).pack(side="left", padx=6)
+        ttk.Button(row, text=_("Guardar configuración actual…"), style="Accent.TButton", command=self.myprof_save).pack(side="left")
+        ttk.Button(row, text=_("Importar…"), command=self.myprof_import).pack(side="left", padx=6)
+        ttk.Button(row, text=_("Exportar…"), command=self.myprof_export).pack(side="left")
+        ttk.Button(row, text=_("Eliminar"), command=self.myprof_delete).pack(side="left", padx=6)
         body = ttk.PanedWindow(f, orient="horizontal")
         body.pack(fill="both", expand=True)
         left = ttk.Frame(body)
         self.mp_tree = ttk.Treeview(left, columns=("name", "file", "inc", "date"), show="headings", height=14)
-        for c, t, w in (("name", "Perfil", 200), ("file", "Archivo gráfico", 190), ("inc", "Incluye", 200), ("date", "Guardado", 130)):
+        for c, t, w in (("name", _("Perfil"), 200), ("file", _("Archivo gráfico"), 190), ("inc", _("Incluye"), 200), ("date", _("Guardado"), 130)):
             self.mp_tree.heading(c, text=t)
             self.mp_tree.column(c, width=w, anchor="w")
         self.mp_tree.pack(fill="both", expand=True)
@@ -800,19 +807,19 @@ class App(tk.Tk):
         right = ttk.Frame(body, padding=(10, 0, 0, 0))
         tr = ttk.Frame(right)
         tr.pack(fill="x")
-        ttk.Label(tr, text="Aplicar sobre:").pack(side="left")
+        ttk.Label(tr, text=_("Aplicar sobre:")).pack(side="left")
         self.mp_target = tk.StringVar()
         self.mp_target_cb = ttk.Combobox(tr, textvariable=self.mp_target, state="readonly", width=28)
         self.mp_target_cb.pack(side="left", padx=6)
         self.mp_target_cb.bind("<<ComboboxSelected>>", lambda e: self._myprof_diff())
-        self.mp_desc = tk.StringVar(value="Selecciona un perfil para ver qué cambiaría.")
+        self.mp_desc = tk.StringVar(value=_("Selecciona un perfil para ver qué cambiaría."))
         ttk.Label(right, textvariable=self.mp_desc, style="Muted.TLabel", wraplength=480).pack(anchor="w", pady=6)
         self.mp_diff = ttk.Treeview(right, columns=("file", "key", "cur", "new"), show="headings", height=12)
-        for c, t, w in (("file", "Archivo", 150), ("key", "Clave", 170), ("cur", "Actual", 80), ("new", "Perfil", 80)):
+        for c, t, w in (("file", _("Archivo"), 150), ("key", _("Clave"), 170), ("cur", _("Actual"), 80), ("new", _("Perfil"), 80)):
             self.mp_diff.heading(c, text=t)
             self.mp_diff.column(c, width=w, anchor="w")
         self.mp_diff.pack(fill="both", expand=True)
-        ttk.Button(right, text="Aplicar perfil seleccionado (con copia de seguridad)", style="Accent.TButton",
+        ttk.Button(right, text=_("Aplicar perfil seleccionado (con copia de seguridad)"), style="Accent.TButton",
                    command=self.myprof_apply).pack(fill="x", pady=(6, 0))
         body.add(right, weight=2)
         self._mp_items: dict[str, dict] = {}
@@ -825,7 +832,7 @@ class App(tk.Tk):
             iid = self.mp_tree.insert("", "end", values=(p["name"], p.get("renderer_file", ""), inc, p.get("created", "")[:16].replace("T", " ")))
             self._mp_items[iid] = p
         if self.cfg:
-            self.mp_target_cb["values"] = [n for n, _ in self.cfg.renderer_candidates]
+            self.mp_target_cb["values"] = [n for n, _mt in self.cfg.renderer_candidates]
 
     def _mp_selected(self):
         sel = self.mp_tree.selection()
@@ -842,8 +849,7 @@ class App(tk.Tk):
             self.mp_target.set("rendererDX11Monitor.ini")
         target = self.mp_target.get()
         if not (Path(self.cfg.directory) / target).is_file():
-            self.mp_desc.set(f"{target} no existe en tu carpeta de iRacing. Arranca iRacing una vez con ese modo "
-                             "(monitor o VR) para que lo cree, o elige otro archivo.")
+            self.mp_desc.set(_("{target} no existe en tu carpeta de iRacing. Arranca iRacing una vez con ese modo (monitor o VR) para que lo cree, o elige otro archivo.", target=target))
             self._mp_changes = []
             return
         ch = userprofiles.changes_for(p, self.cfg.directory, target)
@@ -851,29 +857,29 @@ class App(tk.Tk):
         for c in ch:
             self.mp_diff.insert("", "end", values=(c["file_name"], c["key"], c["current"], c["proposed"]))
         desc = p.get("description") or ""
-        self.mp_desc.set((desc + " · " if desc else "") + (f"{len(ch)} cambios respecto a tu configuración actual."
-                                                          if ch else "Tu configuración ya coincide con este perfil."))
+        self.mp_desc.set((desc + " · " if desc else "") + (_("{p0} cambios respecto a tu configuración actual.", p0=len(ch))
+                                                          if ch else _("Tu configuración ya coincide con este perfil.")))
 
     def myprof_save(self):
         if not self.cfg:
             return
         w = tk.Toplevel(self)
-        w.title("Guardar perfil")
+        w.title(_("Guardar perfil"))
         w.transient(self)
         w.grab_set()
         frm = ttk.Frame(w, padding=14)
         frm.pack(fill="both", expand=True)
-        ttk.Label(frm, text="Nombre:").grid(row=0, column=0, sticky="w")
-        name = tk.StringVar(value="Monitor carreras" if "Monitor" in (self.cfg.renderer_name or "") else "VR")
+        ttk.Label(frm, text=_("Nombre:")).grid(row=0, column=0, sticky="w")
+        name = tk.StringVar(value=_("Monitor carreras") if "Monitor" in (self.cfg.renderer_name or "") else "VR")
         ttk.Entry(frm, textvariable=name, width=36).grid(row=0, column=1, sticky="we", pady=3)
-        ttk.Label(frm, text="Descripción:").grid(row=1, column=0, sticky="w")
+        ttk.Label(frm, text=_("Descripción:")).grid(row=1, column=0, sticky="w")
         desc = tk.StringVar()
         ttk.Entry(frm, textvariable=desc, width=36).grid(row=1, column=1, sticky="we", pady=3)
-        ttk.Label(frm, text="Archivo gráfico:").grid(row=2, column=0, sticky="w")
+        ttk.Label(frm, text=_("Archivo gráfico:")).grid(row=2, column=0, sticky="w")
         rf = tk.StringVar(value=self.cfg.renderer_name or "")
         ttk.Combobox(frm, textvariable=rf, state="readonly", width=34,
-                     values=[n for n, _ in self.cfg.renderer_candidates]).grid(row=2, column=1, sticky="we", pady=3)
-        ttk.Label(frm, text="Incluir:").grid(row=3, column=0, sticky="nw", pady=(8, 0))
+                     values=[n for n, _mt in self.cfg.renderer_candidates]).grid(row=2, column=1, sticky="we", pady=3)
+        ttk.Label(frm, text=_("Incluir:")).grid(row=3, column=0, sticky="nw", pady=(8, 0))
         gv = {}
         for i, (g, spec) in enumerate(userprofiles.GROUPS.items()):
             gv[g] = tk.BooleanVar(value=g != "pantalla")
@@ -882,25 +888,25 @@ class App(tk.Tk):
         def ok():
             groups = [g for g, v in gv.items() if v.get()]
             if not name.get().strip() or not groups:
-                messagebox.showwarning(APP, "Pon un nombre y elige al menos un grupo.", parent=w)
+                messagebox.showwarning(APP, _("Pon un nombre y elige al menos un grupo."), parent=w)
                 return
             existing = {p["name"].lower() for p in userprofiles.list_profiles(self.out_dir)}
-            if name.get().strip().lower() in existing and not messagebox.askyesno(APP, "Ya existe un perfil con ese nombre. ¿Sobrescribir?", parent=w):
+            if name.get().strip().lower() in existing and not messagebox.askyesno(APP, _("Ya existe un perfil con ese nombre. ¿Sobrescribir?"), parent=w):
                 return
             userprofiles.save(self.out_dir, name.get().strip(), self.cfg.directory, rf.get(), groups, desc.get().strip())
             w.destroy()
             self._refresh_myprofiles()
-            self.status(f"Perfil «{name.get().strip()}» guardado")
-        ttk.Button(frm, text="Guardar", style="Accent.TButton", command=ok).grid(row=7, column=1, sticky="e", pady=(12, 0))
+            self.status(_("Perfil «{p0}» guardado", p0=name.get().strip()))
+        ttk.Button(frm, text=_("Guardar"), style="Accent.TButton", command=ok).grid(row=7, column=1, sticky="e", pady=(12, 0))
 
     def myprof_apply(self):
         p = self._mp_selected()
         if not p or not self.cfg:
-            messagebox.showinfo(APP, "Selecciona un perfil.")
+            messagebox.showinfo(APP, _("Selecciona un perfil."))
             return
         self._myprof_diff()
         ch = getattr(self, "_mp_changes", [])
-        if self._confirm_apply(ch, f"el perfil «{p['name']}» sobre {self.mp_target.get()}"):
+        if self._confirm_apply(ch, _("el perfil «{p0}» sobre {p1}", p0=p['name'], p1=self.mp_target.get())):
             try:
                 log = applier.apply_changes(ch, self.cfg.directory, self.mp_target.get(), label=f"mi_perfil_{p['name']}",
                                             state_base=self.out_dir)
@@ -909,36 +915,35 @@ class App(tk.Tk):
                 return
             extra = ""
             if "OpenXR" in self.mp_target.get() or "OpenVR" in self.mp_target.get() or "Oculus" in self.mp_target.get():
-                extra = "\n\nRecuerda elegir el modo VR en la pantalla de iRacing antes de entrar al simulador."
+                extra = _("\n\nRecuerda elegir el modo VR en la pantalla de iRacing antes de entrar al simulador.")
             messagebox.showinfo(APP, "\n".join(log[:30]) + extra)
-            self._bg(self._load_cfg, "Recargando configuración…")
+            self._bg(self._load_cfg, _("Recargando configuración…"))
 
     def myprof_delete(self):
         p = self._mp_selected()
-        if p and messagebox.askyesno(APP, f"¿Eliminar el perfil «{p['name']}»?"):
+        if p and messagebox.askyesno(APP, _("¿Eliminar el perfil «{p0}»?", p0=p['name'])):
             userprofiles.delete(p["_path"])
             self._refresh_myprofiles()
 
     def myprof_export(self):
         p = self._mp_selected()
         if not p:
-            messagebox.showinfo(APP, "Selecciona un perfil.")
+            messagebox.showinfo(APP, _("Selecciona un perfil."))
             return
         dst = filedialog.asksaveasfilename(defaultextension=".json", initialfile=Path(p["_path"]).name,
-                                           filetypes=[("Perfil", "*.json")])
+                                           filetypes=[(_("Perfil"), "*.json")])
         if dst:
             Path(dst).write_text(Path(p["_path"]).read_text(encoding="utf-8"), encoding="utf-8")
-            self.status(f"Exportado a {dst}")
+            self.status(_("Exportado a {dst}", dst=dst))
 
     def myprof_import(self):
-        src = filedialog.askopenfilename(filetypes=[("Perfil", "*.json")])
+        src = filedialog.askopenfilename(filetypes=[(_("Perfil"), "*.json")])
         if src:
             try:
                 dst = userprofiles.import_file(self.out_dir, src)
                 d = userprofiles.validate(__import__("json").loads(Path(src).read_text(encoding="utf-8")))
                 if d.get("_dropped"):
-                    messagebox.showwarning(APP, f"Perfil importado en {dst.name}. Se descartaron {d['_dropped']} valores "
-                                                "que no parecían ajustes válidos de iRacing.")
+                    messagebox.showwarning(APP, _("Perfil importado en {p0}. Se descartaron {p1} valores que no parecían ajustes válidos de iRacing.", p0=dst.name, p1=d['_dropped']))
             except Exception as e:
                 messagebox.showerror(APP, str(e))
                 return
@@ -947,7 +952,7 @@ class App(tk.Tk):
     # ------------------------------------------------------------------ FOV
     def _tab_fov(self):
         f = ttk.Frame(self.nb, padding=10)
-        self.nb.add(f, text="FOV")
+        self.nb.add(f, text=_("FOV"))
         left = ttk.Frame(f)
         left.pack(side="left", fill="y")
         right = ttk.Frame(f)
@@ -959,13 +964,13 @@ class App(tk.Tk):
         self.fv_3p = tk.BooleanVar(value=True)
         self.fv_aspect = tk.StringVar(value="16:9")
 
-        lf = ttk.LabelFrame(left, text="Tu configuración", padding=8)
+        lf = ttk.LabelFrame(left, text=_("Tu configuración"), padding=8)
         lf.pack(fill="x")
-        ttk.Label(lf, text="Monitores:").grid(row=0, column=0, sticky="w")
+        ttk.Label(lf, text=_("Monitores:")).grid(row=0, column=0, sticky="w")
         tf = ttk.Frame(lf)
         tf.grid(row=0, column=1, sticky="w")
         for t in ("1 plano", "1 curvo", "3 planos", "3 curvos"):
-            ttk.Radiobutton(tf, text=t, value=t, variable=self.fv_type, command=self._fov_update).pack(side="left")
+            ttk.Radiobutton(tf, text=_(t), value=t, variable=self.fv_type, command=self._fov_update).pack(side="left")
         r = 1
 
         def field(label, key, hint="", frm=lf):
@@ -978,30 +983,30 @@ class App(tk.Tk):
                 ttk.Label(frm, text=hint, style="Muted.TLabel").grid(row=r, column=2, sticky="w", padx=4)
             r += 1
             return e
-        field("Ancho del monitor (mm)", "width", "con biseles, recto")
-        field("Bisel (mm, un lado)", "bezel")
-        self.fv_radius_w = field("Radio de curvatura (mm)", "radius", "1000R = 1000")
-        self.fv_angle_w = field("Ángulo de los laterales (°)", "angle")
-        ttk.Label(lf, text="Distancia ojos → pantalla (mm)").grid(row=r, column=0, sticky="w", pady=(8, 2))
+        field(_("Ancho del monitor (mm)"), "width", _("con biseles, recto"))
+        field(_("Bisel (mm, un lado)"), "bezel")
+        self.fv_radius_w = field(_("Radio de curvatura (mm)"), "radius", "1000R = 1000")
+        self.fv_angle_w = field(_("Ángulo de los laterales (°)"), "angle")
+        ttk.Label(lf, text=_("Distancia ojos → pantalla (mm)")).grid(row=r, column=0, sticky="w", pady=(8, 2))
         sc = ttk.Scale(lf, from_=300, to=1300, length=230, variable=self.fv["dist"], command=lambda v: self._fov_update())
         sc.grid(row=r, column=1, columnspan=2, sticky="we", pady=(8, 2))
         r += 1
         self.fv_dist_lbl = tk.StringVar()
         ttk.Label(lf, textvariable=self.fv_dist_lbl, style="Muted.TLabel").grid(row=r, column=1, sticky="w")
         r += 1
-        ttk.Checkbutton(lf, text="Render scene using 3 projections", variable=self.fv_3p,
+        ttk.Checkbutton(lf, text=_("Render scene using 3 projections"), variable=self.fv_3p,
                         command=self._fov_update).grid(row=r, column=0, columnspan=3, sticky="w", pady=(6, 0))
 
-        hf = ttk.LabelFrame(left, text="¿No sabes el ancho? Calcúlalo desde las pulgadas", padding=8)
+        hf = ttk.LabelFrame(left, text=_("¿No sabes el ancho? Calcúlalo desde las pulgadas"), padding=8)
         hf.pack(fill="x", pady=8)
-        ttk.Label(hf, text="Diagonal (\")").grid(row=0, column=0, sticky="w")
+        ttk.Label(hf, text=_("Diagonal (\")")).grid(row=0, column=0, sticky="w")
         ttk.Spinbox(hf, from_=10, to=100, increment=1, width=6, textvariable=self.fv["diag"]).grid(row=0, column=1, sticky="w")
-        ttk.Label(hf, text="Formato").grid(row=0, column=2, padx=(10, 0))
+        ttk.Label(hf, text=_("Formato")).grid(row=0, column=2, padx=(10, 0))
         ttk.Combobox(hf, textvariable=self.fv_aspect, values=list(fov.ASPECTS), width=6, state="readonly").grid(row=0, column=3)
-        ttk.Button(hf, text="Calcular ancho", command=self._fov_from_diag).grid(row=0, column=4, padx=8)
-        ttk.Label(hf, text="Da el ancho visible; súmale los dos biseles.", style="Muted.TLabel").grid(row=1, column=0, columnspan=5, sticky="w")
+        ttk.Button(hf, text=_("Calcular ancho"), command=self._fov_from_diag).grid(row=0, column=4, padx=8)
+        ttk.Label(hf, text=_("Da el ancho visible; súmale los dos biseles."), style="Muted.TLabel").grid(row=1, column=0, columnspan=5, sticky="w")
 
-        res = ttk.LabelFrame(left, text="Resultado", padding=8)
+        res = ttk.LabelFrame(left, text=_("Resultado"), padding=8)
         res.pack(fill="x")
         self.fv_out = tk.StringVar(value="—")
         ttk.Label(res, textvariable=self.fv_out, style="Big.TLabel").pack(anchor="w")
@@ -1011,15 +1016,14 @@ class App(tk.Tk):
         ttk.Label(res, textvariable=self.fv_warn, foreground="#b9770e", wraplength=380, justify="left").pack(anchor="w", pady=(4, 0))
         btns = ttk.Frame(left)
         btns.pack(fill="x", pady=8)
-        ttk.Button(btns, text="Leer de iRacing", command=self._fov_load_from_ini).pack(side="left")
-        ttk.Button(btns, text="Usar ángulo ideal", command=self._fov_ideal).pack(side="left", padx=6)
-        ttk.Button(btns, text="Aplicar a iRacing", style="Accent.TButton", command=self._fov_apply).pack(side="right")
+        ttk.Button(btns, text=_("Leer de iRacing"), command=self._fov_load_from_ini).pack(side="left")
+        ttk.Button(btns, text=_("Usar ángulo ideal"), command=self._fov_ideal).pack(side="left", padx=6)
+        ttk.Button(btns, text=_("Aplicar a iRacing"), style="Accent.TButton", command=self._fov_apply).pack(side="right")
 
         self.fv_canvas = tk.Canvas(right, background="#11151d", highlightthickness=0)
         self.fv_canvas.pack(fill="both", expand=True)
         self.fv_canvas.bind("<Configure>", lambda e: self._fov_update())
-        ttk.Label(right, text="Vista cenital: tus ojos abajo, pantallas a escala. En verde el FOV calculado; en gris "
-                              "discontinuo el FOV que tienes ahora en iRacing.", style="Muted.TLabel", wraplength=460).pack(anchor="w", pady=4)
+        ttk.Label(right, text=_("Vista cenital: tus ojos abajo, pantallas a escala. En verde el FOV calculado; en gris discontinuo el FOV que tienes ahora en iRacing."), style="Muted.TLabel", wraplength=460).pack(anchor="w", pady=4)
         self._fov_current = None
         self._fov_result = None
 
@@ -1044,17 +1048,17 @@ class App(tk.Tk):
         self.fv_angle_w.configure(state=state_a)
         self.fv_dist_lbl.set(f"{s.distance:.0f} mm")
         self.fv_out.set(f"FOV {res.fov_h:.0f}°")
-        det = [f"Pantalla visible: {s.screen_width:.0f} mm por monitor."]
+        det = [_("Pantalla visible: {p0:.0f} mm por monitor.", p0=s.screen_width)]
         if s.monitors == 3:
             det.append(f"Monitor central: {res.fov_center:.0f}°.")
         if res.ideal_side_angle is not None:
-            det.append(f"Ángulo ideal de los laterales: {res.ideal_side_angle:.0f}° (cada lateral mirando a tus ojos).")
+            det.append(_("Ángulo ideal de los laterales: {p0:.0f}° (cada lateral mirando a tus ojos).", p0=res.ideal_side_angle))
         if self._fov_current:
             diff = self._fov_current - res.fov_h
-            det.append(f"Ahora en iRacing: {self._fov_current:.0f}° ({'+' if diff >= 0 else ''}{diff:.0f}°"
-                       + (", ves más de lo real: los coches parecen más lejos y lentos)." if diff > 3 else
-                          ", ves menos de lo real: todo parece más grande y rápido)." if diff < -3 else ", prácticamente correcto)."))
-        det.append("Tras aplicar, puedes confirmarlo en iRacing: Ajustes → Pantalla → Monitor → Compute.")
+            det.append(_("Ahora en iRacing: {p0:.0f}° ({p1}{diff:.0f}°", p0=self._fov_current, p1='+' if diff >= 0 else '', diff=diff)
+                       + (_(", ves más de lo real: los coches parecen más lejos y lentos).") if diff > 3 else
+                          _(", ves menos de lo real: todo parece más grande y rápido).") if diff < -3 else _(", prácticamente correcto).")))
+        det.append(_("Tras aplicar, puedes confirmarlo en iRacing: Ajustes → Pantalla → Monitor → Compute."))
         self.fv_detail.set(" ".join(det))
         self.fv_warn.set("\n".join("⚠ " + w for w in res.warnings))
         self._fov_draw(s, res)
@@ -1094,12 +1098,12 @@ class App(tk.Tk):
         rr = 60
         a0 = 90 - res.fov_h / 2
         c.create_arc(ox - rr, oy - rr, ox + rr, oy + rr, start=a0, extent=res.fov_h, style="arc", outline="#4cd97b", width=2)
-        c.create_text(ox, oy - rr - 14, text=f"{res.fov_h:.0f}°", fill="#e8ecf4", font=("Segoe UI", 14, "bold"))
+        c.create_text(ox, oy - rr - 14, text=_("{p0:.0f}°", p0=res.fov_h), fill="#e8ecf4", font=("Segoe UI", 14, "bold"))
         # ojos y cota
         c.create_oval(ox - 9, oy - 6, ox + 9, oy + 6, fill="#e8ecf4", outline="")
-        c.create_text(ox, oy + 18, text="tus ojos", fill="#8a93a6")
+        c.create_text(ox, oy + 18, text=_("tus ojos"), fill="#8a93a6")
         c.create_line(ox + 30, oy, ox + 30, P(0, s.distance)[1], fill="#8a93a6", arrow="both")
-        c.create_text(ox + 36, (oy + P(0, s.distance)[1]) / 2, text=f"{s.distance:.0f} mm", fill="#8a93a6", anchor="w")
+        c.create_text(ox + 36, (oy + P(0, s.distance)[1]) / 2, text=_("{p0:.0f} mm", p0=s.distance), fill="#8a93a6", anchor="w")
 
     def _fov_from_diag(self):
         try:
@@ -1116,7 +1120,7 @@ class App(tk.Tk):
             self.fv["angle"].set(round(self._fov_result.ideal_side_angle))
             self._fov_update()
         else:
-            messagebox.showinfo(APP, "El ángulo ideal solo aplica a 3 monitores planos.")
+            messagebox.showinfo(APP, _("El ángulo ideal solo aplica a 3 monitores planos."))
 
     def _fov_load_from_ini(self, silent=False):
         if not self.cfg or not self.cfg.renderer:
@@ -1130,7 +1134,7 @@ class App(tk.Tk):
         self._fov_current = cur
         self._fov_update()
         if not silent:
-            self.status("Valores de monitor leídos de iRacing")
+            self.status(_("Valores de monitor leídos de iRacing"))
 
     def _fov_apply(self):
         if not self.cfg or not self._fov_result:
@@ -1152,9 +1156,9 @@ class App(tk.Tk):
             if not same:
                 changes.append({**c, "current": cur, "proposed": c["proposed"] if c["key"] != "drivingCamFOV" else f"{float(c['proposed']):.6f}"})
         if not changes:
-            messagebox.showinfo(APP, "Tu configuración ya coincide.")
+            messagebox.showinfo(APP, _("Tu configuración ya coincide."))
             return
-        if self._confirm_apply(changes, "la configuración de monitor y FOV"):
+        if self._confirm_apply(changes, _("la configuración de monitor y FOV")):
             self._do_apply(changes, "fov")
 
     # ------------------------------------------------------------------ copias
@@ -1169,11 +1173,10 @@ class App(tk.Tk):
             return
         sel = self.bk_list.curselection()
         if not sel:
-            messagebox.showinfo(APP, "Selecciona una copia.")
+            messagebox.showinfo(APP, _("Selecciona una copia."))
             return
         stamp = self.bk_list.get(sel[0]).split()[0]
-        if not messagebox.askyesno(APP, f"Restaurar la copia {stamp}?\nSe sobrescribirán los .ini actuales "
-                                        "(antes se guarda una copia del estado actual)."):
+        if not messagebox.askyesno(APP, _("Restaurar la copia {stamp}?\nSe sobrescribirán los .ini actuales (antes se guarda una copia del estado actual).", stamp=stamp)):
             return
         try:
             applier.backup(self.cfg.directory, "antes_de_restaurar")
@@ -1183,7 +1186,7 @@ class App(tk.Tk):
             messagebox.showerror(APP, str(e))
             return
         messagebox.showinfo(APP, "\n".join(log))
-        self._bg(self._load_cfg, "Recargando…")
+        self._bg(self._load_cfg, _("Recargando…"))
 
     def open_backups(self):
         if self.cfg:

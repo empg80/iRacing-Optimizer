@@ -8,6 +8,8 @@ Se guardan como JSON en Documentos\\iRacingOptimizer\\perfiles, así se pueden c
 """
 from __future__ import annotations
 
+from .i18n import _
+
 import json
 import re
 from datetime import datetime
@@ -17,10 +19,10 @@ from .iniio import IniFile
 from .safety import MAX_JSON_BYTES, UnsafeInput, is_safe_value, safe_renderer
 
 GROUPS = {
-    "graficos": {"label": "Gráficos (calidad y rendimiento)", "file": "renderer", "sections": ["Graphics Options"]},
-    "pantalla": {"label": "Pantalla y monitores (resolución, FOV físico, triples)", "file": "renderer",
+    "graficos": {"label": _("Gráficos (calidad y rendimiento)"), "file": "renderer", "sections": ["Graphics Options"]},
+    "pantalla": {"label": _("Pantalla y monitores (resolución, FOV físico, triples)"), "file": "renderer",
                  "sections": ["MonitorSetup", "Display"]},
-    "fov": {"label": "FOV de conducción (app.ini)", "file": "app", "sections": ["View"],
+    "fov": {"label": _("FOV de conducción (app.ini)"), "file": "app", "sections": ["View"],
             "keys": ["drivingCamFOV", "virtualMirrorFOV"]},
 }
 
@@ -102,7 +104,7 @@ def delete(path: str | Path) -> None:
 def validate(d: dict) -> dict:
     """Comprueba un perfil externo y devuelve una copia limpia."""
     if not isinstance(d, dict) or not isinstance(d.get("data"), dict) or not isinstance(d.get("name"), str):
-        raise UnsafeInput("El archivo no es un perfil de iRacing Optimizer.")
+        raise UnsafeInput(_("El archivo no es un perfil de iRacing Optimizer."))
     clean = {"renderer": {}, "app": {}}
     dropped = 0
     for fk in ("renderer", "app"):
@@ -127,7 +129,7 @@ def validate(d: dict) -> dict:
 def import_file(base: Path, src: str | Path) -> Path:
     src = Path(src)
     if src.stat().st_size > MAX_JSON_BYTES:
-        raise UnsafeInput("Archivo demasiado grande para ser un perfil.")
+        raise UnsafeInput(_("Archivo demasiado grande para ser un perfil."))
     d = validate(json.loads(src.read_text(encoding="utf-8")))
     d.pop("_dropped", None)
     dst = profiles_dir(base) / f"{_slug(d['name'])}.json"

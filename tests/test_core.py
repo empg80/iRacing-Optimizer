@@ -156,3 +156,32 @@ def test_drift_detection(tmp_path):
     ini.save()
     drift.accept_current(base, ini_dir)
     assert drift.check(base, ini_dir) == []
+
+
+def test_i18n_catalog_complete_and_consistent():
+    import ast
+    import glob
+    import string
+    from iroptimizer.locale_en import CATALOG
+
+    def names(s):
+        return sorted({f[1] for f in string.Formatter().parse(s) if f[1] is not None})
+    used = set()
+    for f in glob.glob("iroptimizer/*.py"):
+        for n in ast.walk(ast.parse(open(f, encoding="utf-8").read())):
+            if isinstance(n, ast.Call) and getattr(n.func, "id", "") == "_" and n.args and isinstance(n.args[0], ast.Constant):
+                used.add(n.args[0].value)
+    missing = [u for u in used if u not in CATALOG]
+    assert not missing, missing[:5]
+    bad = [k for k, v in CATALOG.items() if names(k) != names(v)]
+    assert not bad, bad[:5]
+
+
+def test_english_report(tmp_path, monkeypatch):
+    from iroptimizer import i18n
+    monkeypatch.setattr(i18n, "LANG", "en")
+    csv_path, _ = _demo(tmp_path)
+    res = pipeline.run(csv_path)
+    html = res.html_path.read_text(encoding="utf-8")
+    assert "Configuration recommendations" in html and 'lang="en"' in html
+    assert any("Physics and network thread" in c["title"] for c in res.diagnostics["checks"])

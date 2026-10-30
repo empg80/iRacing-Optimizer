@@ -10,12 +10,14 @@ Notas de diseño:
 """
 from __future__ import annotations
 
+from .i18n import _
+
 import math
 
 PROFILES = {
     "rendimiento": {
-        "title": "Máximo rendimiento",
-        "desc": "Prioriza FPS estables en salidas y pelotones. Menos coches y objetos dibujados, sombras y efectos al mínimo.",
+        "title": _("Máximo rendimiento"),
+        "desc": _("Prioriza FPS estables en salidas y pelotones. Menos coches y objetos dibujados, sombras y efectos al mínimo."),
         "values": {
             "MaxCarsToDraw": 16, "MaxCarsToDrawInMirrors": 4,
             "MaxPitObjsToDraw": 0, "MaxPitObjsToDrawInMirrors": 0,
@@ -31,8 +33,8 @@ PROFILES = {
         "lod_factor": 0.95, "cap_factor": 1.15,
     },
     "equilibrado": {
-        "title": "Equilibrado",
-        "desc": "Buena imagen sin castigar la CPU: coches suficientes, sombras de pista y coches, efectos moderados.",
+        "title": _("Equilibrado"),
+        "desc": _("Buena imagen sin castigar la CPU: coches suficientes, sombras de pista y coches, efectos moderados."),
         "values": {
             "MaxCarsToDraw": 24, "MaxCarsToDrawInMirrors": 6,
             "MaxPitObjsToDraw": 10, "MaxPitObjsToDrawInMirrors": 0,
@@ -48,8 +50,8 @@ PROFILES = {
         "lod_factor": 0.85, "cap_factor": 1.0,
     },
     "calidad": {
-        "title": "Calidad gráfica",
-        "desc": "Máxima calidad visual asumiendo menos FPS. Para equipos sobrados, hotlaps o grabar contenido.",
+        "title": _("Calidad gráfica"),
+        "desc": _("Máxima calidad visual asumiendo menos FPS. Para equipos sobrados, hotlaps o grabar contenido."),
         "values": {
             "MaxCarsToDraw": 40, "MaxCarsToDrawInMirrors": 10,
             "MaxPitObjsToDraw": 30, "MaxPitObjsToDrawInMirrors": 4,

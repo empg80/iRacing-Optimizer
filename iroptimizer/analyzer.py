@@ -1,6 +1,8 @@
 """Análisis de una sesión grabada: FPS, cuellos de botella, tráfico, memoria y red."""
 from __future__ import annotations
 
+from .i18n import _
+
 import csv
 import json
 import math
@@ -110,8 +112,8 @@ def _corr(xs, ys):
     mx = sum(p[0] for p in pts) / len(pts)
     my = sum(p[1] for p in pts) / len(pts)
     sxy = sum((x - mx) * (y - my) for x, y in pts)
-    sx = math.sqrt(sum((x - mx) ** 2 for x, _ in pts))
-    sy = math.sqrt(sum((y - my) ** 2 for _, y in pts))
+    sx = math.sqrt(sum((x - mx) ** 2 for x, _y in pts))
+    sy = math.sqrt(sum((y - my) ** 2 for _x, y in pts))
     return sxy / (sx * sy) if sx and sy else None
 
 
@@ -171,7 +173,7 @@ def analyze(rows: list[dict], meta: dict, presentmon: dict | None = None, target
         target = float(target_override)
     valid = _valid(rows)
     if not valid:
-        raise ValueError("No hay muestras válidas en pista (¿grabaste con el coche en pista?).")
+        raise ValueError(_("No hay muestras válidas en pista (¿grabaste con el coche en pista?)."))
 
     groups = defaultdict(list)
     for r in valid:
