@@ -70,6 +70,19 @@ PROFILES = {
 
 ORDER = ["rendimiento", "equilibrado", "calidad"]
 
+# Ajustes que en iRacing cargan el hilo principal (más draw calls o cámaras extra), no solo la GPU.
+CPU_KEYS = {"maxcarstodraw", "maxcarstodrawinmirrors", "maxpitobjstodraw", "maxpitobjstodrawinmirrors",
+            "crowddetail", "grandstanddetail", "pitobjectdetail", "objectdetail", "foliagedetail", "cardetail",
+            "shadowmaptype", "shadowdetail", "dynamicshadowmaps", "mirrordetail", "numdynamiccubemaps"}
+
+
+def cpu_bound(analysis: dict | None) -> bool:
+    """True si la sesión estuvo limitada por CPU/motor la mayor parte del tiempo."""
+    if not analysis:
+        return False
+    bn = analysis["groups"][analysis["primary"]].get("bottleneck") or {}
+    return bn.get("cpu", 0) + bn.get("mixed", 0) / 2 >= 50
+
 
 def _round5(x):
     return int(math.floor(x / 5) * 5)
@@ -87,7 +100,11 @@ def build_profile(name: str, renderer_flat: dict[str, str], refresh: float | Non
     p10 = p50 = None
     if analysis:
         f = analysis["groups"][analysis["primary"]]["fps"]
-        p10, p50 = f.get("p10"), f.get("median")
+        # Con Reflex (NVIDIA) la latencia ya está controlada: el tope se basa en lo que mantienes el 75 % del
+        # tiempo, no el 90 %, para no renunciar a tantos FPS en zonas limpias.
+        p10 = (f.get("p25") or f.get("p10")) if nvidia else f.get("p10")
+        p50 = f.get("median")
+    guard = name != "calidad" and cpu_bound(analysis)
 
     if vr_hz:
         # VR: el visor marca el ritmo (el tope de iRacing no aplica); el LOD dinámico actúa al bajar de su frecuencia
@@ -116,6 +133,12 @@ def build_profile(name: str, renderer_flat: dict[str, str], refresh: float | Non
         cur = renderer_flat.get(key.lower())
         if cur is None:
             continue
+        if guard and key.lower() in CPU_KEYS:
+            try:
+                if float(v) > float(cur):
+                    continue  # vas limitado por CPU: el perfil no sube lo que carga el hilo principal
+            except ValueError:
+                pass
         try:
             same = float(cur) == float(v)
         except ValueError:

@@ -113,11 +113,18 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
               _("Tope propuesto: {cap} fps ≈ lo que mantienes el 90 % del tiempo", cap=cap)
               + (_(", y por debajo de {refresh:.0f} Hz para quedarte dentro de G-Sync/VRR.", refresh=refresh) if vrr_cap else "."))
     elif lim == 1 and desired and not vrd:
+        reflex = (b.cur("NvReflexMode") or 0) >= 1
         if refresh and desired > refresh - 2:
             b.add("DesiredFPSLimit", vrr_cap, 2, "frametime",
                   _("Con VRR conviene limitar unos fps por debajo de la frecuencia ({refresh:.0f} Hz) para no salir del rango G-Sync y caer en V-Sync.", refresh=refresh))
         elif fps["p10"] < desired * 0.9 and holdable >= 60:
-            if bn["cap"] >= 20:
+            if reflex and bn["cap"] < 20:
+                # Con Reflex el tope bajo no hace falta para la latencia: solo es una cuestión de suavidad (opcional).
+                mid = _round_down(fps.get("p25") or fps["p10"])
+                if desired > mid * 1.15:
+                    b.add("DesiredFPSLimit", mid, 3, "frametime",
+                          _("Opcional. Con NVIDIA Reflex activo no necesitas un tope bajo para el input lag. Un tope de {mid} (lo que mantienes el 75 % del tiempo) reduce el salto entre recta libre ({p95:.0f} fps) y pelotón ({p10:.0f}); a cambio pierdes FPS en zonas limpias. Con G-Sync puedes dejarlo como está.", mid=mid, p95=fps['p95'], p10=fps['p10']))
+            elif bn["cap"] >= 20:
                 # Pasas bastante tiempo en el tope: bajarlo hasta p10 tiraría FPS útiles en las zonas limpias.
                 mid = _round_down(fps.get("p25") or fps["p10"])
                 if desired > mid * 1.15:
@@ -165,7 +172,7 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
             b.add("LODMinFPSTarget", lod_goal, 1, "cpu",
                   _("Está en {c:.0f}: el LOD dinámico nunca actúa porque nunca bajas de ahí. Con {lod_goal} iRacing reduce el detalle de coches y objetos justo en los momentos de carga (tráfico, zonas pesadas) y lo recupera después.", c=c, lod_goal=lod_goal))
         for key, why in (("CrowdDetail", _("Público: muchas draw calls en Le Mans, Spa, Nordschleife.")),
-                         ("GrandstandDetail", _("Gradas: mismo motivo, coste de CPU en rectas principales.")),
+                         ("GrandstandDetail", _("Gradas: muchas draw calls en rectas principales y zonas con tribunas.")),
                          ("PitObjectDetail", _("Detalle de boxes: las caídas en pit lane vienen de aquí y de MaxPitObjsToDraw."))):
             c = b.cur(key)
             if c is not None and c >= 1 and severity > 0.15:
@@ -211,6 +218,14 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
             if (b.cur("ShadowMapType") or 3) < 3:
                 b.add("ShadowMapType", 3, 3, "calidad", _("Tienes margen de GPU: sombras completas."))
 
+    # ------------------------------------------- GPU sobrada con límite de CPU: MSAA casi gratis
+    gp95 = (g.get("gpu") or {}).get("p95")
+    if not vrd and gp95 is not None and gp95 < 70 and cpu_share >= 50:
+        c = b.cur("MSAASamples")
+        if c is not None and c < 4:
+            b.add("MSAASamples", 4, 3, "calidad",
+                  _("La GPU va al {gp95:.0f} % (p95) mientras la CPU marca el ritmo: el MSAA solo carga la GPU, así que 4× mejora los bordes sin perder FPS.", gp95=gp95))
+
     # -------------------------------------------------------------- Memoria
     m = a["memory"]
     vt, vcfg = m.get("vram_total_mb"), m.get("vidmem_cfg_mb")
@@ -236,7 +251,16 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
               _("NVIDIA Reflex desactivado. Al ir limitado por CPU, Reflex vacía la cola de render y reduce el input lag sin coste de FPS. Compatible con G-Sync y con el tope de iRacing."))
     fp, ft = (g.get("fps_pit") or {}), (g.get("fps_track") or {})
     if fp.get("n", 0) > 40 and ft.get("mean") and fp["mean"] < ft["mean"] * 0.75:
-        b.info(_("Caída en pit lane"), _("{p0:.0f} fps en boxes frente a {p1:.0f} en pista. Lo atacan MaxPitObjsToDraw y PitObjectDetail.", p0=fp['mean'], p1=ft['mean']), 3, "cpu")
+        why = _("{p0:.0f} fps en boxes frente a {p1:.0f} en pista.", p0=fp['mean'], p1=ft['mean'])
+        before = len(b.recs)
+        c = b.cur("MaxPitObjsToDraw")
+        if c is not None and c > 4:
+            b.add("MaxPitObjsToDraw", 4, 3, "cpu", why + " " + _("Menos objetos de boxes dibujados (otros coches, mecánicos, equipamiento)."))
+        c = b.cur("PitObjectDetail")
+        if c is not None and c >= 1:
+            b.add("PitObjectDetail", 0, 3, "cpu", why + " " + _("Detalle de boxes al mínimo."))
+        if len(b.recs) == before:
+            b.info(_("Caída en pit lane"), why + " " + _("Ya tienes los objetos de boxes recortados: es el coste normal de la zona, solo afecta a la entrada y salida de boxes."), 3, "cpu")
 
     b.recs.sort(key=lambda r: (r["priority"], r.get("category") or ""))
     return b.recs

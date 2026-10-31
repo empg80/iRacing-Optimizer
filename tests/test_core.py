@@ -209,3 +209,20 @@ def test_vr_session_analysis(tmp_path):
     titles = {c["title"] for c in res.diagnostics["checks"]}
     assert {"Frecuencia del visor", "Software de VR"} <= titles
     assert all(c["key"] not in ("LimitFrameRate", "DesiredFPSLimit") for ch in res.profiles.values() for c in ch)
+
+
+def test_profiles_do_not_raise_cpu_cost_when_cpu_bound():
+    from iroptimizer import profiles
+    flat = {"maxcarstodraw": "20", "crowddetail": "0", "pitobjectdetail": "0", "shadowmaptype": "1", "msaasamples": "2"}
+    a = {"primary": "Race", "groups": {"Race": {"fps": {"p10": 80, "p25": 95, "median": 110},
+                                                "bottleneck": {"cpu": 99, "mixed": 0, "gpu": 0}}}}
+    ch = {c["key"]: c["proposed"] for c in profiles.build_profile("equilibrado", flat, 240, a)}
+    assert not {"MaxCarsToDraw", "CrowdDetail", "PitObjectDetail", "ShadowMapType"} & set(ch)
+    assert ch.get("MSAASamples") == "4"  # solo GPU: sí se sube
+
+
+def test_background_tips():
+    from iroptimizer.diagnostics import bg_tip
+    assert "Garage 61" in bg_tip("msedgewebview2.exe (Garage61.exe)")
+    assert bg_tip("simpro3.exe")
+    assert bg_tip("unknown.exe") is None

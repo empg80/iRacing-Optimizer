@@ -25,11 +25,13 @@ STATUS_ORDER = {BAD: 0, WARN: 1, INFO: 2, OK: 3}
 KNOWN_BG = {  # procesos habituales y qué hacer con ellos
     "obs64.exe": _("OBS: usa codificador NVENC (GPU) en vez de x264 (CPU) y baja el preset."),
     "simhub.exe": _("SimHub: desactiva plugins/dashboards que no uses y baja su tasa de refresco."),
-    "simhubwpf.exe": _("SimHub: desactiva plugins/dashboards que no uses y baja su tasa de refresco."),
+    "simhubwpf.exe": _("SimHub: limita los fps del dashboard (30 suele bastar) y desactiva los plugins que no uses."),
     "chrome.exe": _("Navegador abierto: ciérralo o desactiva la aceleración de vídeo de pestañas en segundo plano."),
     "msedge.exe": _("Navegador abierto: ciérralo mientras corres."),
     "firefox.exe": _("Navegador abierto: ciérralo mientras corres."),
-    "discord.exe": _("Discord: desactiva la superposición (overlay) y la aceleración por hardware."),
+    "discord.exe": _("Discord: desactiva su superposición (overlay) en juego. Deja la aceleración por hardware activada si tu GPU va sobrada."),
+    "msedgewebview2.exe": _("Interfaz web de otro programa (overlays, Garage 61, widgets…). Graba con la v0.8 o posterior para ver a qué programa pertenece."),
+    "obs-browser-page.exe": _("Fuentes de navegador de OBS (alertas, chat, overlays web): ponlas a 30 fps, quita las ocultas y activa «Apagar la fuente cuando no sea visible»."),
     "msmpeng.exe": _("Antivirus de Windows escaneando: añade una exclusión para la carpeta de iRacing y Documentos\\iRacing."),
     "searchindexer.exe": _("Indexador de Windows: excluye las carpetas de iRacing de la indexación."),
     "steam.exe": _("Steam: cierra la overlay y las descargas en segundo plano."),
@@ -40,6 +42,32 @@ KNOWN_BG = {  # procesos habituales y qué hacer con ellos
     "nvcontainer.exe": _("NVIDIA App/overlay: desactiva la superposición y la grabación instantánea si no la usas."),
     "crewchiefv4.exe": _("CrewChief: normal que use algo de CPU; si va justo, desactiva funciones que no uses."),
 }
+
+# Coincidencia por fragmento de nombre (programas de simracing con nombres de ejecutable variables)
+KNOWN_BG_PARTS = (
+    ("garage61", _("Garage 61: normal que use algo de CPU mientras sube vueltas; no hace falta cerrarlo.")),
+    ("simpro", _("SimPro Manager (Simagic): consumo bajo; ciérralo si no cambias ajustes del volante en carrera.")),
+    ("ifuel", _("iFuel (overlay): si va justo, baja su frecuencia de refresco.")),
+    ("racelab", _("Overlays de RaceLab: desactiva los widgets que no veas y limita su refresco.")),
+    ("ioverlay", _("iOverlay: desactiva los widgets que no veas y limita su refresco.")),
+    ("crewchief", _("CrewChief: normal que use algo de CPU; si va justo, desactiva funciones que no uses.")),
+)
+STREAMING = ("obs64.exe", "obs32.exe", "streamlabs obs.exe", "streamlabs desktop.exe", "xsplit.core.exe")
+
+
+def bg_tip(name: str) -> str | None:
+    """Consejo para un proceso; «msedgewebview2.exe (Programa.exe)» se resuelve por el programa que lo abrió."""
+    low = name.lower()
+    owner = low.partition(" (")[2]
+    owner = owner.rstrip(")")
+    if owner:
+        tip = bg_tip(owner)
+        what = _("Interfaz web de {owner}", owner=owner) if owner != "?" else _("Interfaz web de otro programa (WebView2)")
+        return what + (": " + tip if tip else "")
+    if low in KNOWN_BG:
+        return KNOWN_BG[low]
+    return next((t for part, t in KNOWN_BG_PARTS if part in low), None)
+
 
 THROTTLE_THERMAL = 0x20 | 0x40 | 0x08  # Sw/Hw thermal slowdown, HwSlowdown
 THROTTLE_POWER = 0x04 | 0x80           # SwPowerCap, HwPowerBrake
@@ -202,12 +230,21 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
         metric = _("CPU total {sca:.0f} %", sca=sca) + (_(" · iRacing {ir:.0f} % · resto {other:.0f} %", ir=ir_cpu, other=other) if other is not None else "")
         acts = []
         for p in tops[:6]:
-            tip = KNOWN_BG.get(p["name"].lower())
+            tip = bg_tip(p["name"])
+            if p["name"].lower() in STREAMING and p["cpu_pct"] < 5:
+                tip = _("Consumo bajo: señal de que ya codificas con la GPU (NVENC). Bien así.")
             acts.append(f"{p['name']} ({p['cpu_pct']:.1f} %)" + (f": {tip}" if tip else ""))
         if st != OK and not tops:
             acts.append(_("Graba con la versión 0.3.1+ para ver qué procesos consumen CPU, o mira el Administrador de tareas con el coche en pista."))
-        add("CPU", _("Carga de CPU en segundo plano"), st, metric,
-            _("Todo lo que no es iRacing compite por la CPU y, en los X3D, por la caché. Con iRacing limitado por CPU, cada punto cuenta."), acts if st != OK else acts[:3])
+        streaming = any(p["name"].lower() in STREAMING for p in tops)
+        if streaming and st in (WARN, BAD):
+            # Con OBS emitiendo es el coste esperado del directo: se informa, sin alarmar
+            st = WARN if st == BAD else INFO
+            detail = _("Estás emitiendo: es el coste de tu directo (OBS, overlays, dashboards). Como tu límite es el hilo principal de iRacing, recortarlo da unos pocos FPS en los peores momentos, no grandes saltos. Empieza por lo más barato de quitar.")
+        else:
+            detail = _("Todo lo que no es iRacing compite por la CPU y, en los X3D, por la caché. Con iRacing limitado por CPU, cada punto cuenta.")
+        add("CPU", _("Carga de CPU en segundo plano") + (_(" (emitiendo)") if streaming else ""), st, metric,
+            detail, acts if st != OK else acts[:3])
 
     # ------------------------------------------------------------------ GPU
     gp = g.get("gpu") or {}
@@ -216,7 +253,7 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
         if gp95 >= 97 and below > 15:
             st, txt = BAD, _("La GPU es el límite: baja ajustes que cuestan GPU (MSAA, sombras, shaders, espejos en alto) o la resolución.")
         elif gp95 < 70 and cpu_share > 50:
-            st, txt = INFO, _("La GPU va sobrada: puedes subir calidad gráfica (MSAA, sombras) sin perder FPS.")
+            st, txt = INFO, _("La GPU va sobrada: el MSAA o la resolución salen casi gratis. Ojo: en iRacing las sombras, los espejos y los reflejos también cargan la CPU; súbelos solo si tienes margen de CPU.")
         else:
             st, txt = OK, _("Carga de GPU normal.")
         add("GPU", _("Carga de GPU"), st, _("Uso p95 {gp95:.0f} %", gp95=gp95), txt)
@@ -338,12 +375,17 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
         events += spikes
         srate = len(spikes) / dur_h
         st = BAD if p95_l > 200 or srate >= 20 else WARN if p95_l > 130 or srate >= 6 else OK
+        stable = srate < 6 and p95_l - med_l < 40
+        if st != OK and stable:
+            st = INFO  # alta pero estable: es la distancia al servidor, no tu conexión
         add(_("Red"), _("Latencia con el servidor"), st,
             _("Mediana {med_l:.0f} ms · p95 {p95_l:.0f} ms · máx. {max_l:.0f} ms · {p3} picos", med_l=med_l, p95_l=p95_l, max_l=max_l, p3=len(spikes)),
+            _("Alta pero estable: es la distancia al servidor (p. ej. servidores de EE. UU. desde Europa) y no se arregla en casa. Mientras no haya picos, iRacing la compensa bien.")
+            if st == INFO else
             _("La latencia depende sobre todo de la distancia al servidor; lo que importa es que sea estable. Los picos provocan saltos de coches y contactos fantasma."),
             [_("Conéctate por cable, no por Wi-Fi."), _("Pausa descargas, actualizaciones y sincronizaciones en la nube."),
              _("Si emites, limita el bitrate de subida de OBS a ~70 % de tu subida real."),
-             _("Activa QoS/SQM en el router si lo soporta.")] if st != OK else [])
+             _("Activa QoS/SQM en el router si lo soporta.")] if st in (WARN, BAD) else [])
     q = [r.get("chan_quality") for r in valid if r.get("chan_quality") is not None]
     pq = [r.get("chan_partner_quality") for r in valid if r.get("chan_partner_quality") is not None]
     if q:

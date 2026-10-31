@@ -140,9 +140,10 @@ def windows_tweaks() -> dict:
     except Exception:
         pass
     hags = _reg(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\GraphicsDrivers", "HwSchMode")
-    out["hags"] = None if hags is None else hags == 2
+    # Sin valor en el registro = el de fábrica de Windows (no lo has tocado)
+    out["hags"] = "default" if hags is None else hags == 2
     gm = _reg(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\GameBar", "AutoGameModeEnabled")
-    out["game_mode"] = None if gm is None else bool(gm)
+    out["game_mode"] = True if gm is None else bool(gm)  # el modo juego viene activado por defecto
     return out
 
 

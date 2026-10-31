@@ -31,6 +31,10 @@ FIELDS = [
 NEAR_METERS = 150.0  # radio para contar coches "cerca" (los que más cuestan de dibujar)
 
 
+
+# Procesos auxiliares que comparten nombre entre programas: se muestran con el programa que los abrió
+HELPER_PROCS = {"msedgewebview2.exe", "cefsharp.browsersubprocess.exe", "cefsubprocess.exe"}
+
 class SystemSampler:
     def __init__(self):
         self.nvml = None
@@ -44,6 +48,7 @@ class SystemSampler:
         self.proc: psutil.Process | None = None
         psutil.cpu_percent(percpu=True)  # primera llamada inicializa el contador
         self._proc_cpu: dict[str, float] = {}
+        self._owner: dict[int, str] = {}  # pid de proceso auxiliar (WebView2, CEF…) → programa que lo abrió
         self._proc_samples = 0
         self._last_proc_scan = 0.0
         self._ncpu = psutil.cpu_count() or 1
@@ -65,12 +70,30 @@ class SystemSampler:
             n = p.info["name"] or "?"
             if n.lower() in ("system idle process", "idle"):
                 continue
+            if n.lower() in HELPER_PROCS:
+                n = f"{n} ({self._owner_of(p)})"
             snap[n] = snap.get(n, 0.0) + v
         if first:
             return  # la primera pasada solo inicializa contadores
         self._proc_samples += 1
         for n, v in snap.items():
             self._proc_cpu[n] = self._proc_cpu.get(n, 0.0) + v / self._ncpu
+
+    def _owner_of(self, p) -> str:
+        """Primer antecesor que no es otro proceso auxiliar: así «msedgewebview2.exe» se atribuye a su programa."""
+        if p.pid in self._owner:
+            return self._owner[p.pid]
+        owner = "?"
+        try:
+            for anc in p.parents()[:6]:
+                an = anc.name()
+                if an.lower() not in HELPER_PROCS:
+                    owner = an
+                    break
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+        self._owner[p.pid] = owner
+        return owner
 
     def top_processes(self, k: int = 10) -> list[dict]:
         if not self._proc_samples:
