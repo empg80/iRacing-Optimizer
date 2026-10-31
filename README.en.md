@@ -83,6 +83,22 @@ How the bottleneck is classified, using real GPU load:
 - **Below 80 %**, the GPU is waiting for frames and the limit is the CPU/engine (main thread, draw calls).
 - With PresentMon, the classification is also done frame by frame from CPU and GPU busy times.
 
+## Virtual reality
+
+For headset sessions (Quest, Index, Pimax…), tick **VR session** in the Monitor tab and pick your headset and refresh rate. Meta Quest Link, Virtual Desktop, SteamVR and ALVR are detected automatically when running.
+
+- The target becomes the **headset refresh rate** (72/80/90/120 Hz), not an FPS cap.
+- **Reprojection** (ASW, Motion Smoothing, SSW) is detected: FPS locked at half the refresh rate.
+- Diagnostics show the active OpenXR runtime and tips for it.
+- Profiles built on `rendererDX11OpenXR.ini` set dynamic LOD to the headset refresh rate.
+- PresentMon is not used in VR: it would measure the monitor mirror window, not the headset.
+
+## Sharing sessions
+
+**Analysis → Export to share…** creates an anonymised `.zip`. It includes the telemetry, hardware (without the OS) and only graphics/display settings. It does not include process names, paths, or audio/controls settings.
+
+To open someone else's `.zip`, use **Open session**. It is copied to `recibidas\` and analysed like your own.
+
 ## Command line
 
 The same `.exe`, or `python -m iroptimizer`, accepts subcommands:
@@ -93,6 +109,8 @@ iRacingOptimizer.exe monitor --analyze --presentmon
 iRacingOptimizer.exe analyze session.csv [--target 165] [--presentmon pm.csv]
 iRacingOptimizer.exe apply session.recs.json --max-priority 1 [--dry-run]
 iRacingOptimizer.exe profile equilibrado [--from-session session.csv] [--dry-run]
+iRacingOptimizer.exe monitor --vr-hz 90
+iRacingOptimizer.exe export session.csv [--out session_share.zip]
 iRacingOptimizer.exe compare before.csv after.csv
 iRacingOptimizer.exe restore
 iRacingOptimizer.exe demo

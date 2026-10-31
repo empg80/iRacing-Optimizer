@@ -77,6 +77,22 @@ Para saber qué te limita usa la carga real de la GPU:
 
 Los FPS del SDK son una media de 1 s. Para medir microstutter (1 % / 0,1 % lows reales), activa PresentMon en el monitor (viene incluido en el `.exe`).
 
+## Realidad virtual
+
+Para sesiones con visor (Quest, Index, Pimax…), marca **Sesión en VR** en la pestaña Monitor y elige visor y frecuencia. Si Meta Quest Link, Virtual Desktop, SteamVR o ALVR están abiertos, se detectan solos.
+
+- El objetivo pasa a ser la **frecuencia del visor** (72/80/90/120 Hz), no un tope de FPS.
+- Se detecta la **reproyección** (ASW, Motion Smoothing, SSW): cuando los FPS se quedan en la mitad de la frecuencia.
+- El diagnóstico muestra el runtime OpenXR activo y consejos para él.
+- Los perfiles generados sobre `rendererDX11OpenXR.ini` ajustan el LOD dinámico a la frecuencia del visor.
+- PresentMon no se usa en VR: mediría la ventana espejo del monitor, no el visor.
+
+## Compartir sesiones
+
+**Análisis → Exportar para compartir…** crea un `.zip` anonimizado. Incluye la telemetría, el hardware (sin el sistema operativo) y solo los ajustes gráficos y de pantalla. No incluye nombres de procesos, rutas, ni ajustes de audio o controles.
+
+Para abrir el `.zip` de otra persona, usa **Abrir sesión**. Se copia a `recibidas\` y se analiza como una sesión propia.
+
 ## Línea de comandos
 
 El mismo `.exe`, o `python -m iroptimizer`, acepta subcomandos:
@@ -87,6 +103,8 @@ iRacingOptimizer.exe monitor --analyze --presentmon
 iRacingOptimizer.exe analyze sesion.csv [--target 165] [--presentmon pm.csv]
 iRacingOptimizer.exe apply sesion.recs.json --max-priority 1 [--dry-run]
 iRacingOptimizer.exe profile equilibrado [--from-session sesion.csv] [--dry-run]
+iRacingOptimizer.exe monitor --vr-hz 90
+iRacingOptimizer.exe export sesion.csv [--out sesion_compartir.zip]
 iRacingOptimizer.exe compare antes.csv despues.csv
 iRacingOptimizer.exe restore
 iRacingOptimizer.exe demo
@@ -104,7 +122,7 @@ build.bat            :: genera dist\iRacingOptimizer.exe
 GitHub Actions compila el `.exe` en cada push a `main`; está disponible como *artifact* del workflow. Al publicar una Release (o subir una etiqueta `vX.Y.Z`), el workflow compila y adjunta el ejecutable:
 
 ```
-gh release create v0.7.0 --generate-notes
+gh release create v0.8.0 --generate-notes
 ```
 
 ### Estructura

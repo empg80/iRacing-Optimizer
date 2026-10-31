@@ -245,6 +245,31 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
              _("Cierra apps que usan GPU (navegador con vídeo, overlays con aceleración)."),
              _("Baja calidad de texturas o desactiva CarPaint2048x2048.")] if st != OK else [])
 
+    # ------------------------------------------------------------------ VR
+    vrd = a.get("vr")
+    if vrd:
+        from . import vr as _vr
+        hz = vrd.get("hz") or target
+        rp, at = vrd.get("reprojection_pct", 0), vrd.get("at_rate_pct", 0)
+        st = BAD if rp > 25 or at < 60 else WARN if rp > 8 or at < 85 else OK
+        add("VR", _("Frecuencia del visor"), st,
+            _("{at:.0f} % del tiempo a {hz:.0f} Hz · {rp:.0f} % en reproyección (~{h2:.0f} fps) · {bl:.0f} % por debajo",
+              at=at, hz=hz, rp=rp, h2=hz / 2, bl=vrd.get("below_pct", 0)),
+            _("En VR el objetivo es mantener siempre la frecuencia del visor. Si no se llega, el runtime activa reproyección "
+              "(ASW / Motion Smoothing / SSW): el juego va a la mitad y se inventan frames, con «fantasmas» en coches y bordes."),
+            [_("Aplica los recortes de la pestaña Análisis (en VR suele limitar la GPU: MSAA, sombras, espejos)."),
+             _("Si aún no llegas, baja la frecuencia del visor (90 → 80 o 72 Hz) o la resolución de renderizado del runtime."),
+             _("Los espejos cuestan el doble en VR (se dibujan para cada ojo): usa el espejo virtual con pocos coches.")]
+            if st != OK else [])
+        sw = vrd.get("software") or []
+        add("VR", _("Software de VR"), INFO,
+            ", ".join(x for x in ([vrd.get("runtime")] + sw) if x) or _("no detectado"),
+            _("Runtime OpenXR activo y programas de VR detectados durante la grabación."),
+            _vr.runtime_tips(vrd.get("runtime"), sw))
+        if a.get("presentmon"):
+            add("VR", _("PresentMon en VR"), INFO, _("datos no representativos"),
+                _("En VR PresentMon mide la ventana espejo del monitor, no lo que ves en el visor. Usa la frecuencia del visor de arriba."))
+
     # ------------------------------------------------------------- frametime
     pm = a.get("presentmon") or {}
     if pm:

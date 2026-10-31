@@ -20,10 +20,13 @@ class Result:
     json_path: Path
 
 
-def profiles_for(renderer_flat: dict, hardware: dict, analysis: dict | None) -> dict[str, list[dict]]:
+def profiles_for(renderer_flat: dict, hardware: dict, analysis: dict | None,
+                 vr_hz: float | None = None) -> dict[str, list[dict]]:
     refresh = (hardware.get("display") or {}).get("refresh")
     nvidia = any(g.get("vendor") == "nvidia" for g in hardware.get("gpus") or [])
-    return {n: profiles.build_profile(n, renderer_flat, refresh, analysis, nvidia) for n in profiles.ORDER}
+    if vr_hz is None and analysis and analysis.get("vr"):
+        vr_hz = analysis["vr"].get("hz")
+    return {n: profiles.build_profile(n, renderer_flat, refresh, analysis, nvidia, vr_hz) for n in profiles.ORDER}
 
 
 def load_pm(csv_path: Path, meta: dict, rows: list[dict], explicit: str | None = None) -> dict | None:

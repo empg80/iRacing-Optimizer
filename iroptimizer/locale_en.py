@@ -1,11 +1,23 @@
 """Catálogo inglés: plantilla en español → inglés. Generado y revisado a mano; ver i18n.py."""
-CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
+
+CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  '\n\nRecuerda elegir el modo VR en la pantalla de iRacing antes de entrar al simulador.': '\n'
                                                                                            '\n'
-                                                                                           'Remember to select VR mode '
-                                                                                           'on the iRacing screen '
-                                                                                           'before launching the sim.',
- '\nCarpeta: {d}\nRenderer: {r}  (candidatos: {c})': '\nFolder: {d}\nRenderer: {r}  (candidates: {c})',
+                                                                                           'Remember '
+                                                                                           'to '
+                                                                                           'select '
+                                                                                           'VR '
+                                                                                           'mode '
+                                                                                           'on the '
+                                                                                           'iRacing '
+                                                                                           'screen '
+                                                                                           'before '
+                                                                                           'launching '
+                                                                                           'the '
+                                                                                           'sim.',
+ '\nCarpeta: {d}\nRenderer: {r}  (candidatos: {c})': '\n'
+                                                     'Folder: {d}\n'
+                                                     'Renderer: {r}  (candidates: {c})',
  '\nGuardado: {p}': '\nSaved: {p}',
  '\nInforme: {h}\nRecomendaciones: {j}': '\nReport: {h}\nRecommendations: {j}',
  '\nPrueba apply en los ini de demo:\n  python -m iroptimizer apply "{json_p}" --ini-dir "{ini_dir}" --dry-run': '\n'
@@ -26,45 +38,74 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                  '"{ini_dir}" '
                                                                                                                  '--dry-run',
  '\n{s}: FPS medio {m:.0f} | p5 {p5:.0f} | objetivo {t:.0f} | bajo objetivo {b:.0f} %': '\n'
-                                                                                        '{s}: avg FPS {m:.0f} | p5 '
-                                                                                        '{p5:.0f} | target {t:.0f} | '
-                                                                                        'below target {b:.0f} %',
+                                                                                        '{s}: avg '
+                                                                                        'FPS '
+                                                                                        '{m:.0f} | '
+                                                                                        'p5 '
+                                                                                        '{p5:.0f} '
+                                                                                        '| target '
+                                                                                        '{t:.0f} | '
+                                                                                        'below '
+                                                                                        'target '
+                                                                                        '{b:.0f} %',
  '\n… y {p0} más': '\n… and {p0} more',
  '   Archivo gráfico:': '   Graphics file:',
  '   FPS objetivo (0 = auto):': '   Target FPS (0 = auto):',
+ '   Visor:': '   Headset:',
  '  ! tipo de archivo no permitido: {p0}': '  ! file type not allowed: {p0}',
  '  ! {fname} no existe, se omite {p1}': '  ! {fname} does not exist, skipping {p1}',
  '  ! {fname}: {p1} no existe, se omite': '  ! {fname}: {p1} does not exist, skipping',
  '  Doble clic: ver motivo completo': '  Double-click: see full reason',
  ' (Hz pantalla)': ' (display Hz)',
  ' (tope)': ' (cap)',
- ' Es solo visual: no cambia los coches que recibes por red ni la telemetría.': ' Visual only: it does not change the '
-                                                                                'cars you receive over the network or '
+ ' Es solo visual: no cambia los coches que recibes por red ni la telemetría.': ' Visual only: it '
+                                                                                'does not change '
+                                                                                'the cars you '
+                                                                                'receive over the '
+                                                                                'network or '
                                                                                 'telemetry.',
  ' de todos los coches (irsdkLogAllCars=1)': ' for all cars (irsdkLogAllCars=1)',
- ' y pierdes un {drop:.0f} % de FPS con tráfico cercano.': ' and you lose {drop:.0f} % FPS with nearby traffic.',
- ' · PresentMon: CPU {p0:.0f} % / GPU {p1:.0f} % de los frames': ' · PresentMon: CPU {p0:.0f} % / GPU {p1:.0f} % of '
-                                                                 'frames',
+ ' y pierdes un {drop:.0f} % de FPS con tráfico cercano.': ' and you lose {drop:.0f} % FPS with '
+                                                           'nearby traffic.',
+ ' · PresentMon: CPU {p0:.0f} % / GPU {p1:.0f} % de los frames': ' · PresentMon: CPU {p0:.0f} % / '
+                                                                 'GPU {p1:.0f} % of frames',
  ' · activo el {p0:.0f} % de la sesión': ' · active {p0:.0f} % of the session',
  ' · asignada a iRacing {v:.0f} GB': ' · allocated to iRacing {v:.0f} GB',
  ' · iRacing {ir:.0f} % · resto {other:.0f} %': ' · iRacing {ir:.0f} % · other {other:.0f} %',
- ' · limitación térmica {therm:.1f} % del tiempo': ' · thermal throttling {therm:.1f} % of the time',
+ ' · limitación térmica {therm:.1f} % del tiempo': ' · thermal throttling {therm:.1f} % of the '
+                                                   'time',
  ' · servidor→tú p5 {pqp5:.0f} %': ' · server→you p5 {pqp5:.0f} %',
  ' · {n} coches cerca': ' · {n} cars nearby',
  '(no existe)': '(missing)',
  '(simulación, no se ha escrito nada)': '(dry run, nothing was written)',
  '(ya coincide)': '(already matches)',
  ', prácticamente correcto).': ', practically correct).',
- ', ves menos de lo real: todo parece más grande y rápido).': ', you see less than reality: everything looks bigger '
-                                                              'and faster).',
- ', ves más de lo real: los coches parecen más lejos y lentos).': ', you see more than reality: cars look farther away '
-                                                                  'and slower).',
- ', y por debajo de {refresh:.0f} Hz para quedarte dentro de G-Sync/VRR.': ', and below {refresh:.0f} Hz to stay '
-                                                                           'within G-Sync/VRR.',
- '. El coste es pequeño, pero escribe en disco sin parar y llena la carpeta de telemetría.': '. The cost is small, but '
-                                                                                             'it writes to disk '
-                                                                                             'constantly and fills the '
-                                                                                             'telemetry folder.',
+ ', ves menos de lo real: todo parece más grande y rápido).': ', you see less than reality: '
+                                                              'everything looks bigger and '
+                                                              'faster).',
+ ', ves más de lo real: los coches parecen más lejos y lentos).': ', you see more than reality: '
+                                                                  'cars look farther away and '
+                                                                  'slower).',
+ ', y por debajo de {refresh:.0f} Hz para quedarte dentro de G-Sync/VRR.': ', and below '
+                                                                           '{refresh:.0f} Hz to '
+                                                                           'stay within '
+                                                                           'G-Sync/VRR.',
+ '. El coste es pequeño, pero escribe en disco sin parar y llena la carpeta de telemetría.': '. '
+                                                                                             'The '
+                                                                                             'cost '
+                                                                                             'is '
+                                                                                             'small, '
+                                                                                             'but '
+                                                                                             'it '
+                                                                                             'writes '
+                                                                                             'to '
+                                                                                             'disk '
+                                                                                             'constantly '
+                                                                                             'and '
+                                                                                             'fills '
+                                                                                             'the '
+                                                                                             'telemetry '
+                                                                                             'folder.',
  '1 curvo': '1 curved',
  '1 plano': '1 flat',
  '3 curvos': '3 curved',
@@ -267,19 +308,25 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                             "style='font-size:15px;margin:18px "
                                                                                                                                                                             '0 '
                                                                                                                                                                             "6px'>Incidents</h3><table><tr><th>Session</th><th>Minute</th><th>Lap</th><th>Type</th><th>Duration</th><th>Detail</th></tr>",
- '<li class=muted>Ya coincide con tu configuración.</li>': '<li class=muted>Already matches your configuration.</li>',
+ '<li class=muted>Ya coincide con tu configuración.</li>': '<li class=muted>Already matches your '
+                                                           'configuration.</li>',
  "<p class='muted'>Sin datos de tráfico.</p>": "<p class='muted'>No traffic data.</p>",
- '<tr><td colspan=4 class=muted>Nada que cambiar: vas sobrado.</td></tr>': '<tr><td colspan=4 class=muted>Nothing to '
-                                                                           'change: you have headroom.</td></tr>',
- '<tr><td colspan=6 class=muted>Sin caídas relevantes.</td></tr>': '<tr><td colspan=6 class=muted>No significant '
+ '<tr><td colspan=4 class=muted>Nada que cambiar: vas sobrado.</td></tr>': '<tr><td colspan=4 '
+                                                                           'class=muted>Nothing to '
+                                                                           'change: you have '
+                                                                           'headroom.</td></tr>',
+ '<tr><td colspan=6 class=muted>Sin caídas relevantes.</td></tr>': '<tr><td colspan=6 '
+                                                                   'class=muted>No significant '
                                                                    'drops.</td></tr>',
- '> 0,1 s el {big:.1f} % del tiempo · máx. {p1:.2f} s': '> 0.1 s {big:.1f} % of the time · max {p1:.2f} s',
+ '> 0,1 s el {big:.1f} % del tiempo · máx. {p1:.2f} s': '> 0.1 s {big:.1f} % of the time · max '
+                                                        '{p1:.2f} s',
  'Abrir carpeta': 'Open folder',
  'Abrir informe HTML': 'Open HTML report',
  'Abrir sesión (.csv)…': 'Open session (.csv)…',
  'Activa QoS/SQM en el router si lo soporta.': 'Enable QoS/SQM on your router if supported.',
  'Activa el perfil XMP/EXPO de la RAM en la BIOS.': 'Enable the RAM XMP/EXPO profile in the BIOS.',
- 'Activa el tope (ver recomendaciones de Análisis).': 'Enable the FPS cap (see Analysis recommendations).',
+ 'Activa el tope (ver recomendaciones de Análisis).': 'Enable the FPS cap (see Analysis '
+                                                      'recommendations).',
  'Actual': 'Current',
  'Ahora': 'Now',
  'Ahora en iRacing: {p0:.0f}° ({p1}{diff:.0f}°': 'Currently in iRacing: {p0:.0f}° ({p1}{diff:.0f}°',
@@ -312,21 +359,25 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                         'cap.',
  'Ajustes actuales del archivo gráfico': 'Current settings of the graphics file',
  'Ajustes distintos entre A y B:': 'Settings that differ between A and B:',
- 'Algún núcleo al ≥ 98 % el {sat:.0f} % del tiempo': 'Some core at ≥ 98 % for {sat:.0f} % of the time',
+ 'Algún núcleo al ≥ 98 % el {sat:.0f} % del tiempo': 'Some core at ≥ 98 % for {sat:.0f} % of the '
+                                                     'time',
  'Alto rendimiento': 'High performance',
  'Analizando {p0}…': 'Analyzing {p0}…',
  'Analizar al terminar': 'Analyze when finished',
  'Ancho del monitor (mm)': 'Monitor width (mm)',
- 'Anisotrópico x8: ganancia mínima, solo si vas muy justo.': 'Anisotropic x8: minimal gain, only if you are very '
-                                                             'tight.',
+ 'Anisotrópico x8: ganancia mínima, solo si vas muy justo.': 'Anisotropic x8: minimal gain, only '
+                                                             'if you are very tight.',
  'Antivirus de Windows escaneando: añade una exclusión para la carpeta de iRacing y Documentos\\iRacing.': 'Windows '
                                                                                                            'Defender '
                                                                                                            'scanning: '
-                                                                                                           'add an '
+                                                                                                           'add '
+                                                                                                           'an '
                                                                                                            'exclusion '
-                                                                                                           'for the '
+                                                                                                           'for '
+                                                                                                           'the '
                                                                                                            'iRacing '
-                                                                                                           'folder and '
+                                                                                                           'folder '
+                                                                                                           'and '
                                                                                                            'Documents\\iRacing.',
  'Análisis listo. Informe: {p0}': 'Analysis ready. Report: {p0}',
  'Análisis y recomendaciones': 'Analysis and recommendations',
@@ -346,7 +397,26 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                   'grandstands, '
                                                                                                                                   'dynamic '
                                                                                                                                   'LOD).',
- 'Aplica las recomendaciones de la pestaña Análisis.': 'Apply the recommendations from the Analysis tab.',
+ 'Aplica las recomendaciones de la pestaña Análisis.': 'Apply the recommendations from the '
+                                                       'Analysis tab.',
+ 'Aplica los recortes de la pestaña Análisis (en VR suele limitar la GPU: MSAA, sombras, espejos).': 'Apply '
+                                                                                                     'the '
+                                                                                                     'cuts '
+                                                                                                     'from '
+                                                                                                     'the '
+                                                                                                     'Analysis '
+                                                                                                     'tab '
+                                                                                                     '(in '
+                                                                                                     'VR '
+                                                                                                     'the '
+                                                                                                     'GPU '
+                                                                                                     'is '
+                                                                                                     'usually '
+                                                                                                     'the '
+                                                                                                     'limit: '
+                                                                                                     'MSAA, '
+                                                                                                     'shadows, '
+                                                                                                     'mirrors).',
  'Aplica un perfil genérico': 'Apply a generic profile',
  'Aplicado': 'Applied',
  'Aplicar a iRacing': 'Apply to iRacing',
@@ -372,19 +442,33 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                   'first.',
  'Aplicar «{p0}»': 'Apply «{p0}»',
  'Archivo': 'File',
+ 'Archivo demasiado grande dentro del .zip.': 'File too large inside the .zip.',
  'Archivo demasiado grande para ser un perfil.': 'File too large to be a profile.',
  'Archivo gráfico': 'Graphics file',
  'Archivo gráfico no permitido: {p0!r}': 'Graphics file not allowed: {p0!r}',
  'Archivo gráfico:': 'Graphics file:',
  'Archivo no permitido: {p0!r}': 'File not allowed: {p0!r}',
- 'Armoury Crate: consume CPU en segundo plano; desactiva lo que no uses.': 'Armoury Crate: uses CPU in the background; '
-                                                                           "disable what you don't use.",
- 'Arranca la grabación y entra a pista (mejor en carrera). Detén al terminar.': 'Start recording and get on track (a '
-                                                                                'race is best). Stop when you finish.',
- 'Asegúrate de que nada fija la afinidad de iRacing a pocos núcleos (Process Lasso, etc.).': 'Make sure nothing pins '
-                                                                                             "iRacing's affinity to a "
-                                                                                             'few cores (Process '
-                                                                                             'Lasso, etc.).',
+ 'Armoury Crate: consume CPU en segundo plano; desactiva lo que no uses.': 'Armoury Crate: uses '
+                                                                           'CPU in the background; '
+                                                                           "disable what you don't "
+                                                                           'use.',
+ 'Arranca la grabación y entra a pista (mejor en carrera). Detén al terminar.': 'Start recording '
+                                                                                'and get on track '
+                                                                                '(a race is best). '
+                                                                                'Stop when you '
+                                                                                'finish.',
+ 'Asegúrate de que nada fija la afinidad de iRacing a pocos núcleos (Process Lasso, etc.).': 'Make '
+                                                                                             'sure '
+                                                                                             'nothing '
+                                                                                             'pins '
+                                                                                             "iRacing's "
+                                                                                             'affinity '
+                                                                                             'to a '
+                                                                                             'few '
+                                                                                             'cores '
+                                                                                             '(Process '
+                                                                                             'Lasso, '
+                                                                                             'etc.).',
  'Aviso: sin permiso para PresentMon (grupo Performance Log Users o administrador). Se intentará igualmente.': 'Warning: '
                                                                                                                'no '
                                                                                                                'permission '
@@ -398,15 +482,21 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                'administrator). '
                                                                                                                'Trying '
                                                                                                                'anyway.',
- 'Baja calidad de texturas o desactiva CarPaint2048x2048.': 'Lower texture quality or disable CarPaint2048x2048.',
+ 'Baja calidad de texturas o desactiva CarPaint2048x2048.': 'Lower texture quality or disable '
+                                                            'CarPaint2048x2048.',
  'Bajo objetivo': 'Below target',
  'Bisel (mm, un lado)': 'Bezel (mm, one side)',
- 'Buena imagen sin castigar la CPU: coches suficientes, sombras de pista y coches, efectos moderados.': 'Good image '
+ 'Buena imagen sin castigar la CPU: coches suficientes, sombras de pista y coches, efectos moderados.': 'Good '
+                                                                                                        'image '
                                                                                                         'without '
-                                                                                                        'punishing the '
-                                                                                                        'CPU: enough '
-                                                                                                        'cars, track '
-                                                                                                        'and car '
+                                                                                                        'punishing '
+                                                                                                        'the '
+                                                                                                        'CPU: '
+                                                                                                        'enough '
+                                                                                                        'cars, '
+                                                                                                        'track '
+                                                                                                        'and '
+                                                                                                        'car '
                                                                                                         'shadows, '
                                                                                                         'moderate '
                                                                                                         'effects.',
@@ -418,8 +508,10 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'CSV de la sesión anterior': 'CSV of the previous session',
  'CSV de la sesión nueva': 'CSV of the new session',
  'CSV de una sesión para ajustar tope de FPS y LOD': 'Session CSV to tune the FPS cap and LOD',
- 'Cable de red y, si puedes, reinicia el router antes de carreras largas.': 'Use a network cable and, if you can, '
-                                                                            'restart the router before long races.',
+ 'Cable de red y, si puedes, reinicia el router antes de carreras largas.': 'Use a network cable '
+                                                                            'and, if you can, '
+                                                                            'restart the router '
+                                                                            'before long races.',
  'Cada espejo es otra cámara que renderiza coches: es el recorte con mejor relación coste/beneficio para el hilo principal en salidas y pelotones.': 'Each '
                                                                                                                                                      'mirror '
                                                                                                                                                      'is '
@@ -441,14 +533,30 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                      'and '
                                                                                                                                                      'in '
                                                                                                                                                      'packs.',
- 'Cada espejo extra es un render adicional. Úsalo si dependes del espejo virtual o del spotter.': 'Each extra mirror '
-                                                                                                  'is an additional '
-                                                                                                  'render. Use it if '
-                                                                                                  'you rely on the '
-                                                                                                  'virtual mirror or '
-                                                                                                  'the spotter.',
- 'Cada vez que aplicas cambios se guarda una copia de todos los .ini de iRacing.': 'Every time you apply changes, a '
-                                                                                   'copy of all iRacing .ini files is '
+ 'Cada espejo extra es un render adicional. Úsalo si dependes del espejo virtual o del spotter.': 'Each '
+                                                                                                  'extra '
+                                                                                                  'mirror '
+                                                                                                  'is '
+                                                                                                  'an '
+                                                                                                  'additional '
+                                                                                                  'render. '
+                                                                                                  'Use '
+                                                                                                  'it '
+                                                                                                  'if '
+                                                                                                  'you '
+                                                                                                  'rely '
+                                                                                                  'on '
+                                                                                                  'the '
+                                                                                                  'virtual '
+                                                                                                  'mirror '
+                                                                                                  'or '
+                                                                                                  'the '
+                                                                                                  'spotter.',
+ 'Cada vez que aplicas cambios se guarda una copia de todos los .ini de iRacing.': 'Every time you '
+                                                                                   'apply changes, '
+                                                                                   'a copy of all '
+                                                                                   'iRacing .ini '
+                                                                                   'files is '
                                                                                    'saved.',
  'Calcular ancho': 'Calculate width',
  'Calidad de conexión (pérdida de paquetes)': 'Connection quality (packet loss)',
@@ -461,7 +569,8 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Cargando…': 'Loading…',
  'Carpeta Documentos\\iRacing': 'Documents\\iRacing folder',
  'Carpeta de iRacing:': 'iRacing folder:',
- 'Carpeta de los .ini (por defecto Documentos\\iRacing)': 'Folder with the .ini files (default Documents\\iRacing)',
+ 'Carpeta de los .ini (por defecto Documentos\\iRacing)': 'Folder with the .ini files (default '
+                                                          'Documents\\iRacing)',
  'Carpeta de salida (por defecto ~/iRacingOptimizer)': 'Output folder (default ~/iRacingOptimizer)',
  'Caída en pit lane': 'Pit lane drop',
  'Caída repentina de la media de FPS del SDK (aprox.: el SDK promedia 1 s). Para medirlos frame a frame activa PresentMon en el monitor.': 'Sudden '
@@ -493,8 +602,10 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                'ChanClockSkew '
                                                                                                                'means '
                                                                                                                'your '
-                                                                                                               'sim is '
-                                                                                                               'out of '
+                                                                                                               'sim '
+                                                                                                               'is '
+                                                                                                               'out '
+                                                                                                               'of '
                                                                                                                'sync '
                                                                                                                'with '
                                                                                                                'the '
@@ -525,21 +636,36 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                        'outside '
                                                                                                                                        'your '
                                                                                                                                        'home.',
- 'Cierra apps que usan GPU (navegador con vídeo, overlays con aceleración).': 'Close apps using the GPU (browser '
-                                                                              'playing video, hardware-accelerated '
+ 'Cierra apps que usan GPU (navegador con vídeo, overlays con aceleración).': 'Close apps using '
+                                                                              'the GPU (browser '
+                                                                              'playing video, '
+                                                                              'hardware-accelerated '
                                                                               'overlays).',
  'Cierra iRacing antes de aplicar cambios.': 'Close iRacing before applying changes.',
- 'Cierra iRacing antes de aplicar cambios: el simulador reescribe los .ini al salir.': 'Close iRacing before applying '
-                                                                                       'changes: the sim rewrites the '
-                                                                                       '.ini files on exit.',
- 'Cierra iRacing antes de aplicar: el simulador reescribe los .ini al salir.': 'Close iRacing before applying: the sim '
-                                                                               'rewrites the .ini files on exit.',
+ 'Cierra iRacing antes de aplicar cambios: el simulador reescribe los .ini al salir.': 'Close '
+                                                                                       'iRacing '
+                                                                                       'before '
+                                                                                       'applying '
+                                                                                       'changes: '
+                                                                                       'the sim '
+                                                                                       'rewrites '
+                                                                                       'the .ini '
+                                                                                       'files on '
+                                                                                       'exit.',
+ 'Cierra iRacing antes de aplicar: el simulador reescribe los .ini al salir.': 'Close iRacing '
+                                                                               'before applying: '
+                                                                               'the sim rewrites '
+                                                                               'the .ini files on '
+                                                                               'exit.',
  'Cierra iRacing antes de restaurar.': 'Close iRacing before restoring.',
- 'Cierra programas en segundo plano (ver comprobación de carga de fondo).': 'Close background programs (see the '
-                                                                            'background load check).',
+ 'Cierra programas en segundo plano (ver comprobación de carga de fondo).': 'Close background '
+                                                                            'programs (see the '
+                                                                            'background load '
+                                                                            'check).',
  'Cierra programas en segundo plano.': 'Close background programs.',
  'Cierra programas que consumen mucha RAM.': 'Close programs that use a lot of RAM.',
- 'Cierra software que use mucha CPU en segundo plano.': 'Close software using a lot of CPU in the background.',
+ 'Cierra software que use mucha CPU en segundo plano.': 'Close software using a lot of CPU in the '
+                                                        'background.',
  'Clave': 'Key',
  'Coches cerca': 'Cars nearby',
  'Compara dos sesiones (antes/después)': 'Compare two sessions (before/after)',
@@ -547,8 +673,9 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Comparando…': 'Comparing…',
  'Comparar con otra sesión…': 'Compare with another session…',
  'Comprobación': 'Check',
- 'Comprueba que no haya otro equipo de la casa saturando la conexión.': 'Make sure no other device at home is '
-                                                                        'saturating the connection.',
+ 'Comprueba que no haya otro equipo de la casa saturando la conexión.': 'Make sure no other device '
+                                                                        'at home is saturating the '
+                                                                        'connection.',
  "Con 'Economizador' la CPU no sube frecuencias.": "With 'Power saver' the CPU does not boost.",
  'Con G-Sync/FreeSync conviene V-Sync del juego desactivado y tope de FPS unos fps por debajo de la frecuencia.': 'With '
                                                                                                                   'G-Sync/FreeSync, '
@@ -589,19 +716,51 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                       'fall '
                                                                                                                                       'into '
                                                                                                                                       'V-Sync.',
- 'Con este radio y ancho, los laterales quedan casi de lado: revisa el radio.': 'With this radius and width, the side '
-                                                                                'screens end up almost sideways: check '
+ 'Con cable USB 3 suele ser más estable que Air Link; con Air Link usa Wi-Fi 6/6E dedicado.': 'A '
+                                                                                              'USB '
+                                                                                              '3 '
+                                                                                              'cable '
+                                                                                              'is '
+                                                                                              'usually '
+                                                                                              'more '
+                                                                                              'stable '
+                                                                                              'than '
+                                                                                              'Air '
+                                                                                              'Link; '
+                                                                                              'with '
+                                                                                              'Air '
+                                                                                              'Link '
+                                                                                              'use '
+                                                                                              'a '
+                                                                                              'dedicated '
+                                                                                              'Wi-Fi '
+                                                                                              '6/6E '
+                                                                                              'network.',
+ 'Con este radio y ancho, los laterales quedan casi de lado: revisa el radio.': 'With this radius '
+                                                                                'and width, the '
+                                                                                'side screens end '
+                                                                                'up almost '
+                                                                                'sideways: check '
                                                                                 'the radius.',
  'Configuración cargada: {p0}': 'Configuration loaded: {p0}',
  'Conéctate por cable, no por Wi-Fi.': 'Use a cable, not Wi-Fi.',
- 'Copia concreta (carpeta en iroptimizer_backups)': 'Specific backup (folder in iroptimizer_backups)',
+ 'Copia concreta (carpeta en iroptimizer_backups)': 'Specific backup (folder in '
+                                                    'iroptimizer_backups)',
  'Copia de seguridad: {bdir}': 'Backup: {bdir}',
  'Copias de seguridad': 'Backups',
  'CpuUsageBG p95 {bgp95:.0f} % · máx. {p1:.0f} %': 'CpuUsageBG p95 {bgp95:.0f} % · max {p1:.0f} %',
  'Crear copia ahora': 'Create backup now',
- 'CrewChief: normal que use algo de CPU; si va justo, desactiva funciones que no uses.': 'CrewChief: some CPU use is '
-                                                                                         'normal; if you are tight, '
-                                                                                         "disable features you don't "
+ 'CrewChief: normal que use algo de CPU; si va justo, desactiva funciones que no uses.': 'CrewChief: '
+                                                                                         'some CPU '
+                                                                                         'use is '
+                                                                                         'normal; '
+                                                                                         'if you '
+                                                                                         'are '
+                                                                                         'tight, '
+                                                                                         'disable '
+                                                                                         'features '
+                                                                                         'you '
+                                                                                         "don't "
                                                                                          'use.',
  'Da el ancho visible; súmale los dos biseles.': 'Gives the visible width; add both bezels.',
  'Dar permiso…': 'Grant permission…',
@@ -610,17 +769,27 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Desfase de reloj con el servidor': 'Clock skew with the server',
  'Desmarcar todo': 'Uncheck all',
  'Detalle': 'Detail',
- 'Detalle de boxes: las caídas en pit lane vienen de aquí y de MaxPitObjsToDraw.': 'Pit detail: pit lane drops come '
-                                                                                   'from this and MaxPitObjsToDraw.',
+ 'Detalle de boxes: las caídas en pit lane vienen de aquí y de MaxPitObjsToDraw.': 'Pit detail: '
+                                                                                   'pit lane drops '
+                                                                                   'come from this '
+                                                                                   'and '
+                                                                                   'MaxPitObjsToDraw.',
+ 'Detectado: {x}': 'Detected: {x}',
+ 'Detectar': 'Detect',
  'Deteniendo…': 'Stopping…',
  'Diagnóstico': 'Diagnostics',
  'Diagonal (")': 'Diagonal (")',
- 'Discord: desactiva la superposición (overlay) y la aceleración por hardware.': 'Discord: disable the overlay and '
-                                                                                 'hardware acceleration.',
+ 'Discord: desactiva la superposición (overlay) y la aceleración por hardware.': 'Discord: disable '
+                                                                                 'the overlay and '
+                                                                                 'hardware '
+                                                                                 'acceleration.',
  'Distancia ojos → pantalla (mm)': 'Eye → screen distance (mm)',
  'Duración': 'Duration',
  'Economizador': 'Power saver',
- 'El archivo no es un perfil de iRacing Optimizer.': 'The file is not an iRacing Optimizer profile.',
+ 'El archivo no es un perfil de iRacing Optimizer.': 'The file is not an iRacing Optimizer '
+                                                     'profile.',
+ 'El archivo no parece una sesión de iRacing Optimizer.': 'The file does not look like an iRacing '
+                                                          'Optimizer session.',
  'El hilo BG calcula la física y la red. Si se satura aparecen tirones en el force feedback, saltos de coches (warping) y caídas aunque la GPU y el hilo principal vayan sobrados.': 'The '
                                                                                                                                                                                      'BG '
                                                                                                                                                                                      'thread '
@@ -649,12 +818,65 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                                      'thread '
                                                                                                                                                                                      'have '
                                                                                                                                                                                      'headroom.',
- 'El occlusion culling evita dibujar lo que no se ve; casi siempre compensa.': 'Occlusion culling avoids drawing what '
-                                                                               "can't be seen; it's almost always "
-                                                                               'worth it.',
- 'El ángulo de los laterales ({p0:.0f}°) está lejos del ideal ({ideal:.0f}°).': 'The side screen angle ({p0:.0f}°) is '
-                                                                                'far from the ideal ({ideal:.0f}°).',
- 'El ángulo ideal solo aplica a 3 monitores planos.': 'The ideal angle only applies to 3 flat monitors.',
+ 'El occlusion culling evita dibujar lo que no se ve; casi siempre compensa.': 'Occlusion culling '
+                                                                               'avoids drawing '
+                                                                               "what can't be "
+                                                                               "seen; it's almost "
+                                                                               'always worth it.',
+ 'El {p:.0f} % del tiempo estás a ~{h:.0f} fps (la mitad de {hz:.0f} Hz): el runtime inventa uno de cada dos frames y aparecen «fantasmas» en coches y bordes. Aplica los recortes de abajo o baja la frecuencia del visor: mejor {lower} Hz estables que {hz:.0f} Hz con reproyección.': '{p:.0f} '
+                                                                                                                                                                                                                                                                                          '% '
+                                                                                                                                                                                                                                                                                          'of '
+                                                                                                                                                                                                                                                                                          'the '
+                                                                                                                                                                                                                                                                                          'time '
+                                                                                                                                                                                                                                                                                          'you '
+                                                                                                                                                                                                                                                                                          'run '
+                                                                                                                                                                                                                                                                                          'at '
+                                                                                                                                                                                                                                                                                          '~{h:.0f} '
+                                                                                                                                                                                                                                                                                          'fps '
+                                                                                                                                                                                                                                                                                          '(half '
+                                                                                                                                                                                                                                                                                          'of '
+                                                                                                                                                                                                                                                                                          '{hz:.0f} '
+                                                                                                                                                                                                                                                                                          'Hz): '
+                                                                                                                                                                                                                                                                                          'the '
+                                                                                                                                                                                                                                                                                          'runtime '
+                                                                                                                                                                                                                                                                                          'synthesises '
+                                                                                                                                                                                                                                                                                          'every '
+                                                                                                                                                                                                                                                                                          'other '
+                                                                                                                                                                                                                                                                                          'frame '
+                                                                                                                                                                                                                                                                                          'and '
+                                                                                                                                                                                                                                                                                          'you '
+                                                                                                                                                                                                                                                                                          'get '
+                                                                                                                                                                                                                                                                                          '"ghosting" '
+                                                                                                                                                                                                                                                                                          'on '
+                                                                                                                                                                                                                                                                                          'cars '
+                                                                                                                                                                                                                                                                                          'and '
+                                                                                                                                                                                                                                                                                          'edges. '
+                                                                                                                                                                                                                                                                                          'Apply '
+                                                                                                                                                                                                                                                                                          'the '
+                                                                                                                                                                                                                                                                                          'cuts '
+                                                                                                                                                                                                                                                                                          'below '
+                                                                                                                                                                                                                                                                                          'or '
+                                                                                                                                                                                                                                                                                          'lower '
+                                                                                                                                                                                                                                                                                          'the '
+                                                                                                                                                                                                                                                                                          'headset '
+                                                                                                                                                                                                                                                                                          'refresh '
+                                                                                                                                                                                                                                                                                          'rate: '
+                                                                                                                                                                                                                                                                                          'a '
+                                                                                                                                                                                                                                                                                          'stable '
+                                                                                                                                                                                                                                                                                          '{lower} '
+                                                                                                                                                                                                                                                                                          'Hz '
+                                                                                                                                                                                                                                                                                          'beats '
+                                                                                                                                                                                                                                                                                          '{hz:.0f} '
+                                                                                                                                                                                                                                                                                          'Hz '
+                                                                                                                                                                                                                                                                                          'with '
+                                                                                                                                                                                                                                                                                          'reprojection.',
+ 'El ángulo de los laterales ({p0:.0f}°) está lejos del ideal ({ideal:.0f}°).': 'The side screen '
+                                                                                'angle ({p0:.0f}°) '
+                                                                                'is far from the '
+                                                                                'ideal '
+                                                                                '({ideal:.0f}°).',
+ 'El ángulo ideal solo aplica a 3 monitores planos.': 'The ideal angle only applies to 3 flat '
+                                                      'monitors.',
  'Eliminar': 'Delete',
  'En CPUs con varios CCD (7950X3D, 9950X3D) asegúrate de que iRacing corre en el CCD con 3D V-Cache (Game Bar / driver de chipset AMD).': 'On '
                                                                                                                                           'CPUs '
@@ -678,15 +900,82 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                           'AMD '
                                                                                                                                           'chipset '
                                                                                                                                           'driver).',
- 'En algunos equipos mejora la latencia y la estabilidad del frametime.': 'On some PCs it improves latency and '
-                                                                          'frametime stability.',
+ 'En VR PresentMon mide la ventana espejo del monitor, no lo que ves en el visor. Usa la frecuencia del visor de arriba.': 'In '
+                                                                                                                           'VR '
+                                                                                                                           'PresentMon '
+                                                                                                                           'measures '
+                                                                                                                           'the '
+                                                                                                                           'mirror '
+                                                                                                                           'window '
+                                                                                                                           'on '
+                                                                                                                           'the '
+                                                                                                                           'monitor, '
+                                                                                                                           'not '
+                                                                                                                           'what '
+                                                                                                                           'you '
+                                                                                                                           'see '
+                                                                                                                           'in '
+                                                                                                                           'the '
+                                                                                                                           'headset. '
+                                                                                                                           'Use '
+                                                                                                                           'the '
+                                                                                                                           'headset '
+                                                                                                                           'refresh '
+                                                                                                                           'rate '
+                                                                                                                           'above.',
+ 'En VR el objetivo es mantener siempre la frecuencia del visor. Si no se llega, el runtime activa reproyección (ASW / Motion Smoothing / SSW): el juego va a la mitad y se inventan frames, con «fantasmas» en coches y bordes.': 'In '
+                                                                                                                                                                                                                                   'VR '
+                                                                                                                                                                                                                                   'the '
+                                                                                                                                                                                                                                   'goal '
+                                                                                                                                                                                                                                   'is '
+                                                                                                                                                                                                                                   'to '
+                                                                                                                                                                                                                                   'always '
+                                                                                                                                                                                                                                   'hold '
+                                                                                                                                                                                                                                   'the '
+                                                                                                                                                                                                                                   'headset '
+                                                                                                                                                                                                                                   'refresh '
+                                                                                                                                                                                                                                   'rate. '
+                                                                                                                                                                                                                                   'If '
+                                                                                                                                                                                                                                   'you '
+                                                                                                                                                                                                                                   'miss '
+                                                                                                                                                                                                                                   'it, '
+                                                                                                                                                                                                                                   'the '
+                                                                                                                                                                                                                                   'runtime '
+                                                                                                                                                                                                                                   'enables '
+                                                                                                                                                                                                                                   'reprojection '
+                                                                                                                                                                                                                                   '(ASW '
+                                                                                                                                                                                                                                   '/ '
+                                                                                                                                                                                                                                   'Motion '
+                                                                                                                                                                                                                                   'Smoothing '
+                                                                                                                                                                                                                                   '/ '
+                                                                                                                                                                                                                                   'SSW): '
+                                                                                                                                                                                                                                   'the '
+                                                                                                                                                                                                                                   'game '
+                                                                                                                                                                                                                                   'runs '
+                                                                                                                                                                                                                                   'at '
+                                                                                                                                                                                                                                   'half '
+                                                                                                                                                                                                                                   'rate '
+                                                                                                                                                                                                                                   'and '
+                                                                                                                                                                                                                                   'frames '
+                                                                                                                                                                                                                                   'are '
+                                                                                                                                                                                                                                   'synthesised, '
+                                                                                                                                                                                                                                   'with '
+                                                                                                                                                                                                                                   '"ghosting" '
+                                                                                                                                                                                                                                   'on '
+                                                                                                                                                                                                                                   'cars '
+                                                                                                                                                                                                                                   'and '
+                                                                                                                                                                                                                                   'edges.',
+ 'En algunos equipos mejora la latencia y la estabilidad del frametime.': 'On some PCs it improves '
+                                                                          'latency and frametime '
+                                                                          'stability.',
  'En el tope': 'At cap',
  'Equilibrado': 'Balanced',
  'Equipo y configuración': 'Hardware and configuration',
  'Error': 'Error',
  'Error: {e}': 'Error: {e}',
- 'Espejos en detalle bajo: poca diferencia visible, ahorro claro.': 'Low-detail mirrors: little visible difference, '
-                                                                    'clear savings.',
+ 'Espejos en detalle bajo: poca diferencia visible, ahorro claro.': 'Low-detail mirrors: little '
+                                                                    'visible difference, clear '
+                                                                    'savings.',
  'Esperando': 'Waiting',
  'Estado': 'Status',
  'Está en {c:.0f}: el LOD dinámico nunca actúa porque nunca bajas de ahí. Con {lod_goal} iRacing reduce el detalle de coches y objetos justo en los momentos de carga (tráfico, zonas pesadas) y lo recupera después.': "It's "
@@ -766,43 +1055,59 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                                                                                        'Optional '
                                                                                                                                                                                                                                        'with '
                                                                                                                                                                                                                                        'G-Sync.',
- 'Estás muy cerca para este radio: revisa la distancia.': 'You are very close for this radius: check the distance.',
+ 'Estás muy cerca para este radio: revisa la distancia.': 'You are very close for this radius: '
+                                                          'check the distance.',
+ 'Exporta una sesión anonimizada (.zip) para compartir': 'Export an anonymised session (.zip) to '
+                                                         'share',
  'Exportado a {dst}': 'Exported to {dst}',
+ 'Exportar para compartir…': 'Export to share…',
  'Exportar…': 'Export…',
  'FOV': 'FOV',
  'FOV de conducción (app.ini)': 'Driving FOV (app.ini)',
- 'FOV muy alto para un monitor plano: probablemente la distancia es demasiado corta o el ancho está mal.': 'Very high '
-                                                                                                           'FOV for a '
+ 'FOV muy alto para un monitor plano: probablemente la distancia es demasiado corta o el ancho está mal.': 'Very '
+                                                                                                           'high '
+                                                                                                           'FOV '
+                                                                                                           'for '
+                                                                                                           'a '
                                                                                                            'flat '
                                                                                                            'monitor: '
                                                                                                            'the '
                                                                                                            'distance '
                                                                                                            'is '
                                                                                                            'probably '
-                                                                                                           'too short '
-                                                                                                           'or the '
-                                                                                                           'width is '
+                                                                                                           'too '
+                                                                                                           'short '
+                                                                                                           'or '
+                                                                                                           'the '
+                                                                                                           'width '
+                                                                                                           'is '
                                                                                                            'wrong.',
  'FPS': 'FPS',
  'FPS medio': 'Avg FPS',
  'FPS medio ({p0})': 'Avg FPS ({p0})',
  'FPS medio real': 'Real avg FPS',
- 'FPS objetivo (por defecto: tope de iRacing o Hz de la pantalla)': 'Target FPS (default: iRacing cap or display Hz)',
+ 'FPS objetivo (por defecto: tope de iRacing o Hz de la pantalla)': 'Target FPS (default: iRacing '
+                                                                    'cap or display Hz)',
  'FPS p1': 'FPS p1',
  'FPS p5': 'FPS p5',
  'FPS p5 (5 % peor)': 'FPS p5 (worst 5 %)',
- 'FPS por coches cerca (<150 m) — comparación justa:': 'FPS by nearby cars (<150 m) — fair comparison:',
- 'Fallos de página p95 {pf95:.0f}/s · RAM usada máx. {p1:.0f} %': 'Page faults p95 {pf95:.0f}/s · RAM used max '
-                                                                  '{p1:.0f} %',
- 'Falta permiso de Windows para medir frametimes.': 'Missing Windows permission to measure frametimes.',
+ 'FPS por coches cerca (<150 m) — comparación justa:': 'FPS by nearby cars (<150 m) — fair '
+                                                       'comparison:',
+ 'Fallos de página p95 {pf95:.0f}/s · RAM usada máx. {p1:.0f} %': 'Page faults p95 {pf95:.0f}/s · '
+                                                                  'RAM used max {p1:.0f} %',
+ 'Falta permiso de Windows para medir frametimes.': 'Missing Windows permission to measure '
+                                                    'frametimes.',
  'Faros a calidad media (relevante de noche).': 'Medium-quality headlights (relevant at night).',
  'Formato': 'Format',
  'Frames limitados por CPU': 'CPU-bound frames',
  'Frametime máx.': 'Max frametime',
- 'G HUB: cierra la ventana (deja solo el agente).': 'G HUB: close the window (leave only the agent).',
+ 'Frecuencia (Hz):': 'Refresh rate (Hz):',
+ 'Frecuencia del visor': 'Headset refresh rate',
+ 'G HUB: cierra la ventana (deja solo el agente).': 'G HUB: close the window (leave only the '
+                                                    'agent).',
  'GPU %': 'GPU %',
- 'GPU al límite el {gpu_share:.0f} % del tiempo en {lbl}. {why}': 'GPU maxed {gpu_share:.0f} % of the time in {lbl}. '
-                                                                  '{why}',
+ 'GPU al límite el {gpu_share:.0f} % del tiempo en {lbl}. {why}': 'GPU maxed {gpu_share:.0f} % of '
+                                                                  'the time in {lbl}. {why}',
  'GPU limitando frecuencia por temperatura': 'GPU throttling clocks due to temperature',
  'Graba con la versión 0.3.1+ para ver qué procesos consumen CPU, o mira el Administrador de tareas con el coche en pista.': 'Record '
                                                                                                                              'with '
@@ -823,16 +1128,25 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                              'car '
                                                                                                                              'on '
                                                                                                                              'track.',
- 'Graba o abre una sesión para ver el diagnóstico de CPU, GPU, frametime, red, memoria y sistema.': 'Record or open a '
-                                                                                                    'session to see '
-                                                                                                    'CPU, GPU, '
+ 'Graba o abre una sesión para ver el diagnóstico de CPU, GPU, frametime, red, memoria y sistema.': 'Record '
+                                                                                                    'or '
+                                                                                                    'open '
+                                                                                                    'a '
+                                                                                                    'session '
+                                                                                                    'to '
+                                                                                                    'see '
+                                                                                                    'CPU, '
+                                                                                                    'GPU, '
                                                                                                     'frametime, '
-                                                                                                    'network, memory '
-                                                                                                    'and system '
+                                                                                                    'network, '
+                                                                                                    'memory '
+                                                                                                    'and '
+                                                                                                    'system '
                                                                                                     'diagnostics.',
  'Grabación detenida.': 'Recording stopped.',
  'Grabando': 'Recording',
- 'Gradas: mismo motivo, coste de CPU en rectas principales.': 'Grandstands: same reason, CPU cost on main straights.',
+ 'Gradas: mismo motivo, coste de CPU en rectas principales.': 'Grandstands: same reason, CPU cost '
+                                                              'on main straights.',
  'Gráficos (calidad y rendimiento)': 'Graphics (quality and performance)',
  'Guarda tu configuración actual con un nombre (p. ej. «Monitor carreras», «VR», «Grabar vídeos») y aplícala cuando quieras. Útil si alternas monitor y gafas VR o distintos usos.': 'Save '
                                                                                                                                                                                      'your '
@@ -869,25 +1183,43 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Guardar': 'Save',
  'Guardar configuración actual…': 'Save current configuration…',
  'Guardar perfil': 'Save profile',
- 'Hecho. Cierra sesión en Windows y vuelve a entrar para que el permiso se active.': 'Done. Sign out of Windows and '
-                                                                                     'sign back in for the permission '
-                                                                                     'to take effect.',
+ 'Hecho. Cierra sesión en Windows y vuelve a entrar para que el permiso se active.': 'Done. Sign '
+                                                                                     'out of '
+                                                                                     'Windows and '
+                                                                                     'sign back in '
+                                                                                     'for the '
+                                                                                     'permission '
+                                                                                     'to take '
+                                                                                     'effect.',
  'Hilo de física y red (BG)': 'Physics and network thread (BG)',
  'Hilo de física/red (BG) al {bg:.0f} %': 'Physics/network thread (BG) at {bg:.0f} %',
  'Hilo física/red %': 'Physics/network thread %',
  'Importar…': 'Import…',
+ 'Inalámbrico: router Wi-Fi 6/6E dedicado y cerca, PC por cable al router.': 'Wireless: dedicated '
+                                                                             'Wi-Fi 6/6E router '
+                                                                             'close by, PC wired '
+                                                                             'to the router.',
  'Incidentes detectados': 'Detected incidents',
  'Incluir:': 'Include:',
  'Incluye': 'Includes',
- 'Indexador de Windows: excluye las carpetas de iRacing de la indexación.': 'Windows Search indexer: exclude the '
-                                                                            'iRacing folders from indexing.',
+ 'Indexador de Windows: excluye las carpetas de iRacing de la indexación.': 'Windows Search '
+                                                                            'indexer: exclude the '
+                                                                            'iRacing folders from '
+                                                                            'indexing.',
  'Instala iRacing en un SSD NVMe y deja 1-2 vueltas de calentamiento: la primera vuelta carga texturas.': 'Install '
-                                                                                                          'iRacing on '
-                                                                                                          'an NVMe SSD '
-                                                                                                          'and do 1-2 '
+                                                                                                          'iRacing '
+                                                                                                          'on '
+                                                                                                          'an '
+                                                                                                          'NVMe '
+                                                                                                          'SSD '
+                                                                                                          'and '
+                                                                                                          'do '
+                                                                                                          '1-2 '
                                                                                                           'warm-up '
-                                                                                                          'laps: the '
-                                                                                                          'first lap '
+                                                                                                          'laps: '
+                                                                                                          'the '
+                                                                                                          'first '
+                                                                                                          'lap '
                                                                                                           'loads '
                                                                                                           'textures.',
  'La GPU es el límite: baja ajustes que cuestan GPU (MSAA, sombras, shaders, espejos en alto) o la resolución.': 'The '
@@ -940,9 +1272,15 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                                                           'to '
                                                                                                                                                                                                           'be '
                                                                                                                                                                                                           'drawn.',
- 'La GPU va sobrada: puedes subir calidad gráfica (MSAA, sombras) sin perder FPS.': 'The GPU has headroom: you can '
-                                                                                    'raise graphics quality (MSAA, '
-                                                                                    'shadows) without losing FPS.',
+ 'La GPU va sobrada: puedes subir calidad gráfica (MSAA, sombras) sin perder FPS.': 'The GPU has '
+                                                                                    'headroom: you '
+                                                                                    'can raise '
+                                                                                    'graphics '
+                                                                                    'quality '
+                                                                                    '(MSAA, '
+                                                                                    'shadows) '
+                                                                                    'without '
+                                                                                    'losing FPS.',
  'La latencia depende sobre todo de la distancia al servidor; lo que importa es que sea estable. Los picos provocan saltos de coches y contactos fantasma.': 'Latency '
                                                                                                                                                              'depends '
                                                                                                                                                              'mostly '
@@ -988,9 +1326,27 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Limpia el polvo de los disipadores.': 'Clean the dust from the heatsinks.',
  'Listo': 'Ready',
  'Listo.': 'Ready.',
+ 'Los espejos cuestan el doble en VR (se dibujan para cada ojo): usa el espejo virtual con pocos coches.': 'Mirrors '
+                                                                                                           'cost '
+                                                                                                           'double '
+                                                                                                           'in '
+                                                                                                           'VR '
+                                                                                                           '(drawn '
+                                                                                                           'for '
+                                                                                                           'each '
+                                                                                                           'eye): '
+                                                                                                           'use '
+                                                                                                           'the '
+                                                                                                           'virtual '
+                                                                                                           'mirror '
+                                                                                                           'with '
+                                                                                                           'few '
+                                                                                                           'cars.',
  'Límite de CPU / motor': 'CPU / engine limit',
- 'Límite de memoria del sim ({wcfg:.0f} MB) bajo para tus {p1:.0f} GB de RAM': 'Sim memory limit ({wcfg:.0f} MB) is '
-                                                                               'low for your {p1:.0f} GB of RAM',
+ 'Límite de memoria del sim ({wcfg:.0f} MB) bajo para tus {p1:.0f} GB de RAM': 'Sim memory limit '
+                                                                               '({wcfg:.0f} MB) is '
+                                                                               'low for your '
+                                                                               '{p1:.0f} GB of RAM',
  'Límite: ': 'Limit: ',
  'Marcar P1': 'Check P1',
  'Marcar P1 + P2': 'Check P1 + P2',
@@ -1023,9 +1379,13 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                                                          'performance '
                                                                                                                                                                                                          'use '
                                                                                                                                                                                                          'MaxCarsToDraw.',
- 'Mediana {med_l:.0f} ms · p95 {p95_l:.0f} ms · máx. {max_l:.0f} ms · {p3} picos': 'Median {med_l:.0f} ms · p95 '
-                                                                                   '{p95_l:.0f} ms · max {max_l:.0f} '
-                                                                                   'ms · {p3} spikes',
+ 'Mediana {med_l:.0f} ms · p95 {p95_l:.0f} ms · máx. {max_l:.0f} ms · {p3} picos': 'Median '
+                                                                                   '{med_l:.0f} ms '
+                                                                                   '· p95 '
+                                                                                   '{p95_l:.0f} ms '
+                                                                                   '· max '
+                                                                                   '{max_l:.0f} ms '
+                                                                                   '· {p3} spikes',
  'Medición': 'Measurement',
  'Medido frame a frame con PresentMon: es la medida más fiable de la suavidad. Un 1 % low muy por debajo de la media se nota como tirones aunque los FPS medios sean altos.': 'Measured '
                                                                                                                                                                               'frame '
@@ -1057,15 +1417,50 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                               'is '
                                                                                                                                                                               'high.',
  'Medir frametimes con PresentMon': 'Measure frametimes with PresentMon',
- 'Medir frametimes reales con PresentMon (recomendado)': 'Measure real frametimes with PresentMon (recommended)',
+ 'Medir frametimes reales con PresentMon (recomendado)': 'Measure real frametimes with PresentMon '
+                                                         '(recommended)',
  'Memoria': 'Memory',
  'Memoria de vídeo (VRAM)': 'Video memory (VRAM)',
  'Menos actualizaciones de textura dinámica de pista.': 'Fewer dynamic track texture updates.',
- 'Menos objetos de boxes dibujados, alivia la CPU sobre todo en la salida y al entrar a boxes.': 'Fewer pit objects '
-                                                                                                 'drawn; relieves the '
-                                                                                                 'CPU especially at '
-                                                                                                 'the start and when '
-                                                                                                 'entering the pits.',
+ 'Menos objetos de boxes dibujados, alivia la CPU sobre todo en la salida y al entrar a boxes.': 'Fewer '
+                                                                                                 'pit '
+                                                                                                 'objects '
+                                                                                                 'drawn; '
+                                                                                                 'relieves '
+                                                                                                 'the '
+                                                                                                 'CPU '
+                                                                                                 'especially '
+                                                                                                 'at '
+                                                                                                 'the '
+                                                                                                 'start '
+                                                                                                 'and '
+                                                                                                 'when '
+                                                                                                 'entering '
+                                                                                                 'the '
+                                                                                                 'pits.',
+ 'Meta Quest Link: ajusta frecuencia y resolución en la app Meta Quest Link → Dispositivos → Gráficos. Baja resolución antes que subir detalles.': 'Meta '
+                                                                                                                                                   'Quest '
+                                                                                                                                                   'Link: '
+                                                                                                                                                   'set '
+                                                                                                                                                   'refresh '
+                                                                                                                                                   'rate '
+                                                                                                                                                   'and '
+                                                                                                                                                   'resolution '
+                                                                                                                                                   'in '
+                                                                                                                                                   'the '
+                                                                                                                                                   'Meta '
+                                                                                                                                                   'Quest '
+                                                                                                                                                   'Link '
+                                                                                                                                                   'app '
+                                                                                                                                                   '→ '
+                                                                                                                                                   'Devices '
+                                                                                                                                                   '→ '
+                                                                                                                                                   'Graphics. '
+                                                                                                                                                   'Lower '
+                                                                                                                                                   'resolution '
+                                                                                                                                                   'before '
+                                                                                                                                                   'raising '
+                                                                                                                                                   'detail.',
  'Minuto': 'Minute',
  'Mis perfiles': 'My profiles',
  'Mixto': 'Mixed',
@@ -1077,17 +1472,34 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Muestras por segundo (4 por defecto)': 'Samples per second (default 4)',
  'Muestras/s:': 'Samples/s:',
  'Máx. {tmax:.0f} °C': 'Max {tmax:.0f} °C',
- 'Máxima calidad visual asumiendo menos FPS. Para equipos sobrados, hotlaps o grabar contenido.': 'Maximum visual '
-                                                                                                  'quality accepting '
-                                                                                                  'lower FPS. For PCs '
-                                                                                                  'with headroom, '
-                                                                                                  'hotlaps or '
-                                                                                                  'recording content.',
+ 'Máxima calidad visual asumiendo menos FPS. Para equipos sobrados, hotlaps o grabar contenido.': 'Maximum '
+                                                                                                  'visual '
+                                                                                                  'quality '
+                                                                                                  'accepting '
+                                                                                                  'lower '
+                                                                                                  'FPS. '
+                                                                                                  'For '
+                                                                                                  'PCs '
+                                                                                                  'with '
+                                                                                                  'headroom, '
+                                                                                                  'hotlaps '
+                                                                                                  'or '
+                                                                                                  'recording '
+                                                                                                  'content.',
  'Máximo rendimiento': 'Maximum performance',
- 'NVIDIA App/overlay: desactiva la superposición y la grabación instantánea si no la usas.': 'NVIDIA App/overlay: '
-                                                                                             'disable the overlay and '
-                                                                                             'instant replay if you '
-                                                                                             "don't use them.",
+ 'NVIDIA App/overlay: desactiva la superposición y la grabación instantánea si no la usas.': 'NVIDIA '
+                                                                                             'App/overlay: '
+                                                                                             'disable '
+                                                                                             'the '
+                                                                                             'overlay '
+                                                                                             'and '
+                                                                                             'instant '
+                                                                                             'replay '
+                                                                                             'if '
+                                                                                             'you '
+                                                                                             "don't "
+                                                                                             'use '
+                                                                                             'them.',
  'NVIDIA Reflex desactivado. Al ir limitado por CPU, Reflex vacía la cola de render y reduce el input lag sin coste de FPS. Compatible con G-Sync y con el tope de iRacing.': 'NVIDIA '
                                                                                                                                                                               'Reflex '
                                                                                                                                                                               'disabled. '
@@ -1114,63 +1526,120 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                               'iRacing '
                                                                                                                                                                               'cap.',
  'Navegador abierto: ciérralo mientras corres.': 'Browser open: close it while racing.',
- 'Navegador abierto: ciérralo o desactiva la aceleración de vídeo de pestañas en segundo plano.': 'Browser open: close '
-                                                                                                  'it or disable video '
-                                                                                                  'acceleration for '
-                                                                                                  'background tabs.',
+ 'Navegador abierto: ciérralo o desactiva la aceleración de vídeo de pestañas en segundo plano.': 'Browser '
+                                                                                                  'open: '
+                                                                                                  'close '
+                                                                                                  'it '
+                                                                                                  'or '
+                                                                                                  'disable '
+                                                                                                  'video '
+                                                                                                  'acceleration '
+                                                                                                  'for '
+                                                                                                  'background '
+                                                                                                  'tabs.',
  'Ninguna sesión cargada': 'No session loaded',
- 'No encuentro la carpeta de iRacing: {d}  (usa --ini-dir)': "Can't find the iRacing folder: {d}  (use --ini-dir)",
- 'No encuentro la columna de frametime en el CSV de PresentMon': "Can't find the frametime column in the PresentMon "
-                                                                 'CSV',
+ 'No encuentro la carpeta de iRacing: {d}  (usa --ini-dir)': "Can't find the iRacing folder: {d}  "
+                                                             '(use --ini-dir)',
+ 'No encuentro la columna de frametime en el CSV de PresentMon': "Can't find the frametime column "
+                                                                 'in the PresentMon CSV',
  'No existe la copia {stamp}': 'Backup {stamp} does not exist',
  'No hay cambios que aplicar.': 'No changes to apply.',
  'No hay copias de seguridad.': 'No backups.',
- 'No hay muestras válidas en pista (¿grabaste con el coche en pista?).': 'No valid on-track samples (did you record '
+ 'No hay muestras válidas en pista (¿grabaste con el coche en pista?).': 'No valid on-track '
+                                                                         'samples (did you record '
                                                                          'with the car on track?).',
- 'No se pudo lanzar la petición. Alternativa: ejecuta iRacing Optimizer como administrador.': 'Could not launch the '
-                                                                                              'request. Alternative: '
-                                                                                              'run iRacing Optimizer '
-                                                                                              'as administrator.',
+ 'No he detectado el software de VR mientras grababas. Graba con el visor conectado para ver consejos de tu runtime.': 'No '
+                                                                                                                       'VR '
+                                                                                                                       'software '
+                                                                                                                       'was '
+                                                                                                                       'detected '
+                                                                                                                       'while '
+                                                                                                                       'recording. '
+                                                                                                                       'Record '
+                                                                                                                       'with '
+                                                                                                                       'the '
+                                                                                                                       'headset '
+                                                                                                                       'connected '
+                                                                                                                       'to '
+                                                                                                                       'get '
+                                                                                                                       'tips '
+                                                                                                                       'for '
+                                                                                                                       'your '
+                                                                                                                       'runtime.',
+ 'No llegas a la frecuencia del visor': 'Not reaching the headset refresh rate',
+ 'No se detecta software de VR.': 'No VR software detected.',
+ 'No se pudo lanzar la petición. Alternativa: ejecuta iRacing Optimizer como administrador.': 'Could '
+                                                                                              'not '
+                                                                                              'launch '
+                                                                                              'the '
+                                                                                              'request. '
+                                                                                              'Alternative: '
+                                                                                              'run '
+                                                                                              'iRacing '
+                                                                                              'Optimizer '
+                                                                                              'as '
+                                                                                              'administrator.',
  'Nombre de copia no válido: {p0!r}': 'Invalid backup name: {p0!r}',
  'Nombre de usuario no válido para añadir al grupo.': 'Invalid user name to add to the group.',
  'Nombre:': 'Name:',
  'Nuevo': 'New',
  'Núcleo saturado': 'Saturated core',
- 'OBS: usa codificador NVENC (GPU) en vez de x264 (CPU) y baja el preset.': 'OBS: use the NVENC (GPU) encoder instead '
-                                                                            'of x264 (CPU) and lower the preset.',
+ 'OBS: usa codificador NVENC (GPU) en vez de x264 (CPU) y baja el preset.': 'OBS: use the NVENC '
+                                                                            '(GPU) encoder instead '
+                                                                            'of x264 (CPU) and '
+                                                                            'lower the preset.',
  'Objetivo': 'Target',
- 'Objetos de boxes en espejos: coste de CPU sin valor en carrera.': 'Pit objects in mirrors: CPU cost with no value in '
-                                                                    'a race.',
- 'Optimizador de gráficos y rendimiento para iRacing': 'Graphics and performance optimizer for iRacing',
- 'Ordena la escena en varios hilos: descarga el hilo principal.': 'Sorts the scene on several threads: offloads the '
-                                                                  'main thread.',
+ 'Objetos de boxes en espejos: coste de CPU sin valor en carrera.': 'Pit objects in mirrors: CPU '
+                                                                    'cost with no value in a race.',
+ 'Optimizador de gráficos y rendimiento para iRacing': 'Graphics and performance optimizer for '
+                                                       'iRacing',
+ 'Ordena la escena en varios hilos: descarga el hilo principal.': 'Sorts the scene on several '
+                                                                  'threads: offloads the main '
+                                                                  'thread.',
  'Paginación a disco: {pf:.0f} fallos/s': 'Paging to disk: {pf:.0f} faults/s',
  'Pantalla principal: {w}×{h} @ {hz} Hz': 'Main display: {w}×{h} @ {hz} Hz',
  'Pantalla visible: {p0:.0f} mm por monitor.': 'Visible screen: {p0:.0f} mm per monitor.',
- 'Pantalla y monitores (resolución, FOV físico, triples)': 'Display and monitors (resolution, physical FOV, triples)',
+ 'Pantalla y monitores (resolución, FOV físico, triples)': 'Display and monitors (resolution, '
+                                                           'physical FOV, triples)',
  'Parado': 'Stopped',
  'Partículas (humo, polvo, lluvia) a medio.': 'Particles (smoke, dust, rain) at medium.',
- 'Pausa descargas, actualizaciones y sincronizaciones en la nube.': 'Pause downloads, updates and cloud syncs.',
+ 'Pausa descargas, actualizaciones y sincronizaciones en la nube.': 'Pause downloads, updates and '
+                                                                    'cloud syncs.',
  'Perfil': 'Profile',
  'Perfil importado en {p0}. Se descartaron {p1} valores que no parecían ajustes válidos de iRacing.': 'Profile '
-                                                                                                      'imported as '
-                                                                                                      '{p0}. {p1} '
-                                                                                                      'values that '
-                                                                                                      "didn't look "
-                                                                                                      'like valid '
+                                                                                                      'imported '
+                                                                                                      'as '
+                                                                                                      '{p0}. '
+                                                                                                      '{p1} '
+                                                                                                      'values '
+                                                                                                      'that '
+                                                                                                      "didn't "
+                                                                                                      'look '
+                                                                                                      'like '
+                                                                                                      'valid '
                                                                                                       'iRacing '
-                                                                                                      'settings were '
+                                                                                                      'settings '
+                                                                                                      'were '
                                                                                                       'discarded.',
  'Perfil {name}: {p1} cambios': 'Profile {name}: {p1} changes',
  'Perfil «{p0}» guardado': 'Profile «{p0}» saved',
  'Perfiles': 'Profiles',
  'Perfiles genéricos. Si cargas una sesión, el tope de FPS y el LOD dinámico se ajustan a tu medición.': 'Generic '
-                                                                                                         'profiles. If '
-                                                                                                         'you load a '
-                                                                                                         'session, the '
-                                                                                                         'FPS cap and '
-                                                                                                         'dynamic LOD '
-                                                                                                         'are tuned to '
+                                                                                                         'profiles. '
+                                                                                                         'If '
+                                                                                                         'you '
+                                                                                                         'load '
+                                                                                                         'a '
+                                                                                                         'session, '
+                                                                                                         'the '
+                                                                                                         'FPS '
+                                                                                                         'cap '
+                                                                                                         'and '
+                                                                                                         'dynamic '
+                                                                                                         'LOD '
+                                                                                                         'are '
+                                                                                                         'tuned '
+                                                                                                         'to '
                                                                                                          'your '
                                                                                                          'measurement.',
  'Periodos largos por debajo del 80 % de tu mediana (salidas, pelotones, zonas pesadas del circuito). Ver «Peores caídas» y «Zonas más lentas» en el informe.': 'Long '
@@ -1217,6 +1686,7 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                       'your '
                                                                                                                       'Hz.',
  'Pon un nombre y elige al menos un grupo.': 'Enter a name and choose at least one group.',
+ 'PresentMon en VR': 'PresentMon in VR',
  'PresentMon necesita un permiso de Windows que aún no tienes (botón «Dar permiso…»).\n\n¿Grabar ahora sin PresentMon?': 'PresentMon '
                                                                                                                          'needs '
                                                                                                                          'a '
@@ -1234,11 +1704,20 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                          'now '
                                                                                                                          'without '
                                                                                                                          'PresentMon?',
- 'PresentMon no encontrado (viene incluido en el .exe; en desarrollo, ponlo en tools/).': "PresentMon not found (it's "
-                                                                                          'bundled in the .exe; in '
-                                                                                          'development, put it in '
+ 'PresentMon no encontrado (viene incluido en el .exe; en desarrollo, ponlo en tools/).': 'PresentMon '
+                                                                                          'not '
+                                                                                          'found '
+                                                                                          "(it's "
+                                                                                          'bundled '
+                                                                                          'in the '
+                                                                                          '.exe; '
+                                                                                          'in '
+                                                                                          'development, '
+                                                                                          'put it '
+                                                                                          'in '
                                                                                           'tools/).',
- 'PresentMon no encontrado; se graba sin frametimes.': 'PresentMon not found; recording without frametimes.',
+ 'PresentMon no encontrado; se graba sin frametimes.': 'PresentMon not found; recording without '
+                                                       'frametimes.',
  'PresentMon no pudo arrancar: ': 'PresentMon could not start: ',
  'PresentMon usa el registro de eventos de Windows (ETW). Para usarlo sin ser administrador, tu usuario debe estar en el grupo «Usuarios del registro de rendimiento» (Performance Log Users).\n\nWindows te pedirá confirmación una sola vez para añadirte. Después tienes que cerrar sesión y volver a entrar.\n\n¿Continuar?': 'PresentMon '
                                                                                                                                                                                                                                                                                                                                   'uses '
@@ -1285,8 +1764,10 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                                                                                                                                                                                   'in.\n'
                                                                                                                                                                                                                                                                                                                                   '\n'
                                                                                                                                                                                                                                                                                                                                   'Continue?',
- 'Primero abre o graba una sesión (será la sesión B, la nueva).': 'First open or record a session (it will be session '
-                                                                  'B, the new one).',
+ 'Primero abre o graba una sesión (será la sesión B, la nueva).': 'First open or record a session '
+                                                                  '(it will be session B, the new '
+                                                                  'one).',
+ 'Primero abre o graba una sesión.': 'Open or record a session first.',
  'Primero carga la carpeta de iRacing.': 'Load the iRacing folder first.',
  'Prio': 'Prio',
  'Prioriza FPS estables en salidas y pelotones. Menos coches y objetos dibujados, sombras y efectos al mínimo.': 'Prioritizes '
@@ -1309,20 +1790,27 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                  'minimum.',
  'Programación de GPU acelerada por hardware': 'Hardware-accelerated GPU scheduling',
  'Propuesto': 'Proposed',
- 'Pruébala activada (Configuración → Pantalla → Gráficos) y compara dos sesiones con «Comparar».': 'Try it enabled '
-                                                                                                   '(Settings → '
-                                                                                                   'Display → '
-                                                                                                   'Graphics) and '
-                                                                                                   'compare two '
-                                                                                                   'sessions with '
+ 'Pruébala activada (Configuración → Pantalla → Gráficos) y compara dos sesiones con «Comparar».': 'Try '
+                                                                                                   'it '
+                                                                                                   'enabled '
+                                                                                                   '(Settings '
+                                                                                                   '→ '
+                                                                                                   'Display '
+                                                                                                   '→ '
+                                                                                                   'Graphics) '
+                                                                                                   'and '
+                                                                                                   'compare '
+                                                                                                   'two '
+                                                                                                   'sessions '
+                                                                                                   'with '
                                                                                                    '«Compare».',
  'Pérdida con tráfico': 'Loss with traffic',
  'Pérdida de paquetes: calidad {q:.0f} %': 'Packet loss: quality {q:.0f} %',
- 'Público: muchas draw calls en Le Mans, Spa, Nordschleife.': 'Crowds: lots of draw calls at Le Mans, Spa, '
-                                                              'Nordschleife.',
+ 'Público: muchas draw calls en Le Mans, Spa, Nordschleife.': 'Crowds: lots of draw calls at Le '
+                                                              'Mans, Spa, Nordschleife.',
  'Quedarme con los actuales': 'Keep the current ones',
- 'Quitar sombras de objetos de pista (tso) y dejar pista+coches.': 'Remove track object shadows (tso) and keep '
-                                                                   'track+cars.',
+ 'Quitar sombras de objetos de pista (tso) y dejar pista+coches.': 'Remove track object shadows '
+                                                                   '(tso) and keep track+cars.',
  'Qué significa y cómo solucionarlo': 'What it means and how to fix it',
  'RAM y paginación': 'RAM and paging',
  'Radio de curvatura (mm)': 'Curvature radius (mm)',
@@ -1332,15 +1820,30 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Recargando…': 'Reloading…',
  'Recargar': 'Reload',
  'Red': 'Network',
- 'Reduce el LOD de coches/crew cuando hay muchos en alta calidad (salidas, pelotones).': 'Lowers car/crew LOD when '
-                                                                                         'many are at high quality '
-                                                                                         '(starts, packs).',
- 'Reduce la frecuencia del FFB a 60 Hz solo si los tirones coinciden con este indicador.': 'Lower FFB frequency to 60 '
-                                                                                           'Hz only if the stutters '
-                                                                                           'match this indicator.',
- 'Reflejos dinámicos: caros en GPU y poco visibles conduciendo.': 'Dynamic reflections: GPU-heavy and barely visible '
-                                                                  'while driving.',
- 'Registro y alertas en vivo (tirones, latencia, pérdida de paquetes, hilo de física, temperatura de GPU…)': 'Live log '
+ 'Reduce el LOD de coches/crew cuando hay muchos en alta calidad (salidas, pelotones).': 'Lowers '
+                                                                                         'car/crew '
+                                                                                         'LOD when '
+                                                                                         'many are '
+                                                                                         'at high '
+                                                                                         'quality '
+                                                                                         '(starts, '
+                                                                                         'packs).',
+ 'Reduce la frecuencia del FFB a 60 Hz solo si los tirones coinciden con este indicador.': 'Lower '
+                                                                                           'FFB '
+                                                                                           'frequency '
+                                                                                           'to 60 '
+                                                                                           'Hz '
+                                                                                           'only '
+                                                                                           'if the '
+                                                                                           'stutters '
+                                                                                           'match '
+                                                                                           'this '
+                                                                                           'indicator.',
+ 'Reflejos dinámicos: caros en GPU y poco visibles conduciendo.': 'Dynamic reflections: GPU-heavy '
+                                                                  'and barely visible while '
+                                                                  'driving.',
+ 'Registro y alertas en vivo (tirones, latencia, pérdida de paquetes, hilo de física, temperatura de GPU…)': 'Live '
+                                                                                                             'log '
                                                                                                              'and '
                                                                                                              'alerts '
                                                                                                              '(stutters, '
@@ -1352,6 +1855,7 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                              'GPU '
                                                                                                              'temperature…)',
  'Render scene using 3 projections': 'Render scene using 3 projections',
+ 'Reproyección activa en VR': 'Reprojection active in VR',
  'Restaurar la copia {stamp}?\nSe sobrescribirán los .ini actuales (antes se guarda una copia del estado actual).': 'Restore '
                                                                                                                     'backup '
                                                                                                                     '{stamp}?\n'
@@ -1372,9 +1876,15 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                     'first).',
  'Restaurar seleccionada': 'Restore selected',
  'Resultado': 'Result',
- 'Revisa la carga del hilo BG y la estabilidad de la red.': 'Check the BG thread load and network stability.',
- 'Revisa la curva de ventiladores y el flujo de aire de la caja.': 'Check the fan curve and case airflow.',
+ 'Revisa la carga del hilo BG y la estabilidad de la red.': 'Check the BG thread load and network '
+                                                            'stability.',
+ 'Revisa la curva de ventiladores y el flujo de aire de la caja.': 'Check the fan curve and case '
+                                                                   'airflow.',
  'Revisar cambios…': 'Review changes…',
+ 'Runtime OpenXR activo y programas de VR detectados durante la grabación.': 'Active OpenXR '
+                                                                             'runtime and VR '
+                                                                             'software detected '
+                                                                             'during recording.',
  'Ruta fuera de la carpeta de iRacing': 'Path outside the iRacing folder',
  'Sección': 'Section',
  'Segundos máximos de grabación': 'Maximum recording seconds',
@@ -1384,30 +1894,94 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Sesiones': 'Sessions',
  'Sesión': 'Session',
  'Sesión ANTERIOR (A) para comparar': 'PREVIOUS session (A) to compare',
+ 'Sesión VR: PresentMon no se usa (mediría la ventana espejo del monitor, no el visor).': 'VR '
+                                                                                          'session: '
+                                                                                          'PresentMon '
+                                                                                          'is not '
+                                                                                          'used '
+                                                                                          '(it '
+                                                                                          'would '
+                                                                                          'measure '
+                                                                                          'the '
+                                                                                          'monitor '
+                                                                                          'mirror '
+                                                                                          'window, '
+                                                                                          'not the '
+                                                                                          'headset).',
+ 'Sesión compartida': 'Shared session',
+ 'Sesión en VR': 'VR session',
+ 'Sesión en VR: frecuencia del visor (p. ej. 90)': 'VR session: headset refresh rate (e.g. 90)',
+ 'Sesión exportada sin datos personales (sin nombres de procesos, rutas ni ajustes de audio/controles):\n{p}': 'Session '
+                                                                                                               'exported '
+                                                                                                               'without '
+                                                                                                               'personal '
+                                                                                                               'data '
+                                                                                                               '(no '
+                                                                                                               'process '
+                                                                                                               'names, '
+                                                                                                               'paths '
+                                                                                                               'or '
+                                                                                                               'audio/controls '
+                                                                                                               'settings):\n'
+                                                                                                               '{p}',
  'Sesión grabada': 'Recorded session',
- "Shader 'max' → 'high': ahorro de GPU con impacto visual pequeño.": "Shader 'max' → 'high': GPU savings with small "
-                                                                     'visual impact.',
- 'Si Windows tiene que paginar a disco, aparecen tirones largos y cargas lentas.': 'If Windows has to page to disk, '
-                                                                                   'you get long stutters and slow '
+ "Shader 'max' → 'high': ahorro de GPU con impacto visual pequeño.": "Shader 'max' → 'high': GPU "
+                                                                     'savings with small visual '
+                                                                     'impact.',
+ 'Si Windows tiene que paginar a disco, aparecen tirones largos y cargas lentas.': 'If Windows has '
+                                                                                   'to page to '
+                                                                                   'disk, you get '
+                                                                                   'long stutters '
+                                                                                   'and slow '
                                                                                    'loading.',
- 'Si emites, limita el bitrate de subida de OBS a ~70 % de tu subida real.': 'If you stream, cap OBS upload bitrate to '
-                                                                             '~70 % of your real upload.',
- 'Si la GPU se calienta baja frecuencias y pierdes rendimiento de forma irregular.': 'If the GPU gets hot it lowers '
-                                                                                     'clocks and you lose performance '
+ 'Si aún no llegas, baja la frecuencia del visor (90 → 80 o 72 Hz) o la resolución de renderizado del runtime.': 'If '
+                                                                                                                 'you '
+                                                                                                                 'still '
+                                                                                                                 'miss '
+                                                                                                                 'it, '
+                                                                                                                 'lower '
+                                                                                                                 'the '
+                                                                                                                 'headset '
+                                                                                                                 'refresh '
+                                                                                                                 'rate '
+                                                                                                                 '(90 '
+                                                                                                                 '→ '
+                                                                                                                 '80 '
+                                                                                                                 'or '
+                                                                                                                 '72 '
+                                                                                                                 'Hz) '
+                                                                                                                 'or '
+                                                                                                                 'the '
+                                                                                                                 'runtime '
+                                                                                                                 'render '
+                                                                                                                 'resolution.',
+ 'Si emites, limita el bitrate de subida de OBS a ~70 % de tu subida real.': 'If you stream, cap '
+                                                                             'OBS upload bitrate '
+                                                                             'to ~70 % of your '
+                                                                             'real upload.',
+ 'Si la GPU se calienta baja frecuencias y pierdes rendimiento de forma irregular.': 'If the GPU '
+                                                                                     'gets hot it '
+                                                                                     'lowers '
+                                                                                     'clocks and '
+                                                                                     'you lose '
+                                                                                     'performance '
                                                                                      'irregularly.',
- 'Si la VRAM se llena, las texturas se recargan durante la carrera y aparecen tirones y texturas borrosas.': 'If VRAM '
+ 'Si la VRAM se llena, las texturas se recargan durante la carrera y aparecen tirones y texturas borrosas.': 'If '
+                                                                                                             'VRAM '
                                                                                                              'fills '
                                                                                                              'up, '
                                                                                                              'textures '
                                                                                                              'reload '
                                                                                                              'during '
-                                                                                                             'the race '
+                                                                                                             'the '
+                                                                                                             'race '
                                                                                                              'causing '
                                                                                                              'stutters '
                                                                                                              'and '
                                                                                                              'blurry '
                                                                                                              'textures.',
- 'Si la usas, pon irsdkLogAllCars=0 para grabar solo tu coche.': 'If you use it, set irsdkLogAllCars=0 to record only '
+ 'Si la usas, pon irsdkLogAllCars=0 para grabar solo tu coche.': 'If you use it, set '
+                                                                 'irsdkLogAllCars=0 to record only '
                                                                  'your car.',
  'Si no analizas telemetría (Garage61, VRS, MoTeC…), pon irsdkAutoLogDisk=0 en app.ini; puedes activarla a mano con Alt+L.': 'If '
                                                                                                                              'you '
@@ -1428,8 +2002,10 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                              'manually '
                                                                                                                              'with '
                                                                                                                              'Alt+L.',
- 'SimHub: desactiva plugins/dashboards que no uses y baja su tasa de refresco.': 'SimHub: disable plugins/dashboards '
-                                                                                 "you don't use and lower their "
+ 'SimHub: desactiva plugins/dashboards que no uses y baja su tasa de refresco.': 'SimHub: disable '
+                                                                                 'plugins/dashboards '
+                                                                                 "you don't use "
+                                                                                 'and lower their '
                                                                                  'refresh rate.',
  'Sin datos GPU': 'No GPU data',
  'Sin límite de FPS tus FPS oscilan entre {p0:.0f} (p5) y {p1:.0f} (p95) en {lbl}. Un tope que puedas sostener da frametimes constantes y menos picos de input lag.': 'Without '
@@ -1461,30 +2037,86 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                       'lag '
                                                                                                                                                                       'spikes.',
  'Sin tope de FPS': 'No FPS cap',
- 'Sin tope los FPS oscilan mucho y el input lag varía.': 'Without a cap FPS swing a lot and input lag varies.',
- 'Sin «3 proyecciones» iRacing ignora el ángulo de los laterales y la imagen se deforma en ellos.': 'Without «3 '
+ 'Sin tope los FPS oscilan mucho y el input lag varía.': 'Without a cap FPS swing a lot and input '
+                                                         'lag varies.',
+ 'Sin «3 proyecciones» iRacing ignora el ángulo de los laterales y la imagen se deforma en ellos.': 'Without '
+                                                                                                    '«3 '
                                                                                                     'projections» '
-                                                                                                    'iRacing ignores '
-                                                                                                    'the side screen '
-                                                                                                    'angle and the '
-                                                                                                    'image is '
-                                                                                                    'distorted on '
+                                                                                                    'iRacing '
+                                                                                                    'ignores '
+                                                                                                    'the '
+                                                                                                    'side '
+                                                                                                    'screen '
+                                                                                                    'angle '
+                                                                                                    'and '
+                                                                                                    'the '
+                                                                                                    'image '
+                                                                                                    'is '
+                                                                                                    'distorted '
+                                                                                                    'on '
                                                                                                     'them.',
  'Sistema': 'System',
+ 'Software de VR': 'VR software',
+ 'Solo el {p:.0f} % del tiempo a {hz:.0f} Hz. En VR cada caída se nota mucho más que en monitor.': 'Only '
+                                                                                                   '{p:.0f} '
+                                                                                                   '% '
+                                                                                                   'of '
+                                                                                                   'the '
+                                                                                                   'time '
+                                                                                                   'at '
+                                                                                                   '{hz:.0f} '
+                                                                                                   'Hz. '
+                                                                                                   'In '
+                                                                                                   'VR '
+                                                                                                   'every '
+                                                                                                   'drop '
+                                                                                                   'is '
+                                                                                                   'far '
+                                                                                                   'more '
+                                                                                                   'noticeable '
+                                                                                                   'than '
+                                                                                                   'on '
+                                                                                                   'a '
+                                                                                                   'monitor.',
  'Solo estas claves': 'Only these keys',
- 'Steam: cierra la overlay y las descargas en segundo plano.': 'Steam: close the overlay and background downloads.',
+ 'Steam: cierra la overlay y las descargas en segundo plano.': 'Steam: close the overlay and '
+                                                               'background downloads.',
+ 'SteamVR añade una capa más con Quest. Si usas Quest, mejor Meta Quest Link o Virtual Desktop (VDXR).': 'SteamVR '
+                                                                                                         'adds '
+                                                                                                         'an '
+                                                                                                         'extra '
+                                                                                                         'layer '
+                                                                                                         'with '
+                                                                                                         'Quest. '
+                                                                                                         'If '
+                                                                                                         'you '
+                                                                                                         'use '
+                                                                                                         'a '
+                                                                                                         'Quest, '
+                                                                                                         'prefer '
+                                                                                                         'Meta '
+                                                                                                         'Quest '
+                                                                                                         'Link '
+                                                                                                         'or '
+                                                                                                         'Virtual '
+                                                                                                         'Desktop '
+                                                                                                         '(VDXR).',
  'Sube SysMemToUseMB/MaxWorkingSetMB_64Bit si iRacing se acerca al límite.': 'Raise '
-                                                                             'SysMemToUseMB/MaxWorkingSetMB_64Bit if '
-                                                                             'iRacing gets close to the limit.',
- 'Sube VidMemToUseMB/VidMemMB hasta ~85-90 % de tu VRAM.': 'Raise VidMemToUseMB/VidMemMB to ~85-90 % of your VRAM.',
+                                                                             'SysMemToUseMB/MaxWorkingSetMB_64Bit '
+                                                                             'if iRacing gets '
+                                                                             'close to the limit.',
+ 'Sube VidMemToUseMB/VidMemMB hasta ~85-90 % de tu VRAM.': 'Raise VidMemToUseMB/VidMemMB to ~85-90 '
+                                                           '% of your VRAM.',
  'Subir calidad': 'Raise quality',
  'Te limita': 'Limited by',
  'Telemetría grabándose en disco (.ibt)': 'Telemetry being recorded to disk (.ibt)',
  'Temperatura y limitación térmica': 'Temperature and thermal throttling',
  'Tiempo': 'Time',
  'Tiempo bajo objetivo': 'Time below target',
- 'Tienes margen de CPU: puedes ver más coches sin bajar del objetivo.': 'You have CPU headroom: you can see more cars '
-                                                                        'without dropping below target.',
+ 'Tienes margen de CPU: puedes ver más coches sin bajar del objetivo.': 'You have CPU headroom: '
+                                                                        'you can see more cars '
+                                                                        'without dropping below '
+                                                                        'target.',
  'Tienes margen de GPU: espejos en alto.': 'You have GPU headroom: high-detail mirrors.',
  'Tienes margen de GPU: sombras completas.': 'You have GPU headroom: full shadows.',
  'Tienes {p0:.0f} GB de VRAM y iRacing está configurado para usar {vcfg:.0f} MB. iRacing recomienda ajustarlo a tu hardware; ~90 % deja margen al sistema y a overlays.': 'You '
@@ -1520,10 +2152,17 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Tipo': 'Type',
  'Tirones (caídas bruscas y breves)': 'Stutters (sudden, brief drops)',
  'Tirones (frames > 2× mediana)': 'Stutters (frames > 2× median)',
- 'Tirones al alcanzar coches: baja MaxCarsToDraw y coches en espejos; sube LODMinFPSTarget.': 'Stutters when catching '
-                                                                                              'cars: lower '
-                                                                                              'MaxCarsToDraw and cars '
-                                                                                              'in mirrors; raise '
+ 'Tirones al alcanzar coches: baja MaxCarsToDraw y coches en espejos; sube LODMinFPSTarget.': 'Stutters '
+                                                                                              'when '
+                                                                                              'catching '
+                                                                                              'cars: '
+                                                                                              'lower '
+                                                                                              'MaxCarsToDraw '
+                                                                                              'and '
+                                                                                              'cars '
+                                                                                              'in '
+                                                                                              'mirrors; '
+                                                                                              'raise '
                                                                                               'LODMinFPSTarget.',
  'Tirones de CPU: el hilo principal tardó en preparar el frame. Revisa coches dibujados, objetos de boxes y procesos en segundo plano.': 'CPU '
                                                                                                                                          'stutters: '
@@ -1548,18 +2187,28 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Tirones de GPU: frames puntuales muy pesados (sombras, reflejos, espejos en alto). Baja esos ajustes.': 'GPU '
                                                                                                           'stutters: '
                                                                                                           'occasional '
-                                                                                                          'very heavy '
+                                                                                                          'very '
+                                                                                                          'heavy '
                                                                                                           'frames '
                                                                                                           '(shadows, '
                                                                                                           'reflections, '
                                                                                                           'high-detail '
                                                                                                           'mirrors). '
-                                                                                                          'Lower those '
+                                                                                                          'Lower '
+                                                                                                          'those '
                                                                                                           'settings.',
- 'Tirones de física/red: usa cable, cierra descargas y revisa la comprobación de red.': 'Physics/network stutters: use '
-                                                                                        'a cable, close downloads and '
-                                                                                        'check the network check.',
- 'Tirones en boxes: baja MaxPitObjsToDraw y PitObjectDetail.': 'Pit stutters: lower MaxPitObjsToDraw and '
+ 'Tirones de física/red: usa cable, cierra descargas y revisa la comprobación de red.': 'Physics/network '
+                                                                                        'stutters: '
+                                                                                        'use a '
+                                                                                        'cable, '
+                                                                                        'close '
+                                                                                        'downloads '
+                                                                                        'and check '
+                                                                                        'the '
+                                                                                        'network '
+                                                                                        'check.',
+ 'Tirones en boxes: baja MaxPitObjsToDraw y PitObjectDetail.': 'Pit stutters: lower '
+                                                               'MaxPitObjsToDraw and '
                                                                'PitObjectDetail.',
  'Tirones por minuto': 'Stutters per minute',
  'Tirones reales (PresentMon)': 'Real stutters (PresentMon)',
@@ -1613,7 +2262,8 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                                  'measure '
                                                                                                                                                                                  'with '
                                                                                                                                                                                  'PresentMon.',
- 'Tirón: {base:.0f} → {fps:.0f} fps (coches cerca: {p2})': 'Stutter: {base:.0f} → {fps:.0f} fps (cars nearby: {p2})',
+ 'Tirón: {base:.0f} → {fps:.0f} fps (coches cerca: {p2})': 'Stutter: {base:.0f} → {fps:.0f} fps '
+                                                           '(cars nearby: {p2})',
  'Todo lo que no es iRacing compite por la CPU y, en los X3D, por la caché. Con iRacing limitado por CPU, cada punto cuenta.': 'Everything '
                                                                                                                                'that '
                                                                                                                                "isn't "
@@ -1633,15 +2283,26 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                'every '
                                                                                                                                'point '
                                                                                                                                'counts.',
- 'Tope propuesto: {cap} fps ≈ lo que mantienes el 90 % del tiempo': 'Proposed cap: {cap} fps ≈ what you hold 90 % of '
-                                                                    'the time',
- 'Tras aplicar, puedes confirmarlo en iRacing: Ajustes → Pantalla → Monitor → Compute.': 'After applying, you can '
-                                                                                         'confirm it in iRacing: '
-                                                                                         'Settings → Display → Monitor '
-                                                                                         '→ Compute.',
+ 'Tope propuesto: {cap} fps ≈ lo que mantienes el 90 % del tiempo': 'Proposed cap: {cap} fps ≈ '
+                                                                    'what you hold 90 % of the '
+                                                                    'time',
+ 'Tras aplicar, puedes confirmarlo en iRacing: Ajustes → Pantalla → Monitor → Compute.': 'After '
+                                                                                         'applying, '
+                                                                                         'you can '
+                                                                                         'confirm '
+                                                                                         'it in '
+                                                                                         'iRacing: '
+                                                                                         'Settings '
+                                                                                         '→ '
+                                                                                         'Display '
+                                                                                         '→ '
+                                                                                         'Monitor '
+                                                                                         '→ '
+                                                                                         'Compute.',
  'Tu configuración': 'Your setup',
  'Tu configuración ha cambiado': 'Your configuration has changed',
- 'Tu configuración ya coincide con este perfil.': 'Your configuration already matches this profile.',
+ 'Tu configuración ya coincide con este perfil.': 'Your configuration already matches this '
+                                                  'profile.',
  'Tu configuración ya coincide.': 'Your configuration already matches.',
  'Tu tope ({desired:.0f}) está muy por encima de lo que sostienes en {lbl} (p10 {p2:.0f}). Bajarlo a {holdable} alisa el frametime. Mejor orden: aplica antes los recortes de CPU, vuelve a grabar y fija el tope con el nuevo p10.': 'Your '
                                                                                                                                                                                                                                       'cap '
@@ -1700,16 +2361,26 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                               'core '
                                                                                                                                               'causes '
                                                                                                                                               'stutters.',
- 'Un proceso en segundo plano se activó durante los tirones: revisa la lista de carga de fondo.': 'A background '
-                                                                                                  'process kicked in '
-                                                                                                  'during the '
-                                                                                                  'stutters: check the '
-                                                                                                  'background load '
+ 'Un proceso en segundo plano se activó durante los tirones: revisa la lista de carga de fondo.': 'A '
+                                                                                                  'background '
+                                                                                                  'process '
+                                                                                                  'kicked '
+                                                                                                  'in '
+                                                                                                  'during '
+                                                                                                  'the '
+                                                                                                  'stutters: '
+                                                                                                  'check '
+                                                                                                  'the '
+                                                                                                  'background '
+                                                                                                  'load '
                                                                                                   'list.',
- 'Un undervolt ligero suele bajar 5-10 °C sin perder rendimiento.': 'A light undervolt usually drops 5-10 °C without '
-                                                                    'losing performance.',
- "Usa 'Equilibrado' (recomendado por AMD para Ryzen) o 'Alto rendimiento'.": "Use 'Balanced' (recommended by AMD for "
-                                                                             "Ryzen) or 'High performance'.",
+ 'Un undervolt ligero suele bajar 5-10 °C sin perder rendimiento.': 'A light undervolt usually '
+                                                                    'drops 5-10 °C without losing '
+                                                                    'performance.',
+ "Usa 'Equilibrado' (recomendado por AMD para Ryzen) o 'Alto rendimiento'.": "Use 'Balanced' "
+                                                                             '(recommended by AMD '
+                                                                             "for Ryzen) or 'High "
+                                                                             "performance'.",
  'Usada máx. {p0:.1f} de {p1:.0f} GB': 'Used max {p0:.1f} of {p1:.0f} GB',
  'Usar ángulo ideal': 'Use ideal angle',
  'Uso p95 {gp95:.0f} %': 'Usage p95 {gp95:.0f} %',
@@ -1717,6 +2388,39 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Valor': 'Value',
  'Valor no permitido para un .ini: {p0!r}': 'Value not allowed in an .ini: {p0!r}',
  'Valores de monitor leídos de iRacing': 'Monitor values read from iRacing',
+ 'Virtual Desktop: la codificación usa GPU; si vas justo, baja el bitrate o la calidad (High en vez de Ultra) antes que los gráficos.': 'Virtual '
+                                                                                                                                        'Desktop: '
+                                                                                                                                        'encoding '
+                                                                                                                                        'uses '
+                                                                                                                                        'the '
+                                                                                                                                        'GPU; '
+                                                                                                                                        'if '
+                                                                                                                                        "you're "
+                                                                                                                                        'tight, '
+                                                                                                                                        'lower '
+                                                                                                                                        'bitrate '
+                                                                                                                                        'or '
+                                                                                                                                        'quality '
+                                                                                                                                        '(High '
+                                                                                                                                        'instead '
+                                                                                                                                        'of '
+                                                                                                                                        'Ultra) '
+                                                                                                                                        'before '
+                                                                                                                                        'graphics.',
+ 'Virtual Desktop: usa su runtime VDXR (no SteamVR) para que iRacing vaya directo por OpenXR.': 'Virtual '
+                                                                                                'Desktop: '
+                                                                                                'use '
+                                                                                                'its '
+                                                                                                'VDXR '
+                                                                                                'runtime '
+                                                                                                '(not '
+                                                                                                'SteamVR) '
+                                                                                                'so '
+                                                                                                'iRacing '
+                                                                                                'goes '
+                                                                                                'straight '
+                                                                                                'through '
+                                                                                                'OpenXR.',
  'Vista cenital: tus ojos abajo, pantallas a escala. En verde el FOV calculado; en gris discontinuo el FOV que tienes ahora en iRacing.': 'Top '
                                                                                                                                           'view: '
                                                                                                                                           'your '
@@ -1742,27 +2446,33 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                           'iRacing.',
  'Volver a aplicar los míos': 'Re-apply mine',
  'Vuelta': 'Lap',
- 'Ya existe un perfil con ese nombre. ¿Sobrescribir?': 'A profile with that name already exists. Overwrite?',
+ 'Ya existe un perfil con ese nombre. ¿Sobrescribir?': 'A profile with that name already exists. '
+                                                       'Overwrite?',
  'avisos': 'warnings',
  'calidad mín. {p0:.0f} %': 'min quality {p0:.0f} %',
  'carga de texturas desde disco': 'texture loading from disk',
  'coches': 'cars',
  'con biseles, recto': 'including bezels, straight',
  'correctos': 'OK',
+ 'datos no representativos': 'non-representative data',
  'el perfil «{p0}»': 'the profile «{p0}»',
  'el perfil «{p0}» sobre {p1}': 'the profile «{p0}» onto {p1}',
  'espera/sincronización': 'wait/sync',
- 'frame de {p0:.0f} ms (normal {p1:.1f} ms) · {p2} frames': '{p0:.0f} ms frame (normal {p1:.1f} ms) · {p2} frames',
- 'iCUE (RGB): conocido por consumir CPU; ciérralo o reduce los efectos.': 'iCUE (RGB): known to use CPU; close it or '
+ 'frame de {p0:.0f} ms (normal {p1:.1f} ms) · {p2} frames': '{p0:.0f} ms frame (normal {p1:.1f} '
+                                                            'ms) · {p2} frames',
+ 'iCUE (RGB): conocido por consumir CPU; ciérralo o reduce los efectos.': 'iCUE (RGB): known to '
+                                                                          'use CPU; close it or '
                                                                           'reduce effects.',
  'iRacing desconectado. Fin de la grabación.': 'iRacing disconnected. Recording finished.',
- 'iRacing está guardando un archivo .ibt de telemetría continuamente': 'iRacing is continuously saving a .ibt '
-                                                                       'telemetry file',
+ 'iRacing está guardando un archivo .ibt de telemetría continuamente': 'iRacing is continuously '
+                                                                       'saving a .ibt telemetry '
+                                                                       'file',
  'la configuración de monitor y FOV': 'the monitor and FOV configuration',
  'las recomendaciones marcadas': 'the checked recommendations',
  'llegada de tráfico': 'traffic arriving',
  'memoria/paginación': 'memory/paging',
  'no detectada': 'not detected',
+ 'no detectado': 'not detected',
  'pico de latencia': 'latency spike',
  'pico de red': 'network spike',
  'pico del hilo de física/red (BG)': 'physics/network thread (BG) spike',
@@ -1774,16 +2484,44 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'tirón': 'stutter',
  'tirón ({p0})': 'stutter ({p0})',
  'tus ojos': 'your eyes',
- '{cpu_share:.0f} % del tiempo limitado por CPU · {below:.0f} % bajo objetivo': '{cpu_share:.0f} % of the time '
-                                                                                'CPU-bound · {below:.0f} % below '
-                                                                                'target',
+ '{at:.0f} % del tiempo a {hz:.0f} Hz · {rp:.0f} % en reproyección (~{h2:.0f} fps) · {bl:.0f} % por debajo': '{at:.0f} '
+                                                                                                             '% '
+                                                                                                             'of '
+                                                                                                             'the '
+                                                                                                             'time '
+                                                                                                             'at '
+                                                                                                             '{hz:.0f} '
+                                                                                                             'Hz '
+                                                                                                             '· '
+                                                                                                             '{rp:.0f} '
+                                                                                                             '% '
+                                                                                                             'in '
+                                                                                                             'reprojection '
+                                                                                                             '(~{h2:.0f} '
+                                                                                                             'fps) '
+                                                                                                             '· '
+                                                                                                             '{bl:.0f} '
+                                                                                                             '% '
+                                                                                                             'below',
+ '{cpu_share:.0f} % del tiempo limitado por CPU · {below:.0f} % bajo objetivo': '{cpu_share:.0f} % '
+                                                                                'of the time '
+                                                                                'CPU-bound · '
+                                                                                '{below:.0f} % '
+                                                                                'below target',
  '{e}\n\n{p1}': '{e}\n\n{p1}',
  '{msg}\n\nUsa «Cambiar…» para indicar la carpeta.': '{msg}\n\nUse «Change…» to choose the folder.',
  '{n} tirones · {rate:.1f}/hora': '{n} stutters · {rate:.1f}/hour',
- '{p0:.0f} fps en boxes frente a {p1:.0f} en pista. Lo atacan MaxPitObjsToDraw y PitObjectDetail.': '{p0:.0f} fps in '
-                                                                                                    'the pits vs '
-                                                                                                    '{p1:.0f} on '
-                                                                                                    'track. Tackle it '
+ '{p0:.0f} fps en boxes frente a {p1:.0f} en pista. Lo atacan MaxPitObjsToDraw y PitObjectDetail.': '{p0:.0f} '
+                                                                                                    'fps '
+                                                                                                    'in '
+                                                                                                    'the '
+                                                                                                    'pits '
+                                                                                                    'vs '
+                                                                                                    '{p1:.0f} '
+                                                                                                    'on '
+                                                                                                    'track. '
+                                                                                                    'Tackle '
+                                                                                                    'it '
                                                                                                     'with '
                                                                                                     'MaxPitObjsToDraw '
                                                                                                     'and '
@@ -1813,8 +2551,10 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                 'from '
                                                                                                                                                 'the '
                                                                                                                                                 'sim.',
- '{p0} cambios respecto a tu configuración actual.': '{p0} changes compared to your current configuration.',
- '{p0} caídas · peor {p1:.0f} fps durante {p2:.0f} s': '{p0} drops · worst {p1:.0f} fps for {p2:.0f} s',
+ '{p0} cambios respecto a tu configuración actual.': '{p0} changes compared to your current '
+                                                     'configuration.',
+ '{p0} caídas · peor {p1:.0f} fps durante {p2:.0f} s': '{p0} drops · worst {p1:.0f} fps for '
+                                                       '{p2:.0f} s',
  '{p0} frames > 2× la mediana · {spm:.1f}/min · 1 % low {p2:.0f} de {p3:.0f} fps de media · peor frame {p4:.0f} ms': '{p0} '
                                                                                                                      'frames '
                                                                                                                      '> '
@@ -1836,7 +2576,8 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                      'frame '
                                                                                                                      '{p4:.0f} '
                                                                                                                      'ms',
- '{p} problemas · {a} avisos · {i} info · {o} correctos': '{p} problems · {a} warnings · {i} info · {o} OK',
+ '{p} problemas · {a} avisos · {i} info · {o} correctos': '{p} problems · {a} warnings · {i} info '
+                                                          '· {o} OK',
  '{target} no existe en tu carpeta de iRacing. Arranca iRacing una vez con ese modo (monitor o VR) para que lo cree, o elige otro archivo.': '{target} '
                                                                                                                                              "doesn't "
                                                                                                                                              'exist '
@@ -1861,19 +2602,25 @@ CATALOG: dict[str, str] = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                              'choose '
                                                                                                                                              'another '
                                                                                                                                              'file.',
- '¡Ojo! Circuitos distintos: la comparación es orientativa.': 'Warning: different tracks, the comparison is only '
-                                                              'indicative.',
+ '¡Ojo! Circuitos distintos: la comparación es orientativa.': 'Warning: different tracks, the '
+                                                              'comparison is only indicative.',
  '¿Eliminar el perfil «{p0}»?': 'Delete profile «{p0}»?',
- '¿No sabes el ancho? Calcúlalo desde las pulgadas': "Don't know the width? Calculate it from the inches",
+ '¿No sabes el ancho? Calcúlalo desde las pulgadas': "Don't know the width? Calculate it from the "
+                                                     'inches',
  'Ángulo de los laterales (°)': 'Side screen angle (°)',
- 'Ángulo ideal de los laterales: {p0:.0f}° (cada lateral mirando a tus ojos).': 'Ideal side screen angle: {p0:.0f}° '
-                                                                                '(each side screen facing your eyes).',
+ 'Ángulo ideal de los laterales: {p0:.0f}° (cada lateral mirando a tus ojos).': 'Ideal side screen '
+                                                                                'angle: {p0:.0f}° '
+                                                                                '(each side screen '
+                                                                                'facing your '
+                                                                                'eyes).',
  'Árboles en una pasada.': 'Trees in a single pass.',
  'Área': 'Area',
  '■  Detener': '■  Stop',
  '▲ Aviso': '▲ Warning',
  '▶  Iniciar grabación': '▶  Start recording',
- '⚠ {p0} ajustes han cambiado desde la última vez que los aplicaste.': '⚠ {p0} settings have changed since you last '
+ '⚠ {p0} ajustes han cambiado desde la última vez que los aplicaste.': '⚠ {p0} settings have '
+                                                                       'changed since you last '
                                                                        'applied them.',
- '✔ Tu configuración coincide con la última que aplicaste.': '✔ Your configuration matches the last one you applied.',
+ '✔ Tu configuración coincide con la última que aplicaste.': '✔ Your configuration matches the '
+                                                             'last one you applied.',
  '✖ Problema': '✖ Problem'}

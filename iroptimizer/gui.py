@@ -19,7 +19,7 @@ import math
 
 from .report import CAT
 from .safety import RENDERER_FILES
-from . import __version__, i18n, apply as applier, config_reader, diagnostics, drift, fov, hardware, pipeline, presentmon, profiles, userprofiles
+from . import __version__, i18n, sharing, vr, apply as applier, config_reader, diagnostics, drift, fov, hardware, pipeline, presentmon, profiles, userprofiles
 
 APP = "iRacing Optimizer"
 PRIO_TAG = {1: "p1", 2: "p2", 3: "p3"}
@@ -234,6 +234,23 @@ class App(tk.Tk):
         self.pm_status = tk.StringVar(value="")
         ttk.Label(pmrow, textvariable=self.pm_status, style="Muted.TLabel").pack(side="left", padx=10)
         self.btn_pm_perm = ttk.Button(pmrow, text=_("Dar permiso…"), command=self.pm_grant)
+        vrrow = ttk.Frame(f)
+        vrrow.pack(anchor="w", pady=(6, 0))
+        self.vr_on = tk.BooleanVar(value=False)
+        ttk.Checkbutton(vrrow, text=_("Sesión en VR"), variable=self.vr_on).pack(side="left")
+        ttk.Label(vrrow, text=_("   Visor:")).pack(side="left")
+        self.vr_headset = tk.StringVar(value="Meta Quest 3 / 3S")
+        hs = ttk.Combobox(vrrow, textvariable=self.vr_headset, values=list(vr.HEADSETS), state="readonly", width=18)
+        hs.pack(side="left", padx=4)
+        ttk.Label(vrrow, text=_("Frecuencia (Hz):")).pack(side="left", padx=(8, 0))
+        self.vr_hz = tk.StringVar(value="90")
+        self.vr_hz_cb = ttk.Combobox(vrrow, textvariable=self.vr_hz, values=[str(h) for h in vr.HEADSETS["Meta Quest 3 / 3S"]],
+                                     state="readonly", width=5)
+        self.vr_hz_cb.pack(side="left", padx=4)
+        hs.bind("<<ComboboxSelected>>", lambda e: self.vr_hz_cb.configure(values=[str(h) for h in vr.HEADSETS[self.vr_headset.get()]]))
+        self.vr_status = tk.StringVar(value="")
+        ttk.Label(vrrow, textvariable=self.vr_status, style="Muted.TLabel").pack(side="left", padx=10)
+        ttk.Button(vrrow, text=_("Detectar"), command=self._vr_refresh).pack(side="left")
         grid = ttk.Frame(f)
         grid.pack(anchor="w", pady=10)
         self.live = {}
@@ -330,6 +347,7 @@ class App(tk.Tk):
         ttk.Button(row, text=_("Reanalizar"), command=self.reanalyze).pack(side="left", padx=4)
         ttk.Button(row, text=_("Abrir informe HTML"), command=self.open_report).pack(side="right")
         ttk.Button(row, text=_("Comparar con otra sesión…"), command=self.compare_sessions).pack(side="right", padx=6)
+        ttk.Button(row, text=_("Exportar para compartir…"), command=self.export_session).pack(side="right")
         self.session_var = tk.StringVar(value=_("Ninguna sesión cargada"))
         ttk.Label(f, textvariable=self.session_var, style="Muted.TLabel").pack(anchor="w", pady=(6, 2))
 
@@ -433,6 +451,7 @@ class App(tk.Tk):
         self._refresh_myprofiles()
         self._fov_load_from_ini(silent=True)
         self._pm_refresh_status()
+        self._vr_refresh()
         self._drift_check()
         self.status(_("Configuración cargada: {p0}", p0=c.renderer_name or _("sin archivo gráfico")))
 
@@ -517,7 +536,10 @@ class App(tk.Tk):
         if not self.cfg or not self.cfg.renderer:
             return
         analysis = self.result.analysis if self.result else None
-        profs = pipeline.profiles_for(self.cfg.renderer.flat(), self.hw, analysis)
+        vr_hz = None
+        if self.cfg.renderer_name in vr.VR_RENDERERS:
+            vr_hz = float(self.vr_hz.get() or 90)
+        profs = pipeline.profiles_for(self.cfg.renderer.flat(), self.hw, analysis, vr_hz)
         self._profiles = profs
         for name, tv in self.prof_trees.items():
             tv.delete(*tv.get_children())
@@ -593,8 +615,9 @@ class App(tk.Tk):
         except ImportError:
             messagebox.showerror(APP, "Falta pyirsdk (pip install pyirsdk).")
             return
+        self._vr_refresh()
         pm_exe = None
-        if self.use_pm.get():
+        if self.use_pm.get() and not self.vr_on.get():
             self._pm_refresh_status()
             if self._pm_exe and presentmon.can_capture():
                 pm_exe = self._pm_exe
@@ -633,6 +656,9 @@ class App(tk.Tk):
         def run():
             from .monitor import SessionMonitor
             meta = {"hardware": self.hw, "config": config_reader.snapshot(self.cfg)}
+            if self.vr_on.get():
+                meta["vr"] = {**vr.detect(), "active": True, "hz": float(self.vr_hz.get() or 90),
+                              "headset": self.vr_headset.get()}
             mon = SessionMonitor(self.out_dir, hz=float(self.hz_var.get() or 4), meta_extra=meta, presentmon_exe=pm_exe)
             csv_path, _meta = mon.run(on_tick=tick, stop_event=self.mon_stop, log=self._log, on_row=on_row)
 
@@ -664,9 +690,40 @@ class App(tk.Tk):
     # ------------------------------------------------------------------ análisis
     def open_session(self):
         p = filedialog.askopenfilename(title=_("Sesión grabada"), initialdir=self.out_dir,
-                                       filetypes=[(_("Sesiones"), "session_*.csv"), ("CSV", "*.csv")])
-        if p:
-            self.analyze(Path(p))
+                                       filetypes=[(_("Sesiones"), "session_*.csv session_*.zip"), ("CSV", "*.csv"),
+                                                  (_("Sesión compartida"), "*.zip")])
+        if not p:
+            return
+        if p.lower().endswith(".zip"):
+            try:
+                p = sharing.import_session(p, self.out_dir / "recibidas")
+            except Exception as e:
+                messagebox.showerror(APP, str(e))
+                return
+        self.analyze(Path(p))
+
+    def export_session(self):
+        if not self.result:
+            messagebox.showinfo(APP, _("Primero abre o graba una sesión."))
+            return
+        dst = filedialog.asksaveasfilename(defaultextension=".zip", initialfile=f"{self._csv.stem}_compartir.zip",
+                                           filetypes=[("ZIP", "*.zip")])
+        if not dst:
+            return
+        try:
+            out = sharing.export_session(self._csv, dst)
+        except Exception as e:
+            messagebox.showerror(APP, str(e))
+            return
+        messagebox.showinfo(APP, _("Sesión exportada sin datos personales (sin nombres de procesos, rutas ni ajustes de "
+                                   "audio/controles):\n{p}", p=out))
+
+    def _vr_refresh(self):
+        d = vr.detect()
+        if d["active"]:
+            self.vr_on.set(True)
+        parts = [x for x in [d.get("runtime")] + d.get("software", []) if x]
+        self.vr_status.set(_("Detectado: {x}", x=", ".join(dict.fromkeys(parts))) if parts else _("No se detecta software de VR."))
 
     def reanalyze(self):
         if self.result:

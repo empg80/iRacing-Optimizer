@@ -33,7 +33,20 @@ Para avisarte si iRacing cambia tu configuración, la app guarda los valores que
 
 ## Privacidad al compartir sesiones
 
-Los archivos `session_*.json` incluyen tu hardware, tu configuración de iRacing y los nombres de los procesos que más CPU consumieron mientras conducías. La ruta de tu carpeta se guarda como `%USERPROFILE%\…`, sin tu nombre de usuario de Windows. Revisa el archivo antes de publicarlo si te preocupa la lista de procesos.
+Los archivos `session_*.json` locales incluyen tu hardware, tu configuración de iRacing y los procesos que más CPU consumieron. La ruta de tu carpeta se guarda como `%USERPROFILE%\…`, sin tu nombre de usuario.
+
+Para compartir usa **Exportar para compartir…** (o `export`). El `.zip` resultante:
+- solo contiene la telemetría, el CSV de PresentMon si existe y un JSON reducido;
+- del renderer solo guarda `[Graphics Options]`, `[MonitorSetup]` y `[Display]` (sin `deviceIdx`); de `app.ini`, unas pocas claves gráficas; nada de `core.ini`;
+- sustituye la lista de procesos por un único porcentaje de CPU en segundo plano, y elimina rutas y versión del sistema operativo.
+
+## Abrir sesiones de otros
+
+Al abrir un `.zip` recibido:
+- solo se aceptan nombres `session_*.csv/.json/.presentmon.csv`, sin carpetas ni rutas;
+- se ignora cualquier otro archivo del `.zip`;
+- hay límites de tamaño (200 MB por CSV, 2 MB por JSON);
+- nada se ejecuta ni se aplica a tu iRacing: solo se analiza.
 
 ## Verificar la descarga
 

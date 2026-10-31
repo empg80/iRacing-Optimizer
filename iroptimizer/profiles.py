@@ -76,7 +76,7 @@ def _round5(x):
 
 
 def build_profile(name: str, renderer_flat: dict[str, str], refresh: float | None = None,
-                  analysis: dict | None = None, nvidia: bool = True) -> list[dict]:
+                  analysis: dict | None = None, nvidia: bool = True, vr_hz: float | None = None) -> list[dict]:
     """Devuelve la lista de cambios respecto al ini actual (solo claves existentes y distintas)."""
     p = PROFILES[name]
     vals = dict(p["values"])
@@ -89,21 +89,25 @@ def build_profile(name: str, renderer_flat: dict[str, str], refresh: float | Non
         f = analysis["groups"][analysis["primary"]]["fps"]
         p10, p50 = f.get("p10"), f.get("median")
 
-    # Tope de FPS: base = lo que mantienes el 90 % del tiempo (si hay análisis), sin pasar de Hz-3
-    if p10:
-        cap = max(60, _round5(p10 * p["cap_factor"]))
-        cap = min(cap, vrr_cap) if vrr_cap else cap
+    if vr_hz:
+        # VR: el visor marca el ritmo (el tope de iRacing no aplica); el LOD dinámico actúa al bajar de su frecuencia
+        vals["LODMinFPSTarget"] = int(vr_hz) if name != "calidad" else 60
     else:
-        cap = vrr_cap if name != "calidad" or not vrr_cap else max(60, _round5(vrr_cap * 0.6))
-    if cap:
-        vals["LimitFrameRate"] = 1
-        vals["DesiredFPSLimit"] = cap
+        # Tope de FPS: base = lo que mantienes el 90 % del tiempo (si hay análisis), sin pasar de Hz-3
+        if p10:
+            cap = max(60, _round5(p10 * p["cap_factor"]))
+            cap = min(cap, vrr_cap) if vrr_cap else cap
+        else:
+            cap = vrr_cap if name != "calidad" or not vrr_cap else max(60, _round5(vrr_cap * 0.6))
+        if cap:
+            vals["LimitFrameRate"] = 1
+            vals["DesiredFPSLimit"] = cap
 
-    # LOD dinámico: actúa por debajo de este umbral
-    if p["lod_factor"] and (p50 or cap):
-        vals["LODMinFPSTarget"] = max(60, _round5(min(p50 or cap, cap or p50) * p["lod_factor"]))
-    elif name == "calidad":
-        vals["LODMinFPSTarget"] = 60
+        # LOD dinámico: actúa por debajo de este umbral
+        if p["lod_factor"] and (p50 or cap):
+            vals["LODMinFPSTarget"] = max(60, _round5(min(p50 or cap, cap or p50) * p["lod_factor"]))
+        elif name == "calidad":
+            vals["LODMinFPSTarget"] = 60
 
     changes = []
     for key, v in vals.items():

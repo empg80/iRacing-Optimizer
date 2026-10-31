@@ -58,3 +58,43 @@ def test_redact_path():
     import os
     home = os.path.expanduser("~")
     assert redact_path(os.path.join(home, "Documents", "iRacing")).startswith("%USERPROFILE%")
+
+
+def test_export_is_anonymized(tmp_path):
+    import zipfile
+    from iroptimizer import sharing
+    csv_path, _ = demo.make(tmp_path, with_presentmon=True)
+    meta = json.loads(csv_path.with_suffix(".json").read_text())
+    meta["top_processes"] = [{"name": "MiProgramaSecreto.exe", "cpu_pct": 12.0}]
+    meta["config"]["app"]["Audio"] = {"devSpeakerName": "Auriculares de Kike"}
+    meta["config"]["directory"] = "C:\\Users\\kike\\Documents\\iRacing"
+    csv_path.with_suffix(".json").write_text(json.dumps(meta))
+    z = sharing.export_session(csv_path)
+    with zipfile.ZipFile(z) as zf:
+        names = set(zf.namelist())
+        blob = zf.read("session_demo.json").decode()
+    assert names == {"session_demo.csv", "session_demo.json", "session_demo.presentmon.csv"}
+    assert "MiProgramaSecreto" not in blob and "Auriculares" not in blob and "kike" not in blob
+    assert json.loads(blob)["background_cpu_pct"] == 12.0
+    # e importarla de nuevo funciona y se puede analizar
+    out = sharing.import_session(z, tmp_path / "rec")
+    assert out.name == "session_demo_recibida.csv"
+    assert pipeline.run(out).analysis["presentmon"]
+
+
+def test_import_rejects_malicious_zip(tmp_path):
+    import zipfile
+    from iroptimizer import sharing
+    bad = tmp_path / "bad.zip"
+    with zipfile.ZipFile(bad, "w") as z:
+        z.writestr("../../evil.csv", "x")
+    with pytest.raises(ValueError):
+        sharing.import_session(bad, tmp_path / "rec")
+    ok = tmp_path / "extra.zip"
+    with zipfile.ZipFile(ok, "w") as z:
+        z.writestr("session_a.csv", "t,fps\n")
+        z.writestr("session_a.json", "{}")
+        z.writestr("malware.exe", "MZ")
+    sharing.import_session(ok, tmp_path / "rec2")
+    assert not (tmp_path / "rec2" / "malware.exe").exists()
+    assert sorted(p.name for p in (tmp_path / "rec2").iterdir()) == ["session_a_recibida.csv", "session_a_recibida.json"]

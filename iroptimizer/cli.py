@@ -69,6 +69,9 @@ def cmd_monitor(args):
     from .monitor import SessionMonitor
     cfg = config_reader.load(args.ini_dir, args.renderer)
     meta = {"hardware": hardware.get_hardware(), "config": config_reader.snapshot(cfg)}
+    if args.vr_hz:
+        from . import vr
+        meta["vr"] = {**vr.detect(), "active": True, "hz": args.vr_hz}
     pm_exe = None
     if args.presentmon:
         from . import presentmon
@@ -109,6 +112,11 @@ def cmd_compare(args):
     print(pipeline.compare_text(pipeline.compare(args.a, args.b)))
 
 
+def cmd_export(args):
+    from . import sharing
+    print(sharing.export_session(Path(args.csv), args.out))
+
+
 def cmd_restore(args):
     for line in applier.restore(config_reader.find_iracing_dir(args.ini_dir), args.stamp):
         print(line)
@@ -137,6 +145,7 @@ def main(argv=None):
     m.add_argument("--duration", type=float, help=_("Segundos máximos de grabación"))
     m.add_argument("--analyze", action="store_true", help=_("Analizar al terminar"))
     m.add_argument("--presentmon", action="store_true", help=_("Medir frametimes con PresentMon"))
+    m.add_argument("--vr-hz", type=float, help=_("Sesión en VR: frecuencia del visor (p. ej. 90)"))
     m.add_argument("--no-browser", action="store_true")
     m.add_argument("--target", type=float, help=_("FPS objetivo (por defecto: tope de iRacing o Hz de la pantalla)"))
     m.set_defaults(fn=cmd_monitor)
@@ -165,6 +174,11 @@ def main(argv=None):
     c.add_argument("a", help=_("CSV de la sesión anterior"))
     c.add_argument("b", help=_("CSV de la sesión nueva"))
     c.set_defaults(fn=cmd_compare)
+
+    ex = sub.add_parser("export", parents=[common], help=_("Exporta una sesión anonimizada (.zip) para compartir"))
+    ex.add_argument("csv")
+    ex.add_argument("--out")
+    ex.set_defaults(fn=cmd_export)
 
     r = sub.add_parser("restore", parents=[common])
     r.add_argument("--stamp", help=_("Copia concreta (carpeta en iroptimizer_backups)"))

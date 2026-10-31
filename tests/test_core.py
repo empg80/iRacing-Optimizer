@@ -1,6 +1,3 @@
-import shutil
-from pathlib import Path
-
 from iroptimizer import apply as applier, config_reader, demo, iniio, pipeline
 
 
@@ -185,3 +182,30 @@ def test_english_report(tmp_path, monkeypatch):
     html = res.html_path.read_text(encoding="utf-8")
     assert "Configuration recommendations" in html and 'lang="en"' in html
     assert any("Physics and network thread" in c["title"] for c in res.diagnostics["checks"])
+
+
+def test_vr_session_analysis(tmp_path):
+    import json
+    csv_path, ini_dir = _demo(tmp_path)
+    meta = json.loads(csv_path.with_suffix(".json").read_text())
+    meta["vr"] = {"active": True, "hz": 90, "runtime": "Virtual Desktop (VDXR)", "software": ["Virtual Desktop"]}
+    meta["config"]["renderer_file"] = "rendererDX11OpenXR.ini"
+    csv_path.with_suffix(".json").write_text(json.dumps(meta))
+    # FPS de VR: a 90 Hz con periodos a ~45 (reproyección)
+    import csv as _csv
+    rows = list(_csv.DictReader(open(csv_path)))
+    for i, r in enumerate(rows):
+        r["fps"] = "45.2" if (i // 40) % 4 == 0 else "89.8"
+    with open(csv_path, "w", newline="") as f:
+        w = _csv.DictWriter(f, fieldnames=rows[0].keys())
+        w.writeheader()
+        w.writerows(rows)
+    res = pipeline.run(csv_path)
+    v = res.analysis["vr"]
+    assert v and v["hz"] == 90 and 15 < v["reprojection_pct"] < 35 and v["reprojection_periods"] > 5
+    assert res.analysis["target_fps"] == 90 and not res.analysis["capped"]
+    assert not any(r.get("key") in ("LimitFrameRate", "DesiredFPSLimit") for r in res.recs)
+    assert any((r.get("title") or "").startswith("Reproyección") for r in res.recs)
+    titles = {c["title"] for c in res.diagnostics["checks"]}
+    assert {"Frecuencia del visor", "Software de VR"} <= titles
+    assert all(c["key"] not in ("LimitFrameRate", "DesiredFPSLimit") for ch in res.profiles.values() for c in ch)

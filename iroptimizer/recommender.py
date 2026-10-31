@@ -86,8 +86,22 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
     drops = a.get("drops") or []
     drop_cpu = sum(1 for d in drops if d["bottleneck"] in ("cpu", "mixed")) / len(drops) if drops else 0
 
+    vrd = a.get("vr")
+    if vrd:
+        hz = vrd.get("hz") or target
+        if vrd.get("reprojection_pct", 0) > 10:
+            b.info(_("Reproyección activa en VR"),
+                   _("El {p:.0f} % del tiempo estás a ~{h:.0f} fps (la mitad de {hz:.0f} Hz): el runtime inventa uno de cada dos "
+                     "frames y aparecen «fantasmas» en coches y bordes. Aplica los recortes de abajo o baja la frecuencia del "
+                     "visor: mejor {lower} Hz estables que {hz:.0f} Hz con reproyección.",
+                     p=vrd["reprojection_pct"], h=hz / 2, hz=hz, lower=80 if hz > 80 else 72), 1, "frametime")
+        elif vrd.get("at_rate_pct", 100) < 85:
+            b.info(_("No llegas a la frecuencia del visor"),
+                   _("Solo el {p:.0f} % del tiempo a {hz:.0f} Hz. En VR cada caída se nota mucho más que en monitor.",
+                     p=vrd["at_rate_pct"], hz=hz), 2, "frametime")
+
     # ------------------------------------------------------------------ FPS CAP
-    lim = b.cur("LimitFrameRate")
+    lim = b.cur("LimitFrameRate") if not vrd else None
     desired = b.cur("DesiredFPSLimit")
     vrr_cap = (refresh - 3) if refresh else None
     holdable = _round_down(fps["p10"])  # lo que sostienes el 90 % del tiempo
@@ -98,7 +112,7 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
         b.add("DesiredFPSLimit", cap, 1, "frametime",
               _("Tope propuesto: {cap} fps ≈ lo que mantienes el 90 % del tiempo", cap=cap)
               + (_(", y por debajo de {refresh:.0f} Hz para quedarte dentro de G-Sync/VRR.", refresh=refresh) if vrr_cap else "."))
-    elif lim == 1 and desired:
+    elif lim == 1 and desired and not vrd:
         if refresh and desired > refresh - 2:
             b.add("DesiredFPSLimit", vrr_cap, 2, "frametime",
                   _("Con VRR conviene limitar unos fps por debajo de la frecuencia ({refresh:.0f} Hz) para no salir del rango G-Sync y caer en V-Sync.", refresh=refresh))

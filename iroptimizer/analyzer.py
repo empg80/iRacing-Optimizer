@@ -169,6 +169,10 @@ def analyze(rows: list[dict], meta: dict, presentmon: dict | None = None, target
     for k in ("cpu_fg", "cpu_bg", "gpu_usage", "chan_quality", "chan_partner_quality"):
         _norm_pct(rows, k)
     target, cap, capped = _target(cfg, hw)
+    from . import vr as _vr
+    vr_mode = _vr.is_vr_session(meta)
+    if vr_mode:  # en VR el objetivo es la frecuencia del visor; el tope de FPS no aplica
+        target, cap, capped = float((meta.get("vr") or {}).get("hz") or 90), None, False
     if target_override:
         target = float(target_override)
     valid = _valid(rows)
@@ -283,6 +287,9 @@ def analyze(rows: list[dict], meta: dict, presentmon: dict | None = None, target
         "drops": _drops(prim, p["fps"]["median"], cap)[:12],
         "memory": memory,
         "top_processes": meta.get("top_processes") or [],
+        "vr": ({**_vr.analyze(prim, target), "runtime": (meta.get("vr") or {}).get("runtime"),
+                "software": (meta.get("vr") or {}).get("software") or [],
+                "headset": (meta.get("vr") or {}).get("headset")} if vr_mode else None),
         "network": network,
         "thermal": thermal,
         "presentmon": presentmon or None,

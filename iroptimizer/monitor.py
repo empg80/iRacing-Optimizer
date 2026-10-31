@@ -226,6 +226,9 @@ class SessionMonitor:
         log("Conectado. Grabando.")
         self._refresh_session_info(force=True)
         cap = None
+        if self.presentmon_exe and (self.meta.get("vr") or {}).get("active"):
+            log(_("Sesión VR: PresentMon no se usa (mediría la ventana espejo del monitor, no el visor)."))
+            self.presentmon_exe = None
         if self.presentmon_exe:
             from .presentmon import Capture
             cap = Capture(self.presentmon_exe, csv_path.with_suffix(".presentmon.csv"))
