@@ -1,7 +1,7 @@
 """Aviso de nueva versión (opcional y desactivado por defecto).
 
 Es la única conexión a internet de la app y solo ocurre si el usuario lo activa:
-- consulta como mucho una vez al día la API pública de GitHub (`releases/latest` del repositorio oficial);
+- consulta al abrir la app la API pública de GitHub (`releases/latest` del repositorio oficial);
 - no envía nada del usuario: es una petición GET anónima, sin datos de equipo ni de sesiones;
 - nunca descarga ni ejecuta nada: solo avisa y abre la página oficial de la release en el navegador.
 Se puede desactivar del todo con la variable de entorno IROPT_NO_UPDATE_CHECK=1.
@@ -20,7 +20,7 @@ RELEASES_URL = f"https://github.com/{REPO}/releases"
 _PAGE_PREFIX = f"https://github.com/{REPO}/releases/".lower()
 _DL_PREFIX = f"https://github.com/{REPO}/releases/download/".lower()
 EXE_NAME = "iRacingOptimizer.exe"
-CHECK_EVERY_S = 24 * 3600
+CHECK_EVERY_S = 0  # cada arranque (la API anónima de GitHub admite 60 consultas/hora por IP)
 MAX_BYTES = 1_000_000
 _VER_RE = re.compile(r"^v?(\d{1,4})\.(\d{1,4})\.(\d{1,4})$")
 
@@ -36,7 +36,7 @@ def disabled_by_env() -> bool:
 
 
 def should_check(settings: dict, now: float | None = None) -> bool:
-    """Solo si el usuario lo activó, no está desactivado por entorno y han pasado 24 h."""
+    """Solo si el usuario lo activó y no está desactivado por entorno (CHECK_EVERY_S permite espaciar las consultas)."""
     if disabled_by_env() or settings.get("update_check") is not True:
         return False
     now = time.time() if now is None else now

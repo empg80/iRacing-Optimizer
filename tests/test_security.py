@@ -132,6 +132,6 @@ def test_update_check_off_by_default(monkeypatch):
     assert not updates.should_check({})                      # sin preguntar = desactivado
     assert not updates.should_check({"update_check": False})
     assert updates.should_check({"update_check": True}, now=10 ** 9)
-    assert not updates.should_check({"update_check": True, "update_last_check": 10 ** 9 - 60}, now=10 ** 9)
+    assert updates.should_check({"update_check": True, "update_last_check": 10 ** 9 - 60}, now=10 ** 9)  # cada arranque
     monkeypatch.setenv("IROPT_NO_UPDATE_CHECK", "1")
     assert not updates.should_check({"update_check": True}, now=10 ** 9)

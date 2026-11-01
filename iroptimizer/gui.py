@@ -584,7 +584,7 @@ class App(tk.Tk):
         st = i18n.load_settings()
         if "update_check" not in st:
             ok = messagebox.askyesno(APP, _("¿Quieres que la app te avise cuando haya una versión nueva?\n\n"
-                                            "Si aceptas, al arrancar comprobará como mucho una vez al día la página de "
+                                            "Si aceptas, cada vez que abras la app comprobará la página de "
                                             "versiones del proyecto en GitHub. No envía ningún dato tuyo ni descarga nada: "
                                             "solo te avisa y tú decides si la descargas.\n\nPuedes cambiarlo cuando quieras "
                                             "con la casilla «Avisar de nuevas versiones»."))

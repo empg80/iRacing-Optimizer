@@ -97,7 +97,7 @@ For headset sessions (Quest, Index, Pimax…), tick **VR session** in the Monito
 
 The first time you open the app it asks whether you want to be notified of new versions. The default is no. You can change it with the **Notify me of new versions** checkbox.
 
-If enabled, at startup it checks this repository's GitHub releases page at most once a day. When there is a new version, a bar shows *What's new*, *Download* and *Skip this version*. The app never updates itself or downloads anything: you download it yourself from GitHub. To turn it off completely, set `IROPT_NO_UPDATE_CHECK=1`.
+If enabled, every time you open the app it checks this repository's GitHub releases page. When there is a new version, a bar shows *What's new*, *Download* and *Skip this version*. The app never updates itself or downloads anything: you download it yourself from GitHub. To turn it off completely, set `IROPT_NO_UPDATE_CHECK=1`.
 
 ## Sharing sessions
 

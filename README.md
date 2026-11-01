@@ -91,7 +91,7 @@ Para sesiones con visor (Quest, Index, Pimax…), marca **Sesión en VR** en la 
 
 La primera vez que abres la app te pregunta si quieres que te avise de versiones nuevas. Por defecto, no. Puedes cambiarlo con la casilla **Avisar de nuevas versiones**.
 
-Si lo activas, al arrancar consulta como mucho una vez al día la página de releases de este repositorio en GitHub. Si hay versión nueva, muestra una barra con *Ver novedades*, *Descargar* e *Ignorar esta versión*. La app nunca se actualiza sola ni descarga nada: la descarga la haces tú desde GitHub. Para desactivarlo del todo, define `IROPT_NO_UPDATE_CHECK=1`.
+Si lo activas, cada vez que abres la app consulta la página de releases de este repositorio en GitHub. Si hay versión nueva, muestra una barra con *Ver novedades*, *Descargar* e *Ignorar esta versión*. La app nunca se actualiza sola ni descarga nada: la descarga la haces tú desde GitHub. Para desactivarlo del todo, define `IROPT_NO_UPDATE_CHECK=1`.
 
 ## Compartir sesiones
 

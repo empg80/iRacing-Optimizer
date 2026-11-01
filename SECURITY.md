@@ -24,7 +24,7 @@
 ## Conexión a internet (aviso de versiones)
 
 La app funciona sin internet. La única conexión que puede hacer es el aviso de nuevas versiones, **desactivado por defecto** y solo si lo aceptas:
-- es una petición GET anónima a `api.github.com/repos/empg80/iRacing-Optimizer/releases/latest`, como mucho una vez al día;
+- es una petición GET anónima a `api.github.com/repos/empg80/iRacing-Optimizer/releases/latest`, al abrir la app;
 - no envía datos de tu equipo, tu configuración ni tus sesiones;
 - nunca descarga ni ejecuta nada: solo abre en tu navegador enlaces del repositorio oficial en github.com (cualquier otro enlace se descarta);
 - `IROPT_NO_UPDATE_CHECK=1` la desactiva del todo, también la pregunta inicial.
