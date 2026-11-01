@@ -392,7 +392,8 @@ class App(tk.Tk):
         btns.pack(fill="x")
         ttk.Button(btns, text=_("Marcar P1"), command=lambda: self.rec_tree.set_all(lambda r: r["priority"] == 1)).pack(side="left")
         ttk.Button(btns, text=_("Marcar P1 + P2"), command=lambda: self.rec_tree.set_all(lambda r: r["priority"] <= 2)).pack(side="left", padx=4)
-        ttk.Button(btns, text=_("Desmarcar todo"), command=lambda: self.rec_tree.set_all(lambda r: False)).pack(side="left")
+        ttk.Button(btns, text=_("Marcar todo"), command=lambda: self.rec_tree.set_all(lambda r: bool(r.get("key")))).pack(side="left")
+        ttk.Button(btns, text=_("Desmarcar todo"), command=lambda: self.rec_tree.set_all(lambda r: False)).pack(side="left", padx=4)
         ttk.Label(btns, text=_("  Doble clic: ver motivo completo"), style="Muted.TLabel").pack(side="left")
         ttk.Button(btns, text=_("Aplicar seleccionados (con copia de seguridad)"), style="Accent.TButton",
                    command=self.apply_selected).pack(side="right")

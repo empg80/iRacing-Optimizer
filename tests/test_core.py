@@ -235,11 +235,18 @@ def test_vr_detects_real_headset_rate():
     assert vr.detect_rate([60.0] * 100, 120, "Meta Quest 3 / 3S") is None       # 60 = reproyección de 120
     assert vr.detect_rate([45.0] * 100, 90, "Meta Quest 3 / 3S") is None
 
-
-def test_vr_check_overrides_checkbox():
+def test_vr_session_from_checkbox_or_renderer():
     from iroptimizer import vr
-    meta = {"vr": {"active": True, "hz": 90}, "config": {"renderer_file": "rendererDX11OpenXR.ini"}}
-    assert vr.is_vr_session(meta)
-    assert not vr.is_vr_session({**meta, "vr_check": False})      # marcada pero iRacing no estaba en VR
-    assert vr.is_vr_session({"vr_check": True, "config": {"renderer_file": "rendererDX11Monitor.ini"}})
-    assert vr.detect.__doc__ and vr.iracing_in_vr(None) is None
+    assert vr.is_vr_session({"vr": {"active": True, "hz": 90}, "config": {"renderer_file": "rendererDX11Monitor.ini"}})
+    assert vr.is_vr_session({"config": {"renderer_file": "rendererDX11OpenXR.ini"}})
+    # sesiones de la v0.9.3 con vr_check=True por error (openxr_loader cargado en monitor): se ignora
+    assert not vr.is_vr_session({"vr_check": True, "config": {"renderer_file": "rendererDX11Monitor.ini"}})
+
+
+def test_presentmon_clock_offset_aligned():
+    from iroptimizer.presentmon import align_clock
+    t0 = 1_793_554_272.1
+    fr = [(t0 + 3600.1 + i * 0.01, 10.0, 5.0, 4.0) for i in range(5)]
+    out = align_clock(fr, t0)
+    assert abs(out[0][0] - (t0 + 0.1)) < 1e-6
+    assert align_clock([(t0 + 30, 10.0, None, None)], t0)[0][0] == t0 + 30   # sin desfase: no se toca

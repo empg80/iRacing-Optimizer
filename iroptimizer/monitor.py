@@ -102,12 +102,6 @@ class SystemSampler:
         return [{"name": n, "cpu_pct": round(v, 1), "is_iracing": n.lower().startswith("iracing")}
                 for n, v in avg[:k] if v >= 0.3]
 
-    def _find_proc_safe(self):
-        try:
-            return self._find_proc()
-        except Exception:
-            return None
-
     def _find_proc(self):
         if self.proc and self.proc.is_running():
             return self.proc
@@ -269,9 +263,6 @@ class SessionMonitor:
                 log(_("PresentMon no pudo arrancar: ") + ("falta permiso (grupo Performance Log Users o administrador)."
                                                        if cap.error == "permiso" else str(cap.error)))
                 cap = None
-        from . import vr as _vr
-        vr_seen, vr_next = None, 0.0  # comprobación real: ¿iRacing tiene cargado un runtime de VR?
-        vr_marked = bool((self.meta.get("vr") or {}).get("active"))
         t0, last_ok, rows = time.time(), time.time(), 0
         period = 1.0 / self.hz
         ir = self.ir
@@ -324,15 +315,6 @@ class SessionMonitor:
                     row.update(self.sys.sample())
                     if row["on_track"]:
                         self.sys.scan_processes()
-                        if tick >= vr_next and vr_seen is not True:
-                            vr_next = tick + 30
-                            got = _vr.iracing_in_vr(self.sys._find_proc_safe())
-                            if got is not None:
-                                first = vr_seen is None
-                                vr_seen = bool(vr_seen) or got
-                                if first and vr_seen != vr_marked:
-                                    log(_("iRacing está en VR: la sesión se analizará como VR.") if vr_seen
-                                        else _("iRacing no está en VR: la sesión se analizará como de monitor aunque esté marcada «Sesión en VR»."))
                     w.writerow(row)
                     rows += 1
                     if on_row:
@@ -352,7 +334,6 @@ class SessionMonitor:
                 if cap:
                     log("Cerrando PresentMon…")
                     cap.stop()
-        self.meta["vr_check"] = vr_seen
         self.meta["top_processes"] = [p for p in self.sys.top_processes(12) if not p["is_iracing"]][:8]
         self.meta["iracing_cpu_pct"] = next((p["cpu_pct"] for p in self.sys.top_processes(12) if p["is_iracing"]), None)
         self.meta["samples"] = rows

@@ -142,6 +142,20 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
                 b.add("DesiredFPSLimit", holdable, 2, "frametime",
                       _("Tu tope ({desired:.0f}) está muy por encima de lo que sostienes en {lbl} (p10 {p2:.0f}). Bajarlo a {holdable} alisa el frametime. Mejor orden: aplica antes los recortes de CPU, vuelve a grabar y fija el tope con el nuevo p10.", desired=desired, lbl=lbl, p2=fps['p10'], holdable=holdable))
 
+    # ------------------------------------------- Clavado en el tope con mucho margen: se puede subir
+    if not vrd and lim == 1 and desired and bn["cap"] >= 90:
+        cp95 = (g.get("cpu_fg") or {}).get("p95")
+        gp95 = (g.get("gpu") or {}).get("p95")
+        if cp95 is not None and gp95 is not None and cp95 < 70 and gp95 < 70:
+            load = max(cp95, gp95) / 100
+            up = _round_down(desired / max(load, 0.3) * 0.8)
+            if vrr_cap:
+                up = min(up, int(vrr_cap))
+            if up >= desired * 1.15:
+                b.add("DesiredFPSLimit", up, 3, "frametime",
+                      _("Vas clavado en tu tope de {desired:.0f} fps el {cap:.0f} % del tiempo con margen de sobra (hilo principal p95 {cp:.0f} %, GPU p95 {gp:.0f} %). Puedes subirlo a ~{up}. Ojo: el margen depende del circuito y del coche; en pistas pesadas (Le Mans, Nordschleife) quizá necesites un tope más bajo. Guarda un perfil para cada caso.",
+                        desired=desired, cap=bn["cap"], cp=cp95, gp=gp95, up=up))
+
     # ------------------------------------------------------------- CPU (hilo FG)
     # Se activa si la CPU domina en global o si provoca la mayoría de las peores caídas (salidas, pelotones)
     if deficit and ((cpu_share >= 20 and cpu_share >= gpu_share * 0.8) or (drop_cpu >= 0.5 and len(drops) >= 3)):

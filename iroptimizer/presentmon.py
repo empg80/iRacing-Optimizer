@@ -209,6 +209,24 @@ def load_frames(path: str | Path, t0: float | None = None) -> list[tuple]:
             else:
                 t = None
             frames.append((t, ft, _fnum(r.get(c_cpu)) if c_cpu else None, _fnum(r.get(c_gpu)) if c_gpu else None))
+    return align_clock(frames, t0)
+
+
+def align_clock(frames: list[tuple], t0: float | None) -> list[tuple]:
+    """Corrige un desfase horario entero en las marcas de PresentMon.
+
+    En real (nov-2026, Windows 11, horario de invierno) PresentMon escribió la hora con +1 h respecto al reloj
+    del sistema, y ningún frame coincidía con la telemetría. Si el primer frame dista de la hora de arranque de
+    la captura (t0) un múltiplo de 15 min (± 2 min), se resta ese desfase.
+    """
+    if not t0 or not frames or frames[0][0] is None:
+        return frames
+    d = frames[0][0] - t0
+    if abs(d) <= 120:
+        return frames
+    off = round(d / 900) * 900
+    if off and abs(d - off) <= 120 and abs(off) <= 14 * 3600:
+        return [(None if t is None else t - off, *rest) for t, *rest in frames]
     return frames
 
 

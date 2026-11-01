@@ -80,28 +80,9 @@ def detect() -> dict:
     return {"runtime": active_openxr_runtime(), "software": procs, "active": False}
 
 
-# Bibliotecas que iRacing solo carga cuando renderiza en VR
-VR_MODULES = ("openxr_loader", "libovrrt", "openvr_api")
-
-
-def iracing_in_vr(proc) -> bool | None:
-    """True/False según si el proceso de iRacing tiene cargado un runtime de VR; None si no se puede saber."""
-    if proc is None:
-        return None
-    try:
-        for m in proc.memory_maps(grouped=True):
-            name = Path(getattr(m, "path", "") or "").name.lower()
-            if any(name.startswith(x) for x in VR_MODULES):
-                return True
-        return False
-    except Exception:
-        return None
-
-
 def is_vr_session(meta: dict) -> bool:
-    check = meta.get("vr_check")
-    if check is not None:  # comprobado durante la grabación: manda sobre la casilla y el archivo gráfico
-        return bool(check)
+    # Nota: no sirve mirar si iRacing tiene cargado openxr_loader.dll: lo carga también en monitor
+    # (comprobado en real, nov-2026). Manda la casilla «Sesión en VR» o el archivo gráfico de VR.
     v = meta.get("vr") or {}
     if v.get("active"):
         return True

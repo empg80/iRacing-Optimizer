@@ -393,8 +393,9 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
         events += spikes
         srate = len(spikes) / dur_h
         ns = len(spikes)
-        st = BAD if p95_l > 200 or (srate >= 20 and ns >= 10) else WARN if p95_l > 130 or (srate >= 6 and ns >= 5) else OK
-        stable = (srate < 6 or ns < 5) and p95_l - med_l < 40
+        # Picos de un instante (una muestra) son normales; solo cuentan si son frecuentes
+        st = BAD if p95_l > 200 or (srate >= 30 and ns >= 10) else WARN if p95_l > 130 or (srate >= 10 and ns >= 5) else OK
+        stable = (srate < 10 or ns < 5) and p95_l - med_l < 40
         if st != OK and stable:
             st = INFO  # alta pero estable: es la distancia al servidor, no tu conexión
         add(_("Red"), _("Latencia con el servidor"), st,
