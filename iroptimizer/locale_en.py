@@ -482,6 +482,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Archivo demasiado grande dentro del .zip.': 'File too large inside the .zip.',
  'Archivo demasiado grande para ser un perfil.': 'File too large to be a profile.',
  'Archivo gráfico': 'Graphics file',
+ 'Archivo gráfico de VR': 'VR graphics file',
  'Archivo gráfico no permitido: {p0!r}': 'Graphics file not allowed: {p0!r}',
  'Archivo gráfico:': 'Graphics file:',
  'Archivo no permitido: {p0!r}': 'File not allowed: {p0!r}',
@@ -935,6 +936,27 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                 '({ideal:.0f}°).',
  'El ángulo ideal solo aplica a 3 monitores planos.': 'The ideal angle only applies to 3 flat '
                                                       'monitors.',
+ 'Elegida {sel:.0f} Hz · detectada {det:.0f} Hz': 'Selected {sel:.0f} Hz · detected {det:.0f} Hz',
+ 'Elige rendererDX11OpenXR.ini arriba («Archivo gráfico») antes de grabar. Desde esta versión se cambia solo al marcar «Sesión en VR».': 'Pick '
+                                                                                                                                         'rendererDX11OpenXR.ini '
+                                                                                                                                         'at '
+                                                                                                                                         'the '
+                                                                                                                                         'top '
+                                                                                                                                         '("Graphics '
+                                                                                                                                         'file") '
+                                                                                                                                         'before '
+                                                                                                                                         'recording. '
+                                                                                                                                         'From '
+                                                                                                                                         'this '
+                                                                                                                                         'version '
+                                                                                                                                         'it '
+                                                                                                                                         'switches '
+                                                                                                                                         'automatically '
+                                                                                                                                         'when '
+                                                                                                                                         '"VR '
+                                                                                                                                         'session" '
+                                                                                                                                         'is '
+                                                                                                                                         'ticked.',
  'Eliminar': 'Delete',
  'En CPUs con varios CCD (7950X3D, 9950X3D) asegúrate de que iRacing corre en el CCD con 3D V-Cache (Game Bar / driver de chipset AMD).': 'On '
                                                                                                                                           'CPUs '
@@ -1200,6 +1222,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Frametime máx.': 'Max frametime',
  'Frecuencia (Hz):': 'Refresh rate (Hz):',
  'Frecuencia del visor': 'Headset refresh rate',
+ 'Frecuencia real del visor': 'Actual headset refresh rate',
  'Fuentes de navegador de OBS (alertas, chat, overlays web): ponlas a 30 fps, quita las ocultas y activa «Apagar la fuente cuando no sea visible».': 'OBS '
                                                                                                                                                      'browser '
                                                                                                                                                      'sources '
@@ -1512,6 +1535,36 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                              'and '
                                                                                                                                                              'ghost '
                                                                                                                                                              'contacts.',
+ 'La sesión es de VR, pero se leyó el archivo gráfico de monitor. En VR iRacing usa rendererDX11OpenXR.ini, así que los ajustes y perfiles mostrados no son los que estabas usando.': 'This '
+                                                                                                                                                                                      'is '
+                                                                                                                                                                                      'a '
+                                                                                                                                                                                      'VR '
+                                                                                                                                                                                      'session, '
+                                                                                                                                                                                      'but '
+                                                                                                                                                                                      'the '
+                                                                                                                                                                                      'monitor '
+                                                                                                                                                                                      'graphics '
+                                                                                                                                                                                      'file '
+                                                                                                                                                                                      'was '
+                                                                                                                                                                                      'read. '
+                                                                                                                                                                                      'In '
+                                                                                                                                                                                      'VR '
+                                                                                                                                                                                      'iRacing '
+                                                                                                                                                                                      'uses '
+                                                                                                                                                                                      'rendererDX11OpenXR.ini, '
+                                                                                                                                                                                      'so '
+                                                                                                                                                                                      'the '
+                                                                                                                                                                                      'settings '
+                                                                                                                                                                                      'and '
+                                                                                                                                                                                      'profiles '
+                                                                                                                                                                                      'shown '
+                                                                                                                                                                                      'are '
+                                                                                                                                                                                      'not '
+                                                                                                                                                                                      'the '
+                                                                                                                                                                                      'ones '
+                                                                                                                                                                                      'you '
+                                                                                                                                                                                      'were '
+                                                                                                                                                                                      'using.',
  'Las sesiones se guardan en {p0}': 'Sessions are saved in {p0}',
  'Latencia con el servidor': 'Latency to the server',
  'Latencia ms': 'Latency ms',
@@ -1537,6 +1590,25 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Limpia el polvo de los disipadores.': 'Clean the dust from the heatsinks.',
  'Listo': 'Ready',
  'Listo.': 'Ready.',
+ 'Los FPS se quedan clavados en {det:.0f}: el visor estaba a {det:.0f} Hz, no a {sel:.0f}. El análisis usa {det:.0f} Hz.': 'FPS '
+                                                                                                                           'sit '
+                                                                                                                           'locked '
+                                                                                                                           'at '
+                                                                                                                           '{det:.0f}: '
+                                                                                                                           'the '
+                                                                                                                           'headset '
+                                                                                                                           'was '
+                                                                                                                           'running '
+                                                                                                                           'at '
+                                                                                                                           '{det:.0f} '
+                                                                                                                           'Hz, '
+                                                                                                                           'not '
+                                                                                                                           '{sel:.0f}. '
+                                                                                                                           'The '
+                                                                                                                           'analysis '
+                                                                                                                           'uses '
+                                                                                                                           '{det:.0f} '
+                                                                                                                           'Hz.',
  'Los espejos cuestan el doble en VR (se dibujan para cada ojo): usa el espejo virtual con pocos coches.': 'Mirrors '
                                                                                                            'cost '
                                                                                                            'double '
@@ -1561,6 +1633,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Límite: ': 'Limit: ',
  'Marcar P1': 'Check P1',
  'Marcar P1 + P2': 'Check P1 + P2',
+ 'Margen para subir la frecuencia del visor': 'Headroom to raise the headset refresh rate',
  'Max Cars es un ajuste de red: limita los coches que te envía el servidor. Bajarlo deja sin datos a overlays y telemetría (relatives, estrategia de combustible). Para rendimiento usa MaxCarsToDraw.': 'Max '
                                                                                                                                                                                                          'Cars '
                                                                                                                                                                                                          'is '
@@ -1652,29 +1725,31 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                  'entering '
                                                                                                  'the '
                                                                                                  'pits.',
- 'Meta Quest Link: ajusta frecuencia y resolución en la app Meta Quest Link → Dispositivos → Gráficos. Baja resolución antes que subir detalles.': 'Meta '
-                                                                                                                                                   'Quest '
-                                                                                                                                                   'Link: '
-                                                                                                                                                   'set '
-                                                                                                                                                   'refresh '
-                                                                                                                                                   'rate '
-                                                                                                                                                   'and '
-                                                                                                                                                   'resolution '
-                                                                                                                                                   'in '
-                                                                                                                                                   'the '
-                                                                                                                                                   'Meta '
-                                                                                                                                                   'Quest '
-                                                                                                                                                   'Link '
-                                                                                                                                                   'app '
-                                                                                                                                                   '→ '
-                                                                                                                                                   'Devices '
-                                                                                                                                                   '→ '
-                                                                                                                                                   'Graphics. '
-                                                                                                                                                   'Lower '
-                                                                                                                                                   'resolution '
-                                                                                                                                                   'before '
-                                                                                                                                                   'raising '
-                                                                                                                                                   'detail.',
+ 'Meta Horizon Link (antes Meta Quest Link): ajusta frecuencia y resolución en la app del PC → Dispositivos → Gráficos. Baja resolución antes que subir detalles.': 'Meta '
+                                                                                                                                                                    'Horizon '
+                                                                                                                                                                    'Link '
+                                                                                                                                                                    '(formerly '
+                                                                                                                                                                    'Meta '
+                                                                                                                                                                    'Quest '
+                                                                                                                                                                    'Link): '
+                                                                                                                                                                    'set '
+                                                                                                                                                                    'refresh '
+                                                                                                                                                                    'rate '
+                                                                                                                                                                    'and '
+                                                                                                                                                                    'resolution '
+                                                                                                                                                                    'in '
+                                                                                                                                                                    'the '
+                                                                                                                                                                    'PC '
+                                                                                                                                                                    'app '
+                                                                                                                                                                    '→ '
+                                                                                                                                                                    'Devices '
+                                                                                                                                                                    '→ '
+                                                                                                                                                                    'Graphics. '
+                                                                                                                                                                    'Lower '
+                                                                                                                                                                    'resolution '
+                                                                                                                                                                    'before '
+                                                                                                                                                                    'raising '
+                                                                                                                                                                    'detail.',
  'Minuto': 'Minute',
  'Mis perfiles': 'My profiles',
  'Mixto': 'Mixed',
@@ -2184,6 +2259,8 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                           'window, '
                                                                                           'not the '
                                                                                           'headset).',
+ 'Sesión VR: se usa {f} (el archivo gráfico de VR).': 'VR session: using {f} (the VR graphics '
+                                                      'file).',
  'Sesión compartida': 'Shared session',
  'Sesión en VR': 'VR session',
  'Sesión en VR: frecuencia del visor (p. ej. 90)': 'VR session: headset refresh rate (e.g. 90)',
@@ -2278,6 +2355,31 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                              'manually '
                                                                                                                              'with '
                                                                                                                              'Alt+L.',
+ 'Si querías {sel:.0f} Hz, cámbialo en la app del PC (Meta Horizon Link → Dispositivos → Gráficos) o en el visor, y graba otra vez.': 'If '
+                                                                                                                                      'you '
+                                                                                                                                      'wanted '
+                                                                                                                                      '{sel:.0f} '
+                                                                                                                                      'Hz, '
+                                                                                                                                      'change '
+                                                                                                                                      'it '
+                                                                                                                                      'in '
+                                                                                                                                      'the '
+                                                                                                                                      'PC '
+                                                                                                                                      'app '
+                                                                                                                                      '(Meta '
+                                                                                                                                      'Horizon '
+                                                                                                                                      'Link '
+                                                                                                                                      '→ '
+                                                                                                                                      'Devices '
+                                                                                                                                      '→ '
+                                                                                                                                      'Graphics) '
+                                                                                                                                      'or '
+                                                                                                                                      'on '
+                                                                                                                                      'the '
+                                                                                                                                      'headset, '
+                                                                                                                                      'and '
+                                                                                                                                      'record '
+                                                                                                                                      'again.',
  'SimHub: desactiva plugins/dashboards que no uses y baja su tasa de refresco.': 'SimHub: disable '
                                                                                  'plugins/dashboards '
                                                                                  "you don't use "
@@ -2696,6 +2798,33 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Valor': 'Value',
  'Valor no permitido para un .ini: {p0!r}': 'Value not allowed in an .ini: {p0!r}',
  'Valores de monitor leídos de iRacing': 'Monitor values read from iRacing',
+ 'Vas clavado a {hz:.0f} Hz con la GPU al {gp:.0f} % (p95). Prueba {up} Hz en la app del visor: se nota más fluido, sobre todo al girar la cabeza.': "You're "
+                                                                                                                                                     'locked '
+                                                                                                                                                     'at '
+                                                                                                                                                     '{hz:.0f} '
+                                                                                                                                                     'Hz '
+                                                                                                                                                     'with '
+                                                                                                                                                     'the '
+                                                                                                                                                     'GPU '
+                                                                                                                                                     'at '
+                                                                                                                                                     '{gp:.0f} '
+                                                                                                                                                     '% '
+                                                                                                                                                     '(p95). '
+                                                                                                                                                     'Try '
+                                                                                                                                                     '{up} '
+                                                                                                                                                     'Hz '
+                                                                                                                                                     'in '
+                                                                                                                                                     'the '
+                                                                                                                                                     'headset '
+                                                                                                                                                     'app: '
+                                                                                                                                                     'it '
+                                                                                                                                                     'feels '
+                                                                                                                                                     'smoother, '
+                                                                                                                                                     'especially '
+                                                                                                                                                     'when '
+                                                                                                                                                     'turning '
+                                                                                                                                                     'your '
+                                                                                                                                                     'head.',
  'Ver novedades': "What's new",
  'Virtual Desktop: la codificación usa GPU; si vas justo, baja el bitrate o la calidad (High en vez de Ultra) antes que los gráficos.': 'Virtual '
                                                                                                                                         'Desktop: '

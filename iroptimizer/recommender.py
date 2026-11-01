@@ -95,6 +95,14 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
                      "frames y aparecen «fantasmas» en coches y bordes. Aplica los recortes de abajo o baja la frecuencia del "
                      "visor: mejor {lower} Hz estables que {hz:.0f} Hz con reproyección.",
                      p=vrd["reprojection_pct"], h=hz / 2, hz=hz, lower=80 if hz > 80 else 72), 1, "frametime")
+        elif vrd.get("at_rate_pct", 0) >= 98 and ((g.get("gpu") or {}).get("p95") or 100) < 60:
+            from . import vr as _vr
+            rates = _vr.HEADSETS.get(vrd.get("headset") or "", _vr.HEADSETS["Otro"])
+            up = next((r for r in sorted(rates) if r > hz), None)
+            if up:
+                b.info(_("Margen para subir la frecuencia del visor"),
+                       _("Vas clavado a {hz:.0f} Hz con la GPU al {gp:.0f} % (p95). Prueba {up} Hz en la app del visor: se nota más fluido, sobre todo al girar la cabeza.",
+                         hz=hz, gp=(g.get("gpu") or {}).get("p95"), up=up), 3, "frametime")
         elif vrd.get("at_rate_pct", 100) < 85:
             b.info(_("No llegas a la frecuencia del visor"),
                    _("Solo el {p:.0f} % del tiempo a {hz:.0f} Hz. En VR cada caída se nota mucho más que en monitor.",

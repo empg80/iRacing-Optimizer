@@ -680,6 +680,13 @@ class App(tk.Tk):
             messagebox.showerror(APP, "Falta pyirsdk (pip install pyirsdk).")
             return
         self._vr_refresh()
+        if self.vr_on.get() and self.cfg.renderer_name not in vr.VR_RENDERERS:
+            vr_ini = next((n for n, _mt in self.cfg.renderer_candidates if n in vr.VR_RENDERERS), None)
+            if vr_ini:  # en VR iRacing usa su propio archivo gráfico: se graba con ese
+                self.cfg = config_reader.load(self.ini_dir_override, vr_ini)
+                self.renderer_var.set(vr_ini)
+                self._log(_("Sesión VR: se usa {f} (el archivo gráfico de VR).", f=vr_ini))
+                self._bg(self._load_cfg)
         pm_exe = None
         if self.use_pm.get() and not self.vr_on.get():
             self._pm_refresh_status()

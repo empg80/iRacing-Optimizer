@@ -298,9 +298,20 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
              _("Si aún no llegas, baja la frecuencia del visor (90 → 80 o 72 Hz) o la resolución de renderizado del runtime."),
              _("Los espejos cuestan el doble en VR (se dibujan para cada ojo): usa el espejo virtual con pocos coches.")]
             if st != OK else [])
+        if vrd.get("hz_detected"):
+            add("VR", _("Frecuencia real del visor"), INFO,
+                _("Elegida {sel:.0f} Hz · detectada {det:.0f} Hz", sel=vrd["hz_selected"], det=vrd["hz_detected"]),
+                _("Los FPS se quedan clavados en {det:.0f}: el visor estaba a {det:.0f} Hz, no a {sel:.0f}. El análisis usa {det:.0f} Hz.",
+                  det=vrd["hz_detected"], sel=vrd["hz_selected"]),
+                [_("Si querías {sel:.0f} Hz, cámbialo en la app del PC (Meta Horizon Link → Dispositivos → Gráficos) o en el visor, y graba otra vez.",
+                   sel=vrd["hz_selected"])])
+        if vrd.get("renderer_ok") is False:
+            add("VR", _("Archivo gráfico de VR"), WARN, a.get("renderer_file") or "?",
+                _("La sesión es de VR, pero se leyó el archivo gráfico de monitor. En VR iRacing usa rendererDX11OpenXR.ini, así que los ajustes y perfiles mostrados no son los que estabas usando."),
+                [_("Elige rendererDX11OpenXR.ini arriba («Archivo gráfico») antes de grabar. Desde esta versión se cambia solo al marcar «Sesión en VR».")])
         sw = vrd.get("software") or []
         add("VR", _("Software de VR"), INFO,
-            ", ".join(x for x in ([vrd.get("runtime")] + sw) if x) or _("no detectado"),
+            ", ".join(dict.fromkeys(x for x in ([vrd.get("runtime")] + sw) if x)) or _("no detectado"),
             _("Runtime OpenXR activo y programas de VR detectados durante la grabación."),
             _vr.runtime_tips(vrd.get("runtime"), sw))
         if a.get("presentmon"):
@@ -374,8 +385,9 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
                          _("pico de latencia"), lambda ev: f"hasta {max(x['chan_latency'] for x in ev) * 1000:.0f} ms")
         events += spikes
         srate = len(spikes) / dur_h
-        st = BAD if p95_l > 200 or srate >= 20 else WARN if p95_l > 130 or srate >= 6 else OK
-        stable = srate < 6 and p95_l - med_l < 40
+        ns = len(spikes)
+        st = BAD if p95_l > 200 or (srate >= 20 and ns >= 10) else WARN if p95_l > 130 or (srate >= 6 and ns >= 5) else OK
+        stable = (srate < 6 or ns < 5) and p95_l - med_l < 40
         if st != OK and stable:
             st = INFO  # alta pero estable: es la distancia al servidor, no tu conexión
         add(_("Red"), _("Latencia con el servidor"), st,

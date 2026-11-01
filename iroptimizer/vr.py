@@ -86,6 +86,26 @@ def is_vr_session(meta: dict) -> bool:
     return rf in VR_RENDERERS
 
 
+def detect_rate(fps: list[float], chosen_hz: float, headset: str | None = None) -> float | None:
+    """Frecuencia real del visor si los FPS se quedan clavados en otra distinta de la elegida.
+
+    Con el juego al ritmo del visor los FPS forman una meseta en su frecuencia (p. ej. 72 aunque se eligiera 90).
+    Solo se consideran frecuencias de ese visor por debajo de la elegida y nunca ~la mitad (eso es reproyección).
+    """
+    vals = [f for f in fps if f and f > 1]
+    if len(vals) < 40 or not chosen_hz:
+        return None
+    rates = HEADSETS.get(headset or "", HEADSETS["Otro"])
+    for r in sorted(rates, reverse=True):
+        if r >= chosen_hz * 0.95 or abs(r - chosen_hz / 2) <= 2:
+            continue
+        near = sum(1 for f in vals if abs(f - r) <= 1.5)
+        above = sum(1 for f in vals if f > r + 1.5)
+        if near / len(vals) >= 0.6 and above / len(vals) < 0.02:
+            return float(r)
+    return None
+
+
 def analyze(rows: list[dict], hz: float) -> dict:
     """Reparto del tiempo: a la frecuencia del visor, en reproyección (~Hz/2) o por debajo."""
     fps = [r["fps"] for r in rows if r.get("fps")]
@@ -118,7 +138,7 @@ def runtime_tips(runtime: str | None, software: list[str]) -> list[str]:
                  _("Virtual Desktop: la codificación usa GPU; si vas justo, baja el bitrate o la calidad (High en vez de Ultra) antes que los gráficos."),
                  _("Inalámbrico: router Wi-Fi 6/6E dedicado y cerca, PC por cable al router.")]
     if "Meta Quest Link" in name:
-        tips += [_("Meta Quest Link: ajusta frecuencia y resolución en la app Meta Quest Link → Dispositivos → Gráficos. Baja resolución antes que subir detalles."),
+        tips += [_("Meta Horizon Link (antes Meta Quest Link): ajusta frecuencia y resolución en la app del PC → Dispositivos → Gráficos. Baja resolución antes que subir detalles."),
                  _("Con cable USB 3 suele ser más estable que Air Link; con Air Link usa Wi-Fi 6/6E dedicado.")]
     if "SteamVR" in name:
         tips.append(_("SteamVR añade una capa más con Quest. Si usas Quest, mejor Meta Quest Link o Virtual Desktop (VDXR)."))

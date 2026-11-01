@@ -178,6 +178,14 @@ def analyze(rows: list[dict], meta: dict, presentmon: dict | None = None, target
     valid = _valid(rows)
     if not valid:
         raise ValueError(_("No hay muestras válidas en pista (¿grabaste con el coche en pista?)."))
+    vr_selected = vr_detected = None
+    if vr_mode:
+        vr_selected = target
+        if not target_override:
+            vr_detected = _vr.detect_rate([r.get("fps") for r in valid], target, (meta.get("vr") or {}).get("headset"))
+            if vr_detected:
+                target = vr_detected  # el visor estaba a otra frecuencia: se analiza con la real
+        cap = target  # al ritmo del visor el juego va sincronizado: cuenta como «en el tope», no como límite de CPU
 
     groups = defaultdict(list)
     for r in valid:
@@ -287,7 +295,9 @@ def analyze(rows: list[dict], meta: dict, presentmon: dict | None = None, target
         "drops": _drops(prim, p["fps"]["median"], cap)[:12],
         "memory": memory,
         "top_processes": meta.get("top_processes") or [],
-        "vr": ({**_vr.analyze(prim, target), "runtime": (meta.get("vr") or {}).get("runtime"),
+        "vr": ({**_vr.analyze(prim, target), "hz_selected": vr_selected, "hz_detected": vr_detected,
+                "renderer_ok": (meta.get("config") or {}).get("renderer_file") in _vr.VR_RENDERERS,
+                "runtime": (meta.get("vr") or {}).get("runtime"),
                 "software": (meta.get("vr") or {}).get("software") or [],
                 "headset": (meta.get("vr") or {}).get("headset")} if vr_mode else None),
         "network": network,

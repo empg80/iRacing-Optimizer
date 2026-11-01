@@ -226,3 +226,11 @@ def test_background_tips():
     assert "Garage 61" in bg_tip("msedgewebview2.exe (Garage61.exe)")
     assert bg_tip("simpro3.exe")
     assert bg_tip("unknown.exe") is None
+
+
+def test_vr_detects_real_headset_rate():
+    from iroptimizer import vr
+    assert vr.detect_rate([72.0] * 100 + [71.0] * 5, 90, "Meta Quest 3 / 3S") == 72.0
+    assert vr.detect_rate([90.0] * 100, 90, "Meta Quest 3 / 3S") is None        # va a la elegida
+    assert vr.detect_rate([60.0] * 100, 120, "Meta Quest 3 / 3S") is None       # 60 = reproyección de 120
+    assert vr.detect_rate([45.0] * 100, 90, "Meta Quest 3 / 3S") is None
