@@ -33,7 +33,7 @@ iRacing Optimizer reads your iRacing and PC configuration and records a session 
 
 Download `iRacingOptimizer.exe` from **[Releases](../../releases)** and run it. No installation or Python required.
 
-> Windows SmartScreen may show a warning because the executable is not code-signed: click "More info → Run anyway". You can verify the file is the original using the `SHA256SUMS.txt` included in the release. For what the app does and doesn't do (no internet connection, no admin rights, only touches iRacing's `.ini` files and always backs them up first), see [SECURITY.md](SECURITY.md).
+> Windows SmartScreen may show a warning because the executable is not code-signed: click "More info → Run anyway". You can verify the file is the original using the `SHA256SUMS.txt` included in the release or its build provenance attestation (`gh attestation verify`, see [SECURITY.md](SECURITY.md)). For what the app does and doesn't do (no internet connection except the optional update notice, no admin rights, only touches iRacing's `.ini` files and always backs them up first), see [SECURITY.md](SECURITY.md).
 
 The interface is available in **English and Spanish**. It follows your Windows language by default; you can switch it with the 🌐 selector at the top right (restart required).
 

@@ -345,8 +345,8 @@ class SessionMonitor:
         if self.config_loader:
             try:
                 self.meta["config_end"] = self.config_loader()
-            except Exception:
-                pass
+            except Exception as e:  # se informa en el diagnóstico en vez de callarlo
+                self.meta["config_end_error"] = str(e)[:200]
         meta_path.write_text(json.dumps(self.meta, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
         try:
             self.ir.shutdown()

@@ -30,16 +30,31 @@ def profiles_for(renderer_flat: dict, hardware: dict, analysis: dict | None,
 
 
 def load_pm(csv_path: Path, meta: dict, rows: list[dict], explicit: str | None = None) -> dict | None:
-    """Frametimes de PresentMon: el CSV indicado o el que grabó el monitor junto a la sesión."""
+    """Frametimes de PresentMon: el CSV indicado o el que grabó el monitor junto a la sesión.
+
+    Si se esperaba PresentMon y no se puede usar, deja el motivo en meta["presentmon_status"] para que el
+    diagnóstico lo muestre (antes se descartaba en silencio).
+    """
     info = meta.get("presentmon") or {}
+    if info.get("error") and not explicit:
+        meta["presentmon_status"] = ("no_start", str(info["error"]))
+        return None
     path = Path(explicit) if explicit else (csv_path.parent / Path(info["csv"]).name if info.get("csv") else None)
-    if not path or not path.is_file():
+    if not path:
+        return None
+    if not path.is_file():
+        meta["presentmon_status"] = ("missing", path.name)
         return None
     try:
         frames = presentmon.load_frames(path, info.get("t0"))
-        return presentmon.analyze(frames, rows) or None
-    except (OSError, ValueError):
+    except (OSError, ValueError) as e:
+        meta["presentmon_status"] = ("unreadable", str(e)[:200])
         return None
+    res = presentmon.analyze(frames, rows)
+    if not res:
+        meta["presentmon_status"] = ("no_match", str(len(frames)))
+        return None
+    return res
 
 
 WATCH_KEYS = ("DesiredFPSLimit", "LimitFrameRate", "MSAASamples", "MaxCarsToDraw", "MaxCarsToDrawInMirrors",

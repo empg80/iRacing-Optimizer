@@ -41,7 +41,7 @@ Lee tu configuración de iRacing y de tu equipo y graba una sesión (mejor si es
 
 Descarga `iRacingOptimizer.exe` desde **[Releases](../../releases)** y ejecútalo: no necesita instalación ni Python.
 
-> Windows SmartScreen puede avisar porque el ejecutable no está firmado. Pulsa "Más información → Ejecutar de todas formas". Puedes comprobar que el archivo es el original con el `SHA256SUMS.txt` de la release. Qué hace y qué no hace la app (sin conexión a internet, sin permisos de administrador, solo toca los `.ini` de iRacing y siempre con copia): ver [SECURITY.md](SECURITY.md).
+> Windows SmartScreen puede avisar porque el ejecutable no está firmado. Pulsa "Más información → Ejecutar de todas formas". Puedes comprobar que el archivo es el original con el `SHA256SUMS.txt` de la release o con su atestación de procedencia (`gh attestation verify`, ver [SECURITY.md](SECURITY.md)). Qué hace y qué no hace la app (sin conexión a internet salvo el aviso opcional de versiones, sin permisos de administrador, solo toca los `.ini` de iRacing y siempre con copia): ver [SECURITY.md](SECURITY.md).
 
 La interfaz está en **español e inglés**: sigue el idioma de Windows y se puede cambiar con el selector 🌐 de arriba a la derecha (requiere reiniciar).
 
@@ -126,10 +126,12 @@ py app.py            :: interfaz
 build.bat            :: genera dist\iRacingOptimizer.exe
 ```
 
+Los tests incluyen **sesiones reales anonimizadas** (`tests/fixtures/real`: Le Mans con directo, VR a 72 Hz, Hungaroring y Monza con PresentMon). Cada una fija un fallo que apareció en uso real, para que no vuelva. Se generan con `tests/fixtures/build_real.py`.
+
 GitHub Actions compila el `.exe` en cada push a `main`; está disponible como *artifact* del workflow. Al publicar una Release (o subir una etiqueta `vX.Y.Z`), el workflow compila y adjunta el ejecutable:
 
 ```
-gh release create v0.8.0 --generate-notes
+gh release create v0.9.5 --generate-notes
 ```
 
 ### Estructura

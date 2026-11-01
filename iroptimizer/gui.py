@@ -251,6 +251,7 @@ class App(tk.Tk):
         self.pm_status = tk.StringVar(value="")
         ttk.Label(pmrow, textvariable=self.pm_status, style="Muted.TLabel").pack(side="left", padx=10)
         self.btn_pm_perm = ttk.Button(pmrow, text=_("Dar permiso…"), command=self.pm_grant)
+        self.btn_pm_revoke = ttk.Button(pmrow, text=_("Quitar permiso…"), command=self.pm_revoke)
         vrrow = ttk.Frame(f)
         vrrow.pack(anchor="w", pady=(6, 0))
         self.vr_on = tk.BooleanVar(value=False)
@@ -649,6 +650,9 @@ class App(tk.Tk):
         exe = presentmon.find_exe([self.out_dir / "tools"])
         self._pm_exe = exe
         self.btn_pm_perm.pack_forget()
+        self.btn_pm_revoke.pack_forget()
+        if presentmon.in_perf_log_users() and not presentmon.is_admin():
+            self.btn_pm_revoke.pack(side="left")  # el permiso queda puesto: se puede quitar desde aquí
         if not exe:
             self.pm_status.set(_("PresentMon no encontrado (viene incluido en el .exe; en desarrollo, ponlo en tools/)."))
         elif presentmon.can_capture():
@@ -669,6 +673,19 @@ class App(tk.Tk):
             messagebox.showinfo(APP, _("Hecho. Cierra sesión en Windows y vuelve a entrar para que el permiso se active."))
         else:
             messagebox.showwarning(APP, _("No se pudo lanzar la petición. Alternativa: ejecuta iRacing Optimizer como administrador."))
+
+    def pm_revoke(self):
+        if not messagebox.askyesno(APP, _("¿Quitar tu usuario del grupo «Usuarios del registro de rendimiento» (Performance Log Users)?\n\nPresentMon dejará de funcionar sin administrador. Windows pedirá confirmación y el cambio se aplica al cerrar sesión.")):
+            return
+        try:
+            ok = presentmon.request_group_membership(remove=True)
+        except Exception as e:
+            messagebox.showerror(APP, str(e))
+            return
+        if ok:
+            messagebox.showinfo(APP, _("Hecho. Cierra sesión en Windows y vuelve a entrar para que se aplique."))
+        else:
+            messagebox.showwarning(APP, _("No se pudo lanzar la petición. Puedes quitarlo a mano en Administración de equipos → Usuarios y grupos locales → Grupos."))
 
     def start_monitor(self):
         if not self.cfg:

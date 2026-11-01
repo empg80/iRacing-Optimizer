@@ -16,6 +16,10 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: read
+      id-token: write      # solo para la atestación de procedencia (firma Sigstore de GitHub)
+      attestations: write
     steps:
       # Acciones fijadas por commit (no por etiqueta) para evitar cambios no revisados
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -102,6 +106,14 @@ jobs:
           $h = (Get-FileHash dist\iRacingOptimizer.exe -Algorithm SHA256).Hash.ToLower()
           "$h  iRacingOptimizer.exe" | Out-File -Encoding ascii dist\SHA256SUMS.txt
           Get-Content dist\SHA256SUMS.txt
+
+      # Atestación de procedencia: prueba firmada de que este .exe salió de este repositorio, de este commit y
+      # de este workflow. Se comprueba con: gh attestation verify iRacingOptimizer.exe -R empg80/iRacing-Optimizer
+      - name: Atestación de procedencia
+        if: github.event_name != 'pull_request'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/iRacingOptimizer.exe
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

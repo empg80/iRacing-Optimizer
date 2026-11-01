@@ -35,6 +35,8 @@ La app funciona sin internet. La única conexión que puede hacer es el aviso de
 - Solo captura los procesos de iRacing (`--process_name iRacingSim64DX11.exe`) y escribe un CSV junto a la sesión.
 - Licencia MIT: ver [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
+- Para medir sin ser administrador, la app ofrece añadir tu usuario al grupo de Windows «Usuarios del registro de rendimiento» (Performance Log Users), con confirmación UAC. Ese permiso permite leer registros de rendimiento del sistema y **se queda puesto** aunque dejes de usar la app. Para quitarlo: botón «Quitar permiso…» en la pestaña Monitor, o Administración de equipos → Usuarios y grupos locales → Grupos.
+
 ## Referencia de lo aplicado
 
 Para avisarte si iRacing cambia tu configuración, la app guarda los valores que aplicó en `Documentos\iRacingOptimizer\referencia_aplicada.json`. Ese archivo solo se usa para comparar y está sujeto a las mismas validaciones.
@@ -64,7 +66,13 @@ Cada release incluye `SHA256SUMS.txt`. En PowerShell:
 Get-FileHash .\iRacingOptimizer.exe -Algorithm SHA256
 ```
 
-El valor tiene que coincidir con el de `SHA256SUMS.txt`. El ejecutable no está firmado digitalmente, así que Windows SmartScreen puede mostrar un aviso. El `.exe` se compila en GitHub Actions a partir del código de este repositorio, con dependencias de versión fija y acciones fijadas por commit. En cada compilación se pasan los tests, el análisis estático (bandit) y la auditoría de dependencias (pip-audit).
+El valor tiene que coincidir con el de `SHA256SUMS.txt`.
+
+Desde la v0.9.5 cada `.exe` lleva además una **atestación de procedencia** firmada por GitHub: prueba que el archivo salió de este repositorio, de un commit concreto y del workflow público, no de un equipo particular. Para comprobarla, con [GitHub CLI](https://cli.github.com/):
+
+```powershell
+gh attestation verify .\iRacingOptimizer.exe -R empg80/iRacing-Optimizer
+``` El ejecutable no está firmado digitalmente, así que Windows SmartScreen puede mostrar un aviso. El `.exe` se compila en GitHub Actions a partir del código de este repositorio, con dependencias de versión fija y acciones fijadas por commit. En cada compilación se pasan los tests, el análisis estático (bandit) y la auditoría de dependencias (pip-audit).
 
 ## Avisar de un problema
 

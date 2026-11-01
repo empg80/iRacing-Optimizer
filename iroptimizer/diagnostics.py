@@ -314,6 +314,27 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
             add("VR", _("PresentMon en VR"), INFO, _("datos no representativos"),
                 _("En VR PresentMon mide la ventana espejo del monitor, no lo que ves en el visor. Usa la frecuencia del visor de arriba."))
 
+    # ------------------------------------------- datos que faltan (nunca en silencio)
+    pms = meta.get("presentmon_status")
+    if pms:
+        kind, info = pms
+        msg = {
+            "no_start": _("PresentMon no pudo arrancar ({x}). Si es por permisos, usa «Dar permiso…» en la pestaña Monitor.", x=info),
+            "missing": _("No encuentro el archivo de PresentMon ({x}) junto a la sesión. Si moviste la sesión, copia también ese archivo.", x=info),
+            "unreadable": _("El archivo de PresentMon no se pudo leer: {x}", x=info),
+            "no_match": _("PresentMon grabó {x} frames, pero ninguno coincide en el tiempo con la sesión en pista, así que no se han usado.", x=info),
+        }.get(kind, str(info))
+        add("Frametime", _("PresentMon sin datos"), WARN, kind, msg,
+            [_("Las cifras de frametime de este informe salen solo de la media de FPS del SDK (1 s).")])
+    if meta.get("config_end_error"):
+        add(_("Sistema"), _("No se pudo releer la configuración al terminar"), INFO, meta["config_end_error"][:80],
+            _("Si cambiaste ajustes durante la grabación, el análisis usa los del principio."))
+    nvidia = any(gg.get("vendor") == "nvidia" for gg in (meta.get("hardware") or {}).get("gpus") or [])
+    if nvidia and not any(r.get("gpu_util") is not None for r in valid):
+        add("GPU", _("Sin datos del driver NVIDIA"), WARN, "NVML",
+            _("Tienes una gráfica NVIDIA, pero no se pudo leer su carga real (NVML). Sin ese dato la app no distingue bien si te limita la CPU o la GPU."),
+            [_("Actualiza el driver de NVIDIA y vuelve a grabar.")])
+
     # ------------------------------------------- cambios de configuración durante la grabación
     if a.get("config_changes"):
         add(_("Sistema"), _("Configuración cambiada durante la grabación"), INFO,

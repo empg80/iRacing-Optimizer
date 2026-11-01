@@ -87,8 +87,9 @@ def can_capture() -> bool:
     return is_admin() or bool(in_perf_log_users())
 
 
-def request_group_membership() -> bool:
-    """Lanza (con UAC) un PowerShell que añade el usuario actual al grupo. Devuelve si se lanzó."""
+def request_group_membership(remove: bool = False) -> bool:
+    """Lanza (con UAC) un PowerShell que añade —o quita, con remove=True— el usuario actual del grupo.
+    Devuelve si se lanzó."""
     if sys.platform != "win32":
         return False
     user = os.environ.get("USERNAME", "")
@@ -99,7 +100,8 @@ def request_group_membership() -> bool:
     ps = system_exe(r"WindowsPowerShell\v1.0\powershell.exe")
     if not ps:
         return False
-    cmd = f"Add-LocalGroupMember -SID '{PERF_LOG_USERS_SID}' -Member '{member}' -ErrorAction Stop"
+    verb = "Remove-LocalGroupMember" if remove else "Add-LocalGroupMember"
+    cmd = f"{verb} -SID '{PERF_LOG_USERS_SID}' -Member '{member}' -ErrorAction Stop"
     import ctypes
     rc = ctypes.windll.shell32.ShellExecuteW(None, "runas", ps, f'-NoProfile -Command "{cmd}"', None, 0)
     return rc > 32

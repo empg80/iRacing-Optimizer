@@ -335,6 +335,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Activa el tope (ver recomendaciones de Análisis).': 'Enable the FPS cap (see Analysis '
                                                       'recommendations).',
  'Actual': 'Current',
+ 'Actualiza el driver de NVIDIA y vuelve a grabar.': 'Update the NVIDIA driver and record again.',
  'Ahora': 'Now',
  'Ahora en iRacing: {p0:.0f}° ({p1}{diff:.0f}°': 'Currently in iRacing: {p0:.0f}° ({p1}{diff:.0f}°',
  'Ahora no': 'Not now',
@@ -913,6 +914,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Distancia ojos → pantalla (mm)': 'Eye → screen distance (mm)',
  'Duración': 'Duration',
  'Economizador': 'Power saver',
+ 'El archivo de PresentMon no se pudo leer: {x}': 'The PresentMon file could not be read: {x}',
  'El archivo no es un perfil de iRacing Optimizer.': 'The file is not an iRacing Optimizer '
                                                      'profile.',
  'El archivo no parece una sesión de iRacing Optimizer.': 'The file does not look like an iRacing '
@@ -1415,6 +1417,9 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                      'permission '
                                                                                      'to take '
                                                                                      'effect.',
+ 'Hecho. Cierra sesión en Windows y vuelve a entrar para que se aplique.': 'Done. Sign out of '
+                                                                           'Windows and back in '
+                                                                           'for it to take effect.',
  'Hilo de física y red (BG)': 'Physics and network thread (BG)',
  'Hilo de física/red (BG) al {bg:.0f} %': 'Physics/network thread (BG) at {bg:.0f} %',
  'Hilo física/red %': 'Physics/network thread %',
@@ -1633,6 +1638,17 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                                       'you '
                                                                                                                                                                                       'were '
                                                                                                                                                                                       'using.',
+ 'Las cifras de frametime de este informe salen solo de la media de FPS del SDK (1 s).': 'Frametime '
+                                                                                         'figures '
+                                                                                         'in this '
+                                                                                         'report '
+                                                                                         'come '
+                                                                                         'only '
+                                                                                         'from the '
+                                                                                         "SDK's "
+                                                                                         'FPS '
+                                                                                         'average '
+                                                                                         '(1 s).',
  'Las sesiones se guardan en {p0}': 'Sessions are saved in {p0}',
  'Latencia con el servidor': 'Latency to the server',
  'Latencia ms': 'Latency ms',
@@ -1946,6 +1962,25 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                   'background '
                                                                                                   'tabs.',
  'Ninguna sesión cargada': 'No session loaded',
+ 'No encuentro el archivo de PresentMon ({x}) junto a la sesión. Si moviste la sesión, copia también ese archivo.': "Can't "
+                                                                                                                    'find '
+                                                                                                                    'the '
+                                                                                                                    'PresentMon '
+                                                                                                                    'file '
+                                                                                                                    '({x}) '
+                                                                                                                    'next '
+                                                                                                                    'to '
+                                                                                                                    'the '
+                                                                                                                    'session. '
+                                                                                                                    'If '
+                                                                                                                    'you '
+                                                                                                                    'moved '
+                                                                                                                    'the '
+                                                                                                                    'session, '
+                                                                                                                    'copy '
+                                                                                                                    'that '
+                                                                                                                    'file '
+                                                                                                                    'too.',
  'No encuentro la carpeta de iRacing: {d}  (usa --ini-dir)': "Can't find the iRacing folder: {d}  "
                                                              '(use --ini-dir)',
  'No encuentro la columna de frametime en el CSV de PresentMon': "Can't find the frametime column "
@@ -1987,6 +2022,28 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                               'Optimizer '
                                                                                               'as '
                                                                                               'administrator.',
+ 'No se pudo lanzar la petición. Puedes quitarlo a mano en Administración de equipos → Usuarios y grupos locales → Grupos.': 'The '
+                                                                                                                             'request '
+                                                                                                                             'could '
+                                                                                                                             'not '
+                                                                                                                             'be '
+                                                                                                                             'started. '
+                                                                                                                             'You '
+                                                                                                                             'can '
+                                                                                                                             'remove '
+                                                                                                                             'it '
+                                                                                                                             'manually '
+                                                                                                                             'in '
+                                                                                                                             'Computer '
+                                                                                                                             'Management '
+                                                                                                                             '→ '
+                                                                                                                             'Local '
+                                                                                                                             'Users '
+                                                                                                                             'and '
+                                                                                                                             'Groups '
+                                                                                                                             '→ '
+                                                                                                                             'Groups.',
+ 'No se pudo releer la configuración al terminar': 'Settings could not be re-read at the end',
  'Nombre de copia no válido: {p0!r}': 'Invalid backup name: {p0!r}',
  'Nombre de usuario no válido para añadir al grupo.': 'Invalid user name to add to the group.',
  'Nombre:': 'Name:',
@@ -2157,6 +2214,23 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                       'Hz.',
  'Pon un nombre y elige al menos un grupo.': 'Enter a name and choose at least one group.',
  'PresentMon en VR': 'PresentMon in VR',
+ 'PresentMon grabó {x} frames, pero ninguno coincide en el tiempo con la sesión en pista, así que no se han usado.': 'PresentMon '
+                                                                                                                     'recorded '
+                                                                                                                     '{x} '
+                                                                                                                     'frames, '
+                                                                                                                     'but '
+                                                                                                                     'none '
+                                                                                                                     'match '
+                                                                                                                     'the '
+                                                                                                                     'on-track '
+                                                                                                                     'session '
+                                                                                                                     'in '
+                                                                                                                     'time, '
+                                                                                                                     'so '
+                                                                                                                     'they '
+                                                                                                                     'were '
+                                                                                                                     'not '
+                                                                                                                     'used.',
  'PresentMon necesita un permiso de Windows que aún no tienes (botón «Dar permiso…»).\n\n¿Grabar ahora sin PresentMon?': 'PresentMon '
                                                                                                                          'needs '
                                                                                                                          'a '
@@ -2188,7 +2262,25 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                           'tools/).',
  'PresentMon no encontrado; se graba sin frametimes.': 'PresentMon not found; recording without '
                                                        'frametimes.',
+ 'PresentMon no pudo arrancar ({x}). Si es por permisos, usa «Dar permiso…» en la pestaña Monitor.': 'PresentMon '
+                                                                                                     'could '
+                                                                                                     'not '
+                                                                                                     'start '
+                                                                                                     '({x}). '
+                                                                                                     'If '
+                                                                                                     "it's "
+                                                                                                     'a '
+                                                                                                     'permissions '
+                                                                                                     'issue, '
+                                                                                                     'use '
+                                                                                                     '"Grant '
+                                                                                                     'permission…" '
+                                                                                                     'in '
+                                                                                                     'the '
+                                                                                                     'Monitor '
+                                                                                                     'tab.',
  'PresentMon no pudo arrancar: ': 'PresentMon could not start: ',
+ 'PresentMon sin datos': 'PresentMon without data',
  'PresentMon usa el registro de eventos de Windows (ETW). Para usarlo sin ser administrador, tu usuario debe estar en el grupo «Usuarios del registro de rendimiento» (Performance Log Users).\n\nWindows te pedirá confirmación una sola vez para añadirte. Después tienes que cerrar sesión y volver a entrar.\n\n¿Continuar?': 'PresentMon '
                                                                                                                                                                                                                                                                                                                                   'uses '
                                                                                                                                                                                                                                                                                                                                   'Windows '
@@ -2279,6 +2371,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Público: muchas draw calls en Le Mans, Spa, Nordschleife.': 'Crowds: lots of draw calls at Le '
                                                               'Mans, Spa, Nordschleife.',
  'Quedarme con los actuales': 'Keep the current ones',
+ 'Quitar permiso…': 'Remove permission…',
  'Quitar sombras de objetos de pista (tso) y dejar pista+coches.': 'Remove track object shadows '
                                                                    '(tso) and keep track+cars.',
  'Qué significa y cómo solucionarlo': 'What it means and how to fix it',
@@ -2428,6 +2521,12 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                  'runtime '
                                                                                                                  'render '
                                                                                                                  'resolution.',
+ 'Si cambiaste ajustes durante la grabación, el análisis usa los del principio.': 'If you changed '
+                                                                                  'settings during '
+                                                                                  'recording, the '
+                                                                                  'analysis uses '
+                                                                                  'the ones from '
+                                                                                  'the start.',
  'Si emites, limita el bitrate de subida de OBS a ~70 % de tu subida real.': 'If you stream, cap '
                                                                              'OBS upload bitrate '
                                                                              'to ~70 % of your '
@@ -2536,6 +2635,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                    'the '
                                                                                                    'race.',
  'Sin datos GPU': 'No GPU data',
+ 'Sin datos del driver NVIDIA': 'No data from the NVIDIA driver',
  'Sin límite de FPS tus FPS oscilan entre {p0:.0f} (p5) y {p1:.0f} (p95) en {lbl}. Un tope que puedas sostener da frametimes constantes y menos picos de input lag.': 'Without '
                                                                                                                                                                       'an '
                                                                                                                                                                       'FPS '
@@ -2652,6 +2752,35 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                         'target.',
  'Tienes margen de GPU: espejos en alto.': 'You have GPU headroom: high-detail mirrors.',
  'Tienes margen de GPU: sombras completas.': 'You have GPU headroom: full shadows.',
+ 'Tienes una gráfica NVIDIA, pero no se pudo leer su carga real (NVML). Sin ese dato la app no distingue bien si te limita la CPU o la GPU.': 'You '
+                                                                                                                                              'have '
+                                                                                                                                              'an '
+                                                                                                                                              'NVIDIA '
+                                                                                                                                              'card, '
+                                                                                                                                              'but '
+                                                                                                                                              'its '
+                                                                                                                                              'real '
+                                                                                                                                              'load '
+                                                                                                                                              '(NVML) '
+                                                                                                                                              'could '
+                                                                                                                                              'not '
+                                                                                                                                              'be '
+                                                                                                                                              'read. '
+                                                                                                                                              'Without '
+                                                                                                                                              'it '
+                                                                                                                                              'the '
+                                                                                                                                              'app '
+                                                                                                                                              "can't "
+                                                                                                                                              'reliably '
+                                                                                                                                              'tell '
+                                                                                                                                              'whether '
+                                                                                                                                              'the '
+                                                                                                                                              'CPU '
+                                                                                                                                              'or '
+                                                                                                                                              'the '
+                                                                                                                                              'GPU '
+                                                                                                                                              'limits '
+                                                                                                                                              'you.',
  'Tienes {p0:.0f} GB de VRAM y iRacing está configurado para usar {vcfg:.0f} MB. iRacing recomienda ajustarlo a tu hardware; ~90 % deja margen al sistema y a overlays.': 'You '
                                                                                                                                                                           'have '
                                                                                                                                                                           '{p0:.0f} '
@@ -3341,6 +3470,36 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                                                                                                                                                                                            'new '
                                                                                                                                                                                                                                                                                                                                            'versions" '
                                                                                                                                                                                                                                                                                                                                            'checkbox.',
+ '¿Quitar tu usuario del grupo «Usuarios del registro de rendimiento» (Performance Log Users)?\n\nPresentMon dejará de funcionar sin administrador. Windows pedirá confirmación y el cambio se aplica al cerrar sesión.': 'Remove '
+                                                                                                                                                                                                                          'your '
+                                                                                                                                                                                                                          'user '
+                                                                                                                                                                                                                          'from '
+                                                                                                                                                                                                                          'the '
+                                                                                                                                                                                                                          '"Performance '
+                                                                                                                                                                                                                          'Log '
+                                                                                                                                                                                                                          'Users" '
+                                                                                                                                                                                                                          'group?\n'
+                                                                                                                                                                                                                          '\n'
+                                                                                                                                                                                                                          'PresentMon '
+                                                                                                                                                                                                                          'will '
+                                                                                                                                                                                                                          'stop '
+                                                                                                                                                                                                                          'working '
+                                                                                                                                                                                                                          'without '
+                                                                                                                                                                                                                          'administrator '
+                                                                                                                                                                                                                          'rights. '
+                                                                                                                                                                                                                          'Windows '
+                                                                                                                                                                                                                          'will '
+                                                                                                                                                                                                                          'ask '
+                                                                                                                                                                                                                          'for '
+                                                                                                                                                                                                                          'confirmation '
+                                                                                                                                                                                                                          'and '
+                                                                                                                                                                                                                          'the '
+                                                                                                                                                                                                                          'change '
+                                                                                                                                                                                                                          'applies '
+                                                                                                                                                                                                                          'when '
+                                                                                                                                                                                                                          'you '
+                                                                                                                                                                                                                          'sign '
+                                                                                                                                                                                                                          'out.',
  'Ángulo de los laterales (°)': 'Side screen angle (°)',
  'Ángulo ideal de los laterales: {p0:.0f}° (cada lateral mirando a tus ojos).': 'Ideal side screen '
                                                                                 'angle: {p0:.0f}° '
