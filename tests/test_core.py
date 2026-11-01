@@ -250,3 +250,14 @@ def test_presentmon_clock_offset_aligned():
     out = align_clock(fr, t0)
     assert abs(out[0][0] - (t0 + 0.1)) < 1e-6
     assert align_clock([(t0 + 30, 10.0, None, None)], t0)[0][0] == t0 + 30   # sin desfase: no se toca
+
+
+def test_cap_change_during_recording():
+    from iroptimizer.analyzer import _infer_cap
+    from iroptimizer import pipeline
+    assert _infer_cap([80.0] * 300 + [120.0] * 900, 80) == 120.0
+    assert _infer_cap([80.0] * 1000, 80) is None
+    meta = {"config": {"renderer": {"Graphics Options": {"DesiredFPSLimit": "80", "MSAASamples": "2"}}},
+            "config_end": {"renderer": {"Graphics Options": {"DesiredFPSLimit": "120", "MSAASamples": "4"}}}}
+    pipeline.use_final_config(meta)
+    assert ("DesiredFPSLimit", "80", "120") in meta["config_changes"] and meta["config"] is meta["config_end"]

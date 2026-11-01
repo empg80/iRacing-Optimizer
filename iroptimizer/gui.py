@@ -725,7 +725,9 @@ class App(tk.Tk):
             if self.vr_on.get():
                 meta["vr"] = {**vr.detect(), "active": True, "hz": float(self.vr_hz.get() or 90),
                               "headset": self.vr_headset.get()}
-            mon = SessionMonitor(self.out_dir, hz=float(self.hz_var.get() or 4), meta_extra=meta, presentmon_exe=pm_exe)
+            ini_dir, rname = self.ini_dir_override, self.cfg.renderer_name
+            mon = SessionMonitor(self.out_dir, hz=float(self.hz_var.get() or 4), meta_extra=meta, presentmon_exe=pm_exe,
+                                 config_loader=lambda: config_reader.snapshot(config_reader.load(ini_dir, rname)))
             csv_path, _meta = mon.run(on_tick=tick, stop_event=self.mon_stop, log=self._log, on_row=on_row)
 
             def done():

@@ -602,6 +602,34 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Calidad de conexión (pérdida de paquetes)': 'Connection quality (packet loss)',
  'Calidad gráfica': 'Graphics quality',
  'Cambiar…': 'Change…',
+ 'Cambiaste ajustes mientras grababas. El análisis usa los valores del final (los que tenías en la carrera). Las partes de la sesión anteriores al cambio pueden verse distintas.': 'You '
+                                                                                                                                                                                    'changed '
+                                                                                                                                                                                    'settings '
+                                                                                                                                                                                    'while '
+                                                                                                                                                                                    'recording. '
+                                                                                                                                                                                    'The '
+                                                                                                                                                                                    'analysis '
+                                                                                                                                                                                    'uses '
+                                                                                                                                                                                    'the '
+                                                                                                                                                                                    'final '
+                                                                                                                                                                                    'values '
+                                                                                                                                                                                    '(the '
+                                                                                                                                                                                    'ones '
+                                                                                                                                                                                    'you '
+                                                                                                                                                                                    'had '
+                                                                                                                                                                                    'in '
+                                                                                                                                                                                    'the '
+                                                                                                                                                                                    'race). '
+                                                                                                                                                                                    'Parts '
+                                                                                                                                                                                    'of '
+                                                                                                                                                                                    'the '
+                                                                                                                                                                                    'session '
+                                                                                                                                                                                    'before '
+                                                                                                                                                                                    'the '
+                                                                                                                                                                                    'change '
+                                                                                                                                                                                    'may '
+                                                                                                                                                                                    'look '
+                                                                                                                                                                                    'different.',
  'Carga de CPU en segundo plano': 'Background CPU load',
  'Carga de GPU': 'GPU load',
  'Carga de GPU normal.': 'Normal GPU load.',
@@ -783,6 +811,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                 'up almost '
                                                                                 'sideways: check '
                                                                                 'the radius.',
+ 'Configuración cambiada durante la grabación': 'Settings changed during recording',
  'Configuración cargada: {p0}': 'Configuration loaded: {p0}',
  'Consumo bajo: señal de que ya codificas con la GPU (NVENC). Bien así.': 'Low usage: a sign you '
                                                                           'already encode on the '
@@ -1608,6 +1637,8 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Latencia con el servidor': 'Latency to the server',
  'Latencia ms': 'Latency ms',
  'Leer de iRacing': 'Read from iRacing',
+ 'Leído al empezar: {old} · real según la telemetría: {new:.0f}': 'Read at start: {old} · actual '
+                                                                  'from telemetry: {new:.0f}',
  'Limitado por CPU/motor (GPU esperando) el {cpu_share:.0f} % del tiempo y en el {p1:.0f} % de las peores caídas': 'Limited '
                                                                                                                    'by '
                                                                                                                    'CPU/engine '
@@ -1648,6 +1679,45 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                            'uses '
                                                                                                                            '{det:.0f} '
                                                                                                                            'Hz.',
+ 'Los FPS se quedan clavados por encima del tope leído al empezar: lo cambiaste mientras grababas. El análisis usa el tope real. Otros ajustes cambiados (p. ej. MSAA) no se pueden saber: desde esta versión la app relee la configuración al terminar.': 'FPS '
+                                                                                                                                                                                                                                                           'sit '
+                                                                                                                                                                                                                                                           'locked '
+                                                                                                                                                                                                                                                           'above '
+                                                                                                                                                                                                                                                           'the '
+                                                                                                                                                                                                                                                           'cap '
+                                                                                                                                                                                                                                                           'read '
+                                                                                                                                                                                                                                                           'at '
+                                                                                                                                                                                                                                                           'start: '
+                                                                                                                                                                                                                                                           'you '
+                                                                                                                                                                                                                                                           'changed '
+                                                                                                                                                                                                                                                           'it '
+                                                                                                                                                                                                                                                           'while '
+                                                                                                                                                                                                                                                           'recording. '
+                                                                                                                                                                                                                                                           'The '
+                                                                                                                                                                                                                                                           'analysis '
+                                                                                                                                                                                                                                                           'uses '
+                                                                                                                                                                                                                                                           'the '
+                                                                                                                                                                                                                                                           'actual '
+                                                                                                                                                                                                                                                           'cap. '
+                                                                                                                                                                                                                                                           'Other '
+                                                                                                                                                                                                                                                           'changed '
+                                                                                                                                                                                                                                                           'settings '
+                                                                                                                                                                                                                                                           '(e.g. '
+                                                                                                                                                                                                                                                           'MSAA) '
+                                                                                                                                                                                                                                                           "can't "
+                                                                                                                                                                                                                                                           'be '
+                                                                                                                                                                                                                                                           'known: '
+                                                                                                                                                                                                                                                           'from '
+                                                                                                                                                                                                                                                           'this '
+                                                                                                                                                                                                                                                           'version '
+                                                                                                                                                                                                                                                           'the '
+                                                                                                                                                                                                                                                           'app '
+                                                                                                                                                                                                                                                           're-reads '
+                                                                                                                                                                                                                                                           'the '
+                                                                                                                                                                                                                                                           'settings '
+                                                                                                                                                                                                                                                           'when '
+                                                                                                                                                                                                                                                           'recording '
+                                                                                                                                                                                                                                                           'ends.',
  'Los espejos cuestan el doble en VR (se dibujan para cada ojo): usa el espejo virtual con pocos coches.': 'Mirrors '
                                                                                                            'cost '
                                                                                                            'double '
@@ -2746,6 +2816,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                'every '
                                                                                                                                'point '
                                                                                                                                'counts.',
+ 'Tope de FPS cambiado durante la grabación': 'FPS cap changed during recording',
  'Tope propuesto: {cap} fps ≈ lo que mantienes el 90 % del tiempo': 'Proposed cap: {cap} fps ≈ '
                                                                     'what you hold 90 % of the '
                                                                     'time',

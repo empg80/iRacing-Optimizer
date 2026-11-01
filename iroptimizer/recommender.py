@@ -110,7 +110,7 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
 
     # ------------------------------------------------------------------ FPS CAP
     lim = b.cur("LimitFrameRate") if not vrd else None
-    desired = b.cur("DesiredFPSLimit")
+    desired = a.get("cap_inferred") or b.cur("DesiredFPSLimit")
     vrr_cap = (refresh - 3) if refresh else None
     holdable = _round_down(fps["p10"])  # lo que sostienes el 90 % del tiempo
     if lim == 0:
@@ -148,7 +148,7 @@ def build(analysis: dict, config_snapshot: dict) -> list[dict]:
         gp95 = (g.get("gpu") or {}).get("p95")
         if cp95 is not None and gp95 is not None and cp95 < 70 and gp95 < 70:
             load = max(cp95, gp95) / 100
-            up = _round_down(desired / max(load, 0.3) * 0.8)
+            up = _round_down(min(desired / max(load, 0.3) * 0.8, desired * 1.4))  # subidas en pasos: graba y repite
             if vrr_cap:
                 up = min(up, int(vrr_cap))
             if up >= desired * 1.15:

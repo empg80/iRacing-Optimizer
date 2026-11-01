@@ -245,6 +245,10 @@ def analyze(frames: list[tuple], telemetry: list[dict] | None = None) -> dict:
     tirón se sitúa en la sesión, minuto y posición de la vuelta.
     """
     tele = sorted((r for r in (telemetry or []) if r.get("t")), key=lambda r: r["t"])
+    # Como el resto del informe: si hay carrera (≥ 1 min en pista), las cifras son de la carrera
+    race = [r for r in tele if (r.get("session_type") or "").lower() == "race" and r.get("on_track") and not r.get("replay")]
+    if len(race) >= 240:
+        tele = sorted((r for r in tele if (r.get("session_type") or "").lower() == "race"), key=lambda r: r["t"])
     tt = [r["t"] for r in tele]
 
     def nearest(t):

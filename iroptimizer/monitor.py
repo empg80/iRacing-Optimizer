@@ -166,7 +166,7 @@ def _track_length_m(weekend: dict) -> float | None:
 
 class SessionMonitor:
     def __init__(self, out_dir: Path, hz: float = 4.0, meta_extra: dict | None = None,
-                 presentmon_exe: Path | None = None):
+                 presentmon_exe: Path | None = None, config_loader=None):
         import irsdk  # pyirsdk
         self.ir = irsdk.IRSDK()
         self.out_dir = Path(out_dir)
@@ -174,6 +174,9 @@ class SessionMonitor:
         self.hz = hz
         self.sys = SystemSampler()
         self.meta = dict(meta_extra or {})
+        # Relee la configuración al terminar: si cambiaste gráficos o el tope de FPS durante la grabación,
+        # el análisis usa los valores finales (los de la carrera) y lista los cambios.
+        self.config_loader = config_loader
         self.track_len = None
         self.player_idx = None
         self._sessions: list = []
@@ -339,6 +342,11 @@ class SessionMonitor:
         self.meta["samples"] = rows
         self.meta["hz"] = self.hz
         self.meta["started"] = datetime.fromtimestamp(t0).isoformat(timespec="seconds")
+        if self.config_loader:
+            try:
+                self.meta["config_end"] = self.config_loader()
+            except Exception:
+                pass
         meta_path.write_text(json.dumps(self.meta, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
         try:
             self.ir.shutdown()

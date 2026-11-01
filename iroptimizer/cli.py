@@ -80,7 +80,8 @@ def cmd_monitor(args):
             print(_("PresentMon no encontrado; se graba sin frametimes."))
         elif not presentmon.can_capture():
             print(_("Aviso: sin permiso para PresentMon (grupo Performance Log Users o administrador). Se intentará igualmente."))
-    mon = SessionMonitor(_out_dir(args.out), hz=args.hz, meta_extra=meta, presentmon_exe=pm_exe)
+    mon = SessionMonitor(_out_dir(args.out), hz=args.hz, meta_extra=meta, presentmon_exe=pm_exe,
+                         config_loader=lambda: config_reader.snapshot(config_reader.load(args.ini_dir, cfg.renderer_name)))
     csv_path, _meta = mon.run(duration_s=args.duration)
     print(_("\nGuardado: {p}", p=csv_path))
     if args.analyze:

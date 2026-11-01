@@ -314,6 +314,16 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
             add("VR", _("PresentMon en VR"), INFO, _("datos no representativos"),
                 _("En VR PresentMon mide la ventana espejo del monitor, no lo que ves en el visor. Usa la frecuencia del visor de arriba."))
 
+    # ------------------------------------------- cambios de configuración durante la grabación
+    if a.get("config_changes"):
+        add(_("Sistema"), _("Configuración cambiada durante la grabación"), INFO,
+            ", ".join(f"{k} {b} → {c}" for k, b, c in a["config_changes"]),
+            _("Cambiaste ajustes mientras grababas. El análisis usa los valores del final (los que tenías en la carrera). Las partes de la sesión anteriores al cambio pueden verse distintas."))
+    elif a.get("cap_inferred"):
+        add(_("Sistema"), _("Tope de FPS cambiado durante la grabación"), INFO,
+            _("Leído al empezar: {old} · real según la telemetría: {new:.0f}", old=f"{a['cap_cfg']:.0f}" if a.get("cap_cfg") else "?", new=a["cap_inferred"]),
+            _("Los FPS se quedan clavados por encima del tope leído al empezar: lo cambiaste mientras grababas. El análisis usa el tope real. Otros ajustes cambiados (p. ej. MSAA) no se pueden saber: desde esta versión la app relee la configuración al terminar."))
+
     # --------------------------------------------- archivo gráfico que no corresponde
     mism = a.get("renderer_mismatch")
     if mism == "vr_session_monitor_ini":

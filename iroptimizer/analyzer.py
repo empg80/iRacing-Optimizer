@@ -83,6 +83,20 @@ def _gpu(r):
     return r.get("gpu_util") if r.get("gpu_util") is not None else r.get("gpu_usage")
 
 
+def _infer_cap(fps: list[float], cap: float) -> float | None:
+    """Tope real si los FPS se quedan clavados por encima del leído al empezar (lo cambiaste durante la grabación)."""
+    vals = sorted(fps)
+    if len(vals) < 200:
+        return None
+    p90 = vals[int(len(vals) * 0.9)]
+    if p90 <= cap * 1.05:
+        return None
+    plateau = [f for f in vals if abs(f - p90) <= 2]
+    if len(plateau) / len(vals) < 0.3:
+        return None
+    return float(round(sorted(plateau)[len(plateau) // 2]))
+
+
 def _classify(r, cap) -> str:
     fps = r.get("fps") or 0
     gpu = _gpu(r)
@@ -179,6 +193,11 @@ def analyze(rows: list[dict], meta: dict, presentmon: dict | None = None, target
     valid = _valid(rows)
     if not valid:
         raise ValueError(_("No hay muestras válidas en pista (¿grabaste con el coche en pista?)."))
+    cap_inferred = None
+    if capped and cap and not vr_mode and not target_override:
+        cap_inferred = _infer_cap([r["fps"] for r in valid if r.get("fps")], cap)
+        if cap_inferred:
+            target = cap = cap_inferred
     vr_selected = vr_detected = None
     if vr_mode:
         vr_selected = target if marked_hz else None  # None: VR detectada sin marcar la casilla
@@ -297,6 +316,9 @@ def analyze(rows: list[dict], meta: dict, presentmon: dict | None = None, target
         "drops": _drops(prim, p["fps"]["median"], cap)[:12],
         "memory": memory,
         "top_processes": meta.get("top_processes") or [],
+        "cap_inferred": cap_inferred,
+        "cap_cfg": (_target(cfg, hw)[1] if cap_inferred else None),
+        "config_changes": meta.get("config_changes") or [],
         "renderer_mismatch": (("vr_session_monitor_ini" if vr_mode else "monitor_session_vr_ini")
                               if vr_mode != ((meta.get("config") or {}).get("renderer_file") in _vr.VR_RENDERERS) else None),
         "vr": ({**_vr.analyze(prim, target), "hz_selected": vr_selected, "hz_detected": vr_detected,

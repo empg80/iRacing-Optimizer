@@ -42,11 +42,29 @@ def load_pm(csv_path: Path, meta: dict, rows: list[dict], explicit: str | None =
         return None
 
 
+WATCH_KEYS = ("DesiredFPSLimit", "LimitFrameRate", "MSAASamples", "MaxCarsToDraw", "MaxCarsToDrawInMirrors",
+              "ShadowMapType", "MirrorDetail", "ShaderQuality", "ParticleDetail", "LODMinFPSTarget", "NvReflexMode")
+
+
+def use_final_config(meta: dict) -> None:
+    """Si la configuración cambió durante la grabación, el análisis usa la final y guarda la lista de cambios."""
+    end = meta.get("config_end")
+    if not end or not meta.get("config"):
+        return
+    a = config_reader.flat_from_snapshot((meta["config"]).get("renderer", {}))
+    b = config_reader.flat_from_snapshot(end.get("renderer", {}))
+    changes = [(k, a.get(k.lower()), b.get(k.lower())) for k in WATCH_KEYS if a.get(k.lower()) != b.get(k.lower())]
+    if changes:
+        meta["config_start"], meta["config"] = meta["config"], end
+        meta["config_changes"] = changes
+
+
 def run(csv_path: str | Path, presentmon: str | None = None, target: float | None = None,
         current_renderer_flat: dict | None = None) -> Result:
     """Analiza el CSV. Los perfiles se calculan contra el ini *actual* si se pasa (si no, el del snapshot)."""
     csv_path = Path(csv_path)
     rows, meta = analyzer.load_session(csv_path)
+    use_final_config(meta)
     pm = load_pm(csv_path, meta, rows, presentmon)
     a = analyzer.analyze(rows, meta, pm, target)
     recs = recommender.build(a, meta.get("config") or {})
