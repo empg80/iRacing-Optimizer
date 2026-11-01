@@ -298,17 +298,13 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
              _("Si aún no llegas, baja la frecuencia del visor (90 → 80 o 72 Hz) o la resolución de renderizado del runtime."),
              _("Los espejos cuestan el doble en VR (se dibujan para cada ojo): usa el espejo virtual con pocos coches.")]
             if st != OK else [])
-        if vrd.get("hz_detected"):
+        if vrd.get("hz_detected") and vrd.get("hz_selected"):
             add("VR", _("Frecuencia real del visor"), INFO,
                 _("Elegida {sel:.0f} Hz · detectada {det:.0f} Hz", sel=vrd["hz_selected"], det=vrd["hz_detected"]),
                 _("Los FPS se quedan clavados en {det:.0f}: el visor estaba a {det:.0f} Hz, no a {sel:.0f}. El análisis usa {det:.0f} Hz.",
                   det=vrd["hz_detected"], sel=vrd["hz_selected"]),
                 [_("Si querías {sel:.0f} Hz, cámbialo en la app del PC (Meta Horizon Link → Dispositivos → Gráficos) o en el visor, y graba otra vez.",
                    sel=vrd["hz_selected"])])
-        if vrd.get("renderer_ok") is False:
-            add("VR", _("Archivo gráfico de VR"), WARN, a.get("renderer_file") or "?",
-                _("La sesión es de VR, pero se leyó el archivo gráfico de monitor. En VR iRacing usa rendererDX11OpenXR.ini, así que los ajustes y perfiles mostrados no son los que estabas usando."),
-                [_("Elige rendererDX11OpenXR.ini arriba («Archivo gráfico») antes de grabar. Desde esta versión se cambia solo al marcar «Sesión en VR».")])
         sw = vrd.get("software") or []
         add("VR", _("Software de VR"), INFO,
             ", ".join(dict.fromkeys(x for x in ([vrd.get("runtime")] + sw) if x)) or _("no detectado"),
@@ -317,6 +313,17 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
         if a.get("presentmon"):
             add("VR", _("PresentMon en VR"), INFO, _("datos no representativos"),
                 _("En VR PresentMon mide la ventana espejo del monitor, no lo que ves en el visor. Usa la frecuencia del visor de arriba."))
+
+    # --------------------------------------------- archivo gráfico que no corresponde
+    mism = a.get("renderer_mismatch")
+    if mism == "vr_session_monitor_ini":
+        add("VR", _("Archivo gráfico de VR"), WARN, a.get("renderer_file") or "?",
+            _("La sesión es de VR, pero se leyó el archivo gráfico de monitor. En VR iRacing usa rendererDX11OpenXR.ini, así que los ajustes y perfiles mostrados no son los que estabas usando."),
+            [_("Marca «Sesión en VR» antes de grabar: la app cambia sola a rendererDX11OpenXR.ini.")])
+    elif mism == "monitor_session_vr_ini":
+        add(_("Sistema"), _("Archivo gráfico de monitor"), WARN, a.get("renderer_file") or "?",
+            _("Corriste en monitor, pero se leyó el archivo gráfico de VR, así que los ajustes y perfiles mostrados no son los que estabas usando."),
+            [_("Desmarca «Sesión en VR» y elige rendererDX11Monitor.ini arriba («Archivo gráfico») antes de grabar.")])
 
     # ------------------------------------------------------------- frametime
     pm = a.get("presentmon") or {}

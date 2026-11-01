@@ -171,8 +171,9 @@ def analyze(rows: list[dict], meta: dict, presentmon: dict | None = None, target
     target, cap, capped = _target(cfg, hw)
     from . import vr as _vr
     vr_mode = _vr.is_vr_session(meta)
+    marked_hz = (meta.get("vr") or {}).get("hz") if (meta.get("vr") or {}).get("active") else None
     if vr_mode:  # en VR el objetivo es la frecuencia del visor; el tope de FPS no aplica
-        target, cap, capped = float((meta.get("vr") or {}).get("hz") or 90), None, False
+        target, cap, capped = float(marked_hz or 90), None, False
     if target_override:
         target = float(target_override)
     valid = _valid(rows)
@@ -180,9 +181,10 @@ def analyze(rows: list[dict], meta: dict, presentmon: dict | None = None, target
         raise ValueError(_("No hay muestras válidas en pista (¿grabaste con el coche en pista?)."))
     vr_selected = vr_detected = None
     if vr_mode:
-        vr_selected = target
+        vr_selected = target if marked_hz else None  # None: VR detectada sin marcar la casilla
         if not target_override:
-            vr_detected = _vr.detect_rate([r.get("fps") for r in valid], target, (meta.get("vr") or {}).get("headset"))
+            vr_detected = _vr.detect_rate([r.get("fps") for r in valid], target if marked_hz else 1000,
+                                          (meta.get("vr") or {}).get("headset"))
             if vr_detected:
                 target = vr_detected  # el visor estaba a otra frecuencia: se analiza con la real
         cap = target  # al ritmo del visor el juego va sincronizado: cuenta como «en el tope», no como límite de CPU
@@ -295,6 +297,8 @@ def analyze(rows: list[dict], meta: dict, presentmon: dict | None = None, target
         "drops": _drops(prim, p["fps"]["median"], cap)[:12],
         "memory": memory,
         "top_processes": meta.get("top_processes") or [],
+        "renderer_mismatch": (("vr_session_monitor_ini" if vr_mode else "monitor_session_vr_ini")
+                              if vr_mode != ((meta.get("config") or {}).get("renderer_file") in _vr.VR_RENDERERS) else None),
         "vr": ({**_vr.analyze(prim, target), "hz_selected": vr_selected, "hz_detected": vr_detected,
                 "renderer_ok": (meta.get("config") or {}).get("renderer_file") in _vr.VR_RENDERERS,
                 "runtime": (meta.get("vr") or {}).get("runtime"),

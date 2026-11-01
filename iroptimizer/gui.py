@@ -254,7 +254,7 @@ class App(tk.Tk):
         vrrow = ttk.Frame(f)
         vrrow.pack(anchor="w", pady=(6, 0))
         self.vr_on = tk.BooleanVar(value=False)
-        ttk.Checkbutton(vrrow, text=_("Sesión en VR"), variable=self.vr_on).pack(side="left")
+        ttk.Checkbutton(vrrow, text=_("Sesión en VR"), variable=self.vr_on, command=self._vr_toggled).pack(side="left")
         ttk.Label(vrrow, text=_("   Visor:")).pack(side="left")
         self.vr_headset = tk.StringVar(value="Meta Quest 3 / 3S")
         hs = ttk.Combobox(vrrow, textvariable=self.vr_headset, values=list(vr.HEADSETS), state="readonly", width=18)
@@ -680,13 +680,7 @@ class App(tk.Tk):
             messagebox.showerror(APP, "Falta pyirsdk (pip install pyirsdk).")
             return
         self._vr_refresh()
-        if self.vr_on.get() and self.cfg.renderer_name not in vr.VR_RENDERERS:
-            vr_ini = next((n for n, _mt in self.cfg.renderer_candidates if n in vr.VR_RENDERERS), None)
-            if vr_ini:  # en VR iRacing usa su propio archivo gráfico: se graba con ese
-                self.cfg = config_reader.load(self.ini_dir_override, vr_ini)
-                self.renderer_var.set(vr_ini)
-                self._log(_("Sesión VR: se usa {f} (el archivo gráfico de VR).", f=vr_ini))
-                self._bg(self._load_cfg)
+        self._vr_toggled()
         pm_exe = None
         if self.use_pm.get() and not self.vr_on.get():
             self._pm_refresh_status()
@@ -789,12 +783,29 @@ class App(tk.Tk):
         messagebox.showinfo(APP, _("Sesión exportada sin datos personales (sin nombres de procesos, rutas ni ajustes de "
                                    "audio/controles):\n{p}", p=out))
 
+    def _vr_toggled(self):
+        """Cada modo graba con su archivo gráfico: VR → rendererDX11OpenXR.ini; monitor → rendererDX11Monitor.ini."""
+        if not self.cfg:
+            return
+        names = [n for n, _mt in self.cfg.renderer_candidates]
+        cur = self.cfg.renderer_name
+        if self.vr_on.get():
+            want = next((n for n in names if n in vr.VR_RENDERERS), None) if cur not in vr.VR_RENDERERS else None
+        else:
+            want = next((n for n in names if n not in vr.VR_RENDERERS), None) if cur in vr.VR_RENDERERS else None
+        if want:
+            self.cfg = config_reader.load(self.ini_dir_override, want)
+            self.renderer_var.set(want)
+            self._log(_("Se usa {f} para esta sesión.", f=want))
+            self._bg(self._load_cfg)
+
     def _vr_refresh(self):
+        # Solo informa: el software de VR puede estar abierto sin visor conectado. La casilla la marca el usuario
+        # y, al grabar, la app comprueba si iRacing está realmente en VR.
         d = vr.detect()
-        if d["active"]:
-            self.vr_on.set(True)
         parts = [x for x in [d.get("runtime")] + d.get("software", []) if x]
-        self.vr_status.set(_("Detectado: {x}", x=", ".join(dict.fromkeys(parts))) if parts else _("No se detecta software de VR."))
+        self.vr_status.set(_("Software de VR: {x}. Marca la casilla si vas a correr con el visor.", x=", ".join(dict.fromkeys(parts)))
+                           if parts else _("No se detecta software de VR."))
 
     def reanalyze(self):
         if self.result:

@@ -74,11 +74,34 @@ def running_vr_software() -> list[str]:
 
 
 def detect() -> dict:
+    """Software de VR abierto. OJO: que esté abierto no significa que estés en VR (el servicio de Meta,
+    OVRServer_x64.exe, corre siempre en segundo plano). Por eso `active` ya no se deduce de aquí."""
     procs = running_vr_software()
-    return {"runtime": active_openxr_runtime(), "software": procs, "active": bool(procs)}
+    return {"runtime": active_openxr_runtime(), "software": procs, "active": False}
+
+
+# Bibliotecas que iRacing solo carga cuando renderiza en VR
+VR_MODULES = ("openxr_loader", "libovrrt", "openvr_api")
+
+
+def iracing_in_vr(proc) -> bool | None:
+    """True/False según si el proceso de iRacing tiene cargado un runtime de VR; None si no se puede saber."""
+    if proc is None:
+        return None
+    try:
+        for m in proc.memory_maps(grouped=True):
+            name = Path(getattr(m, "path", "") or "").name.lower()
+            if any(name.startswith(x) for x in VR_MODULES):
+                return True
+        return False
+    except Exception:
+        return None
 
 
 def is_vr_session(meta: dict) -> bool:
+    check = meta.get("vr_check")
+    if check is not None:  # comprobado durante la grabación: manda sobre la casilla y el archivo gráfico
+        return bool(check)
     v = meta.get("vr") or {}
     if v.get("active"):
         return True

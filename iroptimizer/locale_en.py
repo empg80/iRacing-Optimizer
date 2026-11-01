@@ -483,6 +483,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Archivo demasiado grande para ser un perfil.': 'File too large to be a profile.',
  'Archivo gráfico': 'Graphics file',
  'Archivo gráfico de VR': 'VR graphics file',
+ 'Archivo gráfico de monitor': 'Monitor graphics file',
  'Archivo gráfico no permitido: {p0!r}': 'Graphics file not allowed: {p0!r}',
  'Archivo gráfico:': 'Graphics file:',
  'Archivo no permitido: {p0!r}': 'File not allowed: {p0!r}',
@@ -791,6 +792,31 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                     'iroptimizer_backups)',
  'Copia de seguridad: {bdir}': 'Backup: {bdir}',
  'Copias de seguridad': 'Backups',
+ 'Corriste en monitor, pero se leyó el archivo gráfico de VR, así que los ajustes y perfiles mostrados no son los que estabas usando.': 'You '
+                                                                                                                                        'raced '
+                                                                                                                                        'on '
+                                                                                                                                        'a '
+                                                                                                                                        'monitor, '
+                                                                                                                                        'but '
+                                                                                                                                        'the '
+                                                                                                                                        'VR '
+                                                                                                                                        'graphics '
+                                                                                                                                        'file '
+                                                                                                                                        'was '
+                                                                                                                                        'read, '
+                                                                                                                                        'so '
+                                                                                                                                        'the '
+                                                                                                                                        'settings '
+                                                                                                                                        'and '
+                                                                                                                                        'profiles '
+                                                                                                                                        'shown '
+                                                                                                                                        'are '
+                                                                                                                                        'not '
+                                                                                                                                        'the '
+                                                                                                                                        'ones '
+                                                                                                                                        'you '
+                                                                                                                                        'were '
+                                                                                                                                        'using.',
  'CpuUsageBG p95 {bgp95:.0f} % · máx. {p1:.0f} %': 'CpuUsageBG p95 {bgp95:.0f} % · max {p1:.0f} %',
  'Crear copia ahora': 'Create backup now',
  'CrewChief: normal que use algo de CPU; si va justo, desactiva funciones que no uses.': 'CrewChief: '
@@ -811,6 +837,19 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Descargar': 'Download',
  'Descripción:': 'Description:',
  'Desfase de reloj con el servidor': 'Clock skew with the server',
+ 'Desmarca «Sesión en VR» y elige rendererDX11Monitor.ini arriba («Archivo gráfico») antes de grabar.': 'Untick '
+                                                                                                        '"VR '
+                                                                                                        'session" '
+                                                                                                        'and '
+                                                                                                        'pick '
+                                                                                                        'rendererDX11Monitor.ini '
+                                                                                                        'at '
+                                                                                                        'the '
+                                                                                                        'top '
+                                                                                                        '("Graphics '
+                                                                                                        'file") '
+                                                                                                        'before '
+                                                                                                        'recording.',
  'Desmarcar todo': 'Uncheck all',
  'Detalle': 'Detail',
  'Detalle de boxes al mínimo.': 'Pit detail at minimum.',
@@ -1631,6 +1670,15 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                'low for your '
                                                                                '{p1:.0f} GB of RAM',
  'Límite: ': 'Limit: ',
+ 'Marca «Sesión en VR» antes de grabar: la app cambia sola a rendererDX11OpenXR.ini.': 'Tick "VR '
+                                                                                       'session" '
+                                                                                       'before '
+                                                                                       'recording: '
+                                                                                       'the app '
+                                                                                       'switches '
+                                                                                       'to '
+                                                                                       'rendererDX11OpenXR.ini '
+                                                                                       'automatically.',
  'Marcar P1': 'Check P1',
  'Marcar P1 + P2': 'Check P1 + P2',
  'Margen para subir la frecuencia del visor': 'Headroom to raise the headset refresh rate',
@@ -2237,6 +2285,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                              'software detected '
                                                                              'during recording.',
  'Ruta fuera de la carpeta de iRacing': 'Path outside the iRacing folder',
+ 'Se usa {f} para esta sesión.': 'Using {f} for this session.',
  'Sección': 'Section',
  'Segundos máximos de grabación': 'Maximum recording seconds',
  'Selecciona un perfil para ver qué cambiaría.': 'Select a profile to see what would change.',
@@ -2465,6 +2514,9 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                     'them.',
  'Sistema': 'System',
  'Software de VR': 'VR software',
+ 'Software de VR: {x}. Marca la casilla si vas a correr con el visor.': 'VR software: {x}. Tick '
+                                                                        "the box if you're going "
+                                                                        'to race with the headset.',
  'Solo el {p:.0f} % del tiempo a {hz:.0f} Hz. En VR cada caída se nota mucho más que en monitor.': 'Only '
                                                                                                    '{p:.0f} '
                                                                                                    '% '
@@ -2926,9 +2978,32 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                       "you don't look at and limit "
                                                                       'their refresh rate.',
  'iRacing desconectado. Fin de la grabación.': 'iRacing disconnected. Recording finished.',
+ 'iRacing está en VR: la sesión se analizará como VR.': 'iRacing is running in VR: the session '
+                                                        'will be analysed as VR.',
  'iRacing está guardando un archivo .ibt de telemetría continuamente': 'iRacing is continuously '
                                                                        'saving a .ibt telemetry '
                                                                        'file',
+ 'iRacing no está en VR: la sesión se analizará como de monitor aunque esté marcada «Sesión en VR».': 'iRacing '
+                                                                                                      'is '
+                                                                                                      'not '
+                                                                                                      'running '
+                                                                                                      'in '
+                                                                                                      'VR: '
+                                                                                                      'the '
+                                                                                                      'session '
+                                                                                                      'will '
+                                                                                                      'be '
+                                                                                                      'analysed '
+                                                                                                      'as '
+                                                                                                      'a '
+                                                                                                      'monitor '
+                                                                                                      'session '
+                                                                                                      'even '
+                                                                                                      'though '
+                                                                                                      '"VR '
+                                                                                                      'session" '
+                                                                                                      'is '
+                                                                                                      'ticked.',
  'info': 'info',
  'la configuración de monitor y FOV': 'the monitor and FOV configuration',
  'las recomendaciones marcadas': 'the checked recommendations',
