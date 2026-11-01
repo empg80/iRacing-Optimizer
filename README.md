@@ -87,6 +87,12 @@ Para sesiones con visor (Quest, Index, Pimax…), marca **Sesión en VR** en la 
 - Los perfiles generados sobre `rendererDX11OpenXR.ini` ajustan el LOD dinámico a la frecuencia del visor.
 - PresentMon no se usa en VR: mediría la ventana espejo del monitor, no el visor.
 
+## Aviso de nuevas versiones
+
+La primera vez que abres la app te pregunta si quieres que te avise de versiones nuevas. Por defecto, no. Puedes cambiarlo con la casilla **Avisar de nuevas versiones**.
+
+Si lo activas, al arrancar consulta como mucho una vez al día la página de releases de este repositorio en GitHub. Si hay versión nueva, muestra una barra con *Ver novedades*, *Descargar* e *Ignorar esta versión*. La app nunca se actualiza sola ni descarga nada: la descarga la haces tú desde GitHub. Para desactivarlo del todo, define `IROPT_NO_UPDATE_CHECK=1`.
+
 ## Compartir sesiones
 
 **Análisis → Exportar para compartir…** crea un `.zip` anonimizado. Incluye la telemetría, el hardware (sin el sistema operativo) y solo los ajustes gráficos y de pantalla. No incluye nombres de procesos, rutas, ni ajustes de audio o controles.
@@ -106,6 +112,7 @@ iRacingOptimizer.exe profile equilibrado [--from-session sesion.csv] [--dry-run]
 iRacingOptimizer.exe monitor --vr-hz 90
 iRacingOptimizer.exe export sesion.csv [--out sesion_compartir.zip]
 iRacingOptimizer.exe compare antes.csv despues.csv
+iRacingOptimizer.exe check-update
 iRacingOptimizer.exe restore
 iRacingOptimizer.exe demo
 ```

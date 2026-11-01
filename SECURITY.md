@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Red** | No se conecta a internet. No envía datos ni telemetría a ningún sitio. |
+| **Red** | No se conecta a internet salvo el aviso de nuevas versiones, que es opcional y está desactivado por defecto (ver abajo). No envía datos ni telemetría a ningún sitio. |
 | **Permisos** | No necesita ni pide permisos de administrador. |
 | **Lee** | Los `.ini` de `Documentos\iRacing`, la telemetría en vivo de iRacing (memoria compartida, solo lectura) y datos del sistema (CPU, RAM, GPU vía driver NVIDIA, procesos en ejecución). |
 | **Escribe** | Solo en `Documentos\iRacing` (los `.ini` de iRacing que están en una lista cerrada, y sus copias de seguridad en `iroptimizer_backups`) y en `Documentos\iRacingOptimizer` (sesiones, informes y perfiles). |
@@ -20,6 +20,14 @@
 - **Perfiles importados**: se limpian al importarlos y se descarta lo que no parezca un ajuste válido. La app te avisa de cuántos valores ha descartado.
 - **Informes HTML**: todo el texto que procede de sesiones (nombres de circuito, coches, procesos…) se escapa, así que una sesión manipulada no puede inyectar código en el informe.
 - **Restaurar copias**: solo restaura `.ini` conocidos y no admite rutas.
+
+## Conexión a internet (aviso de versiones)
+
+La app funciona sin internet. La única conexión que puede hacer es el aviso de nuevas versiones, **desactivado por defecto** y solo si lo aceptas:
+- es una petición GET anónima a `api.github.com/repos/empg80/iRacing-Optimizer/releases/latest`, como mucho una vez al día;
+- no envía datos de tu equipo, tu configuración ni tus sesiones;
+- nunca descarga ni ejecuta nada: solo abre en tu navegador enlaces del repositorio oficial en github.com (cualquier otro enlace se descarta);
+- `IROPT_NO_UPDATE_CHECK=1` la desactiva del todo, también la pregunta inicial.
 
 ## PresentMon
 

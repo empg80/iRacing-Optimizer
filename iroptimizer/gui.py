@@ -19,7 +19,7 @@ import math
 
 from .report import CAT
 from .safety import RENDERER_FILES
-from . import __version__, i18n, sharing, vr, apply as applier, config_reader, diagnostics, drift, fov, hardware, pipeline, presentmon, profiles, userprofiles
+from . import __version__, i18n, sharing, updates, vr, apply as applier, config_reader, diagnostics, drift, fov, hardware, pipeline, presentmon, profiles, userprofiles
 
 APP = "iRacing Optimizer"
 PRIO_TAG = {1: "p1", 2: "p2", 3: "p3"}
@@ -111,6 +111,7 @@ class App(tk.Tk):
         self._build()
         self.after(100, self._poll)
         self._bg(self._load_all, _("Cargando equipo y configuración…"))
+        self.after(1500, self._update_startup)
 
     # ------------------------------------------------------------------ infra
     def _style(self):
@@ -122,6 +123,7 @@ class App(tk.Tk):
         s.configure("Big.TLabel", font=("Segoe UI", 20, "bold"))
         s.configure("Muted.TLabel", foreground="#666")
         s.configure("Accent.TButton", font=("Segoe UI", 10, "bold"))
+        s.configure("Update.TLabel", font=("Segoe UI", 10, "bold"), foreground="#0b5394")
 
     def _bg(self, fn, msg=None):
         if msg:
@@ -173,6 +175,21 @@ class App(tk.Tk):
         lang_cb.pack(side="right")
         ttk.Label(top, text="🌐").pack(side="right", padx=4)
         lang_cb.bind("<<ComboboxSelected>>", self._change_lang)
+        self.upd_var = tk.BooleanVar(value=i18n.load_settings().get("update_check") is True)
+        ttk.Checkbutton(top, text=_("Avisar de nuevas versiones"), variable=self.upd_var,
+                        command=self._toggle_updates).pack(side="right", padx=10)
+
+        # Barra de aviso de nueva versión (oculta hasta que haya una)
+        self.upd_bar = ttk.Frame(self, padding=(10, 4))
+        self.upd_msg = tk.StringVar()
+        ttk.Label(self.upd_bar, textvariable=self.upd_msg, style="Update.TLabel").pack(side="left")
+        self.upd_btns = ttk.Frame(self.upd_bar)
+        self.upd_btns.pack(side="right")
+        self._upd_rel: dict | None = None
+        ttk.Button(self.upd_btns, text=_("Ver novedades"), command=lambda: self._upd_open("page_url")).pack(side="left", padx=3)
+        ttk.Button(self.upd_btns, text=_("Descargar"), command=lambda: self._upd_open("download_url")).pack(side="left", padx=3)
+        ttk.Button(self.upd_btns, text=_("Ignorar esta versión"), command=self._upd_skip).pack(side="left", padx=3)
+        ttk.Button(self.upd_btns, text="✕", width=3, command=self.upd_bar.pack_forget).pack(side="left", padx=3)
 
         self.nb = ttk.Notebook(self)
         self.nb.pack(fill="both", expand=True, padx=10, pady=(0, 6))
@@ -559,6 +576,53 @@ class App(tk.Tk):
         for d in applier.list_backups(self.cfg.directory):
             files = ", ".join(sorted(p.name for p in d.iterdir()))
             self.bk_list.insert("end", f"{d.name:<38} {files}")
+
+    # ------------------------------------------------------------- versiones
+    def _update_startup(self):
+        if updates.disabled_by_env():
+            return
+        st = i18n.load_settings()
+        if "update_check" not in st:
+            ok = messagebox.askyesno(APP, _("¿Quieres que la app te avise cuando haya una versión nueva?\n\n"
+                                            "Si aceptas, al arrancar comprobará como mucho una vez al día la página de "
+                                            "versiones del proyecto en GitHub. No envía ningún dato tuyo ni descarga nada: "
+                                            "solo te avisa y tú decides si la descargas.\n\nPuedes cambiarlo cuando quieras "
+                                            "con la casilla «Avisar de nuevas versiones»."))
+            i18n.save_setting("update_check", bool(ok))
+            self.upd_var.set(bool(ok))
+            st["update_check"] = bool(ok)
+        if updates.should_check(st):
+            self._check_updates(st)
+
+    def _toggle_updates(self):
+        on = bool(self.upd_var.get())
+        i18n.save_setting("update_check", on)
+        if on:
+            self._check_updates(i18n.load_settings())
+        else:
+            self.upd_bar.pack_forget()
+
+    def _check_updates(self, st: dict):
+        def work():
+            i18n.save_setting("update_last_check", time.time())
+            rel = updates.newer_release(__version__, st)
+            if rel:
+                self.ui(lambda: self._show_update(rel))
+        threading.Thread(target=work, daemon=True).start()
+
+    def _show_update(self, rel: dict):
+        self._upd_rel = rel
+        self.upd_msg.set(_("Nueva versión {v} disponible (tienes la {cur}).", v=rel["version"], cur=__version__))
+        self.upd_bar.pack(fill="x", before=self.nb)
+
+    def _upd_open(self, key: str):
+        if self._upd_rel:
+            webbrowser.open(self._upd_rel[key])  # solo URLs validadas de github.com/<repo oficial>
+
+    def _upd_skip(self):
+        if self._upd_rel:
+            i18n.save_setting("update_skip_version", self._upd_rel["version"])
+        self.upd_bar.pack_forget()
 
     def _change_lang(self, _ev=None):
         lang = "en" if self.lang_var.get() == "English" else "es"

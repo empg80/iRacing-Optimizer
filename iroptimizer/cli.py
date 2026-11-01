@@ -117,6 +117,17 @@ def cmd_export(args):
     print(sharing.export_session(Path(args.csv), args.out))
 
 
+def cmd_check_update(args):
+    """Consulta manual (no guarda nada ni depende del ajuste de la interfaz)."""
+    from . import __version__, updates
+    rel = updates.newer_release(__version__)
+    if rel:
+        print(_("Nueva versión {v} disponible (tienes la {cur}).", v=rel["version"], cur=__version__))
+        print(rel["page_url"])
+    else:
+        print(_("Tienes la última versión ({cur}) o no se pudo comprobar.", cur=__version__))
+
+
 def cmd_restore(args):
     for line in applier.restore(config_reader.find_iracing_dir(args.ini_dir), args.stamp):
         print(line)
@@ -179,6 +190,8 @@ def main(argv=None):
     ex.add_argument("csv")
     ex.add_argument("--out")
     ex.set_defaults(fn=cmd_export)
+
+    sub.add_parser("check-update", parents=[common], help=_("Comprueba si hay una versión nueva en GitHub")).set_defaults(fn=cmd_check_update)
 
     r = sub.add_parser("restore", parents=[common])
     r.add_argument("--stamp", help=_("Copia concreta (carpeta en iroptimizer_backups)"))

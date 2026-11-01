@@ -93,6 +93,12 @@ For headset sessions (Quest, Index, Pimax…), tick **VR session** in the Monito
 - Profiles built on `rendererDX11OpenXR.ini` set dynamic LOD to the headset refresh rate.
 - PresentMon is not used in VR: it would measure the monitor mirror window, not the headset.
 
+## New version notice
+
+The first time you open the app it asks whether you want to be notified of new versions. The default is no. You can change it with the **Notify me of new versions** checkbox.
+
+If enabled, at startup it checks this repository's GitHub releases page at most once a day. When there is a new version, a bar shows *What's new*, *Download* and *Skip this version*. The app never updates itself or downloads anything: you download it yourself from GitHub. To turn it off completely, set `IROPT_NO_UPDATE_CHECK=1`.
+
 ## Sharing sessions
 
 **Analysis → Export to share…** creates an anonymised `.zip`. It includes the telemetry, hardware (without the OS) and only graphics/display settings. It does not include process names, paths, or audio/controls settings.
@@ -112,6 +118,7 @@ iRacingOptimizer.exe profile equilibrado [--from-session session.csv] [--dry-run
 iRacingOptimizer.exe monitor --vr-hz 90
 iRacingOptimizer.exe export session.csv [--out session_share.zip]
 iRacingOptimizer.exe compare before.csv after.csv
+iRacingOptimizer.exe check-update
 iRacingOptimizer.exe restore
 iRacingOptimizer.exe demo
 ```

@@ -70,6 +70,26 @@ def _(template: str, **kw) -> str:
         return template.format(**kw)
 
 
+def load_settings() -> dict:
+    """Ajustes de la app (settings.json). Vacío si no existe o está dañado."""
+    try:
+        d = json.loads(_settings_path().read_text(encoding="utf-8"))
+        return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+
+def save_setting(key: str, value) -> None:
+    p = _settings_path()
+    try:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        d = load_settings()
+        d[key] = value
+        p.write_text(json.dumps(d, indent=2), encoding="utf-8")
+    except OSError:
+        pass
+
+
 def set_lang(lang: str) -> None:
     """Guarda el idioma elegido (se aplica al reiniciar)."""
     if lang not in SUPPORTED:

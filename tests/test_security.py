@@ -98,3 +98,40 @@ def test_import_rejects_malicious_zip(tmp_path):
     sharing.import_session(ok, tmp_path / "rec2")
     assert not (tmp_path / "rec2" / "malware.exe").exists()
     assert sorted(p.name for p in (tmp_path / "rec2").iterdir()) == ["session_a_recibida.csv", "session_a_recibida.json"]
+
+
+def test_update_check_parsing_and_urls(monkeypatch):
+    from iroptimizer import updates
+    assert updates.parse_version("v0.9.0") == (0, 9, 0) == updates.parse_version("0.9.0")
+    assert updates.parse_version("0.9.0-beta") is None and updates.parse_version("../x") is None
+    good = {"tag_name": "0.9.0", "html_url": "https://github.com/empg80/iRacing-Optimizer/releases/tag/0.9.0",
+            "assets": [{"name": "iRacingOptimizer.exe",
+                        "browser_download_url": "https://github.com/empg80/iRacing-Optimizer/releases/download/0.9.0/iRacingOptimizer.exe"}]}
+    rel = updates.parse_release(good)
+    assert rel["version"] == "0.9.0" and rel["download_url"].endswith("/iRacingOptimizer.exe")
+    evil = dict(good, html_url="https://evil.example/x",
+                assets=[{"name": "iRacingOptimizer.exe", "browser_download_url": "https://evil.example/a.exe"}])
+    rel = updates.parse_release(evil)
+    assert rel["page_url"] == updates.RELEASES_URL and rel["download_url"] == updates.RELEASES_URL
+    assert updates.parse_release(dict(good, prerelease=True)) is None
+
+    monkeypatch.setattr(updates, "fetch_latest", lambda timeout=5: updates.parse_release(good))
+    assert updates.newer_release("0.8.0")["version"] == "0.9.0"
+    assert updates.newer_release("0.9.0") is None
+    assert updates.newer_release("0.8.0", {"update_skip_version": "0.9.0"}) is None
+
+    def boom(timeout=5):
+        raise OSError("sin red")
+    monkeypatch.setattr(updates, "fetch_latest", boom)
+    assert updates.newer_release("0.8.0") is None
+
+
+def test_update_check_off_by_default(monkeypatch):
+    from iroptimizer import updates
+    monkeypatch.delenv("IROPT_NO_UPDATE_CHECK", raising=False)
+    assert not updates.should_check({})                      # sin preguntar = desactivado
+    assert not updates.should_check({"update_check": False})
+    assert updates.should_check({"update_check": True}, now=10 ** 9)
+    assert not updates.should_check({"update_check": True, "update_last_check": 10 ** 9 - 60}, now=10 ** 9)
+    monkeypatch.setenv("IROPT_NO_UPDATE_CHECK", "1")
+    assert not updates.should_check({"update_check": True}, now=10 ** 9)
