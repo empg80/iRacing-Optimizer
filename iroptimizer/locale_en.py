@@ -70,6 +70,11 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                            'nearby traffic.',
  ' · PresentMon: CPU {p0:.0f} % / GPU {p1:.0f} % de los frames': ' · PresentMon: CPU {p0:.0f} % / '
                                                                  'GPU {p1:.0f} % of frames',
+ ' · PresentMon: tope {c:.0f} % · CPU {p0:.0f} % · GPU {p1:.0f} % de los frames': ' · PresentMon: '
+                                                                                  'cap {c:.0f} % · '
+                                                                                  'CPU {p0:.0f} % '
+                                                                                  '· GPU {p1:.0f} '
+                                                                                  '% of frames',
  ' · activo el {p0:.0f} % de la sesión': ' · active {p0:.0f} % of the session',
  ' · asignada a iRacing {v:.0f} GB': ' · allocated to iRacing {v:.0f} GB',
  ' · iRacing {ir:.0f} % · resto {other:.0f} %': ' · iRacing {ir:.0f} % · other {other:.0f} %',

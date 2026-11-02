@@ -240,7 +240,7 @@ def _pct(sorted_vals, p):
     return sorted_vals[lo] if lo == hi else sorted_vals[lo] + (sorted_vals[hi] - sorted_vals[lo]) * (k - lo)
 
 
-def analyze(frames: list[tuple], telemetry: list[dict] | None = None) -> dict:
+def analyze(frames: list[tuple], telemetry: list[dict] | None = None, cap: float | None = None) -> dict:
     """Estadísticas de frametime, tirones reales y quién limita frame a frame.
 
     Si hay telemetría (filas del monitor con 't' absoluto), solo se usan los frames en pista y cada
@@ -313,13 +313,18 @@ def analyze(frames: list[tuple], telemetry: list[dict] | None = None) -> dict:
         ev["cause"] = max(ev["causes"], key=ev["causes"].get)
 
     # quién limita frame a frame (si PresentMon da CPU/GPU busy)
-    bound = {"cpu": 0, "gpu": 0}
+    # Con tope de FPS, iRacing espera al tope dentro del frame y PresentMon lo cuenta como «CPU ocupada»:
+    # los frames que llegan al tope (o más rápidos) se cuentan aparte, no como límite de CPU.
+    bound = {"cap": 0, "cpu": 0, "gpu": 0}
+    cap_ft = 1000 / cap * 1.05 if cap else None
     n_b = 0
     for (t, ft, cpu, gpu), _row in use:
         if gpu is None or cpu is None:
             continue
         n_b += 1
-        if gpu >= 0.9 * ft:
+        if cap_ft and ft <= cap_ft:
+            bound["cap"] += 1
+        elif gpu >= 0.9 * ft:
             bound["gpu"] += 1
         else:
             bound["cpu"] += 1

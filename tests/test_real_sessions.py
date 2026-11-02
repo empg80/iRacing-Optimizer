@@ -101,3 +101,8 @@ def test_presentmon_problems_are_reported(tmp_path):
     res = pipeline.run(tmp_path / "session_20261101_183045.csv")
     c = _check(res, "PresentMon sin datos")
     assert c and c["status"] == "aviso" and c["metric"] == "missing"
+
+
+def test_presentmon_capped_frames_not_cpu(monza120):
+    b = monza120.analysis["presentmon"]["bound_pct"]
+    assert b["cap"] > 90 and b["cpu"] < 10  # clavado en el tope: no es «limitado por CPU»

@@ -50,7 +50,14 @@ def load_pm(csv_path: Path, meta: dict, rows: list[dict], explicit: str | None =
     except (OSError, ValueError) as e:
         meta["presentmon_status"] = ("unreadable", str(e)[:200])
         return None
-    res = presentmon.analyze(frames, rows)
+    flat = config_reader.flat_from_snapshot((meta.get("config") or {}).get("renderer", {}))
+    try:
+        cap = float(flat.get("desiredfpslimit")) if flat.get("limitframerate") == "1" else None
+    except (TypeError, ValueError):
+        cap = None
+    if (meta.get("vr") or {}).get("active"):
+        cap = None
+    res = presentmon.analyze(frames, rows, cap)
     if not res:
         meta["presentmon_status"] = ("no_match", str(len(frames)))
         return None

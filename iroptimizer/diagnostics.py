@@ -193,7 +193,7 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
     pmb = (a.get("presentmon") or {}).get("bound_pct")
     add("CPU", _("Límite de CPU / motor"), st,
         _("{cpu_share:.0f} % del tiempo limitado por CPU · {below:.0f} % bajo objetivo", cpu_share=cpu_share, below=below)
-        + (_(" · PresentMon: CPU {p0:.0f} % / GPU {p1:.0f} % de los frames", p0=pmb['cpu'], p1=pmb['gpu']) if pmb else ""),
+        + (_(" · PresentMon: tope {c:.0f} % · CPU {p0:.0f} % · GPU {p1:.0f} % de los frames", c=pmb.get('cap', 0), p0=pmb['cpu'], p1=pmb['gpu']) if pmb else ""),
         _("La GPU está esperando frames: el hilo principal de iRacing (lógica + preparar el dibujo) marca el ritmo. Es lo normal en iRacing con parrillas grandes; se combate reduciendo lo que hay que dibujar."),
         [_("Aplica las recomendaciones de CPU de la pestaña Análisis (coches dibujados, espejos, objetos de boxes, gradas, LOD dinámico)."),
          _("Cierra programas en segundo plano (ver comprobación de carga de fondo).")] if st != OK else [])
