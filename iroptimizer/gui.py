@@ -19,7 +19,7 @@ import math
 
 from .report import CAT
 from .safety import RENDERER_FILES
-from . import __version__, i18n, sharing, updates, vr, apply as applier, config_reader, diagnostics, drift, fov, hardware, pipeline, presentmon, profiles, userprofiles
+from . import __version__, i18n, sharing, syscheck, updates, vr, apply as applier, config_reader, diagnostics, drift, fov, hardware, pipeline, presentmon, profiles, userprofiles
 
 APP = "iRacing Optimizer"
 PRIO_TAG = {1: "p1", 2: "p2", 3: "p3"}
@@ -194,6 +194,7 @@ class App(tk.Tk):
         self.nb = ttk.Notebook(self)
         self.nb.pack(fill="both", expand=True, padx=10, pady=(0, 6))
         self._tab_equipo()
+        self._tab_sistema()
         self._tab_monitor()
         self._tab_diagnostico()
         self._tab_analisis()
@@ -226,6 +227,109 @@ class App(tk.Tk):
         self.cfg_tree.configure(yscrollcommand=sb.set)
         self.cfg_tree.pack(side="left", fill="both", expand=True)
         sb.pack(side="right", fill="y")
+
+    def _tab_sistema(self):
+        f = ttk.Frame(self.nb, padding=10)
+        self.nb.add(f, text=_("Sistema"))
+        top = ttk.Frame(f)
+        top.pack(fill="x")
+        self.sys_head = tk.StringVar(value=_("Comprobando el sistema…"))
+        ttk.Label(top, textvariable=self.sys_head, font=("Segoe UI", 11, "bold")).pack(side="left")
+        ttk.Button(top, text=_("Comprobar de nuevo"), command=self.sys_recheck).pack(side="right")
+        self.btn_sys_mark = ttk.Button(top, text=_("Marcar como revisada"), command=self._sys_toggle_manual, state="disabled")
+        self.btn_sys_mark.pack(side="right", padx=6)
+        hint = ttk.Label(f, text=_("BIOS, RAM, gráfica, pantallas y Windows: lo que conviene tener bien antes de optimizar iRacing. "
+                            "Las filas «Manual» son ajustes que la app no puede leer: revísalos y márcalos."),
+                  style="Muted.TLabel", justify="left")
+        hint.pack(anchor="w", fill="x", pady=(2, 6))
+        hint.bind("<Configure>", lambda e: hint.configure(wraplength=max(200, e.width - 10)))
+        pw = ttk.PanedWindow(f, orient="vertical")
+        pw.pack(fill="both", expand=True)
+        up = ttk.Frame(pw)
+        self.sys_tree = ttk.Treeview(up, columns=("st", "title", "metric"), show="headings", height=14)
+        for c, t, w in (("st", _("Estado"), 110), ("title", _("Comprobación"), 470), ("metric", _("Medición"), 470)):
+            self.sys_tree.heading(c, text=t)
+            self.sys_tree.column(c, width=w, anchor="w", stretch=c == "metric")
+        for tag, col in (("problema", "#c0392b"), ("aviso", "#b9770e"), ("ok", "#2e7d4f"), ("info", "#1f618d"),
+                         ("manual", "#555555"), ("revisado", "#2e7d4f")):
+            self.sys_tree.tag_configure(tag, foreground=col)
+        sb = ttk.Scrollbar(up, orient="vertical", command=self.sys_tree.yview)
+        self.sys_tree.configure(yscrollcommand=sb.set)
+        self.sys_tree.pack(side="left", fill="both", expand=True)
+        sb.pack(side="right", fill="y")
+        self.sys_tree.bind("<<TreeviewSelect>>", self._sys_select)
+        self.sys_tree.bind("<Double-1>", lambda e: self._sys_toggle_manual())
+        pw.add(up, weight=3)
+        mid = ttk.LabelFrame(pw, text=_("Qué significa y cómo solucionarlo"), padding=6)
+        self.sys_text = tk.Text(mid, height=6, wrap="word", relief="flat", font=("Segoe UI", 10))
+        self.sys_text.pack(fill="both", expand=True)
+        pw.add(mid, weight=2)
+        self._sys_items: dict = {}
+
+    def sys_recheck(self):
+        def work():
+            self.hw = hardware.get_hardware()
+            self.ui(self._refresh_hw)
+        self._bg(work, _("Comprobando el sistema…"))
+
+    def _refresh_sys(self):
+        checks = syscheck.evaluate(self.hw or {})
+        manual = syscheck.manual_items(self.hw or {})
+        done = i18n.load_settings().get("manual_checks") or {}
+        cnt = {k: sum(1 for c in checks if c["status"] == k) for k in ("problema", "aviso", "info", "ok")}
+        pend = sum(1 for m in manual if not done.get(m["id"]))
+        head = (_("{p} problemas · {a} avisos · {i} info · {o} correctos", p=cnt["problema"], a=cnt["aviso"],
+                  i=cnt["info"], o=cnt["ok"]) if checks else _("No se pudieron leer los datos del sistema (solo en Windows)."))
+        self.sys_head.set(head + (_(" · {n} manuales por revisar", n=pend) if pend else ""))
+        sel_key = None
+        sel = self.sys_tree.selection()
+        if sel and sel[0] in self._sys_items:
+            sel_key = self._sys_items[sel[0]].get("id") or self._sys_items[sel[0]].get("title")
+        self.sys_tree.delete(*self.sys_tree.get_children())
+        self._sys_items = {}
+        icon = {"problema": _("✖ Problema"), "aviso": _("▲ Aviso"), "ok": "✔ OK", "info": "ℹ Info"}
+        for c in checks:
+            iid = self.sys_tree.insert("", "end", values=(icon[c["status"]], c["title"], c["metric"]), tags=(c["status"],))
+            self._sys_items[iid] = c
+        for m in manual:
+            ok = bool(done.get(m["id"]))
+            iid = self.sys_tree.insert("", "end", values=(_("☑ Revisado") if ok else _("☐ Manual"), m["title"], ""),
+                                       tags=("revisado" if ok else "manual",))
+            self._sys_items[iid] = {**m, "manual": True, "done": ok}
+        kids = self.sys_tree.get_children()
+        target = next((i for i in kids if (self._sys_items[i].get("id") or self._sys_items[i].get("title")) == sel_key), None)
+        if target or kids:
+            self.sys_tree.selection_set(target or kids[0])
+            self.sys_tree.see(target or kids[0])
+
+    def _sys_toggle_manual(self):
+        sel = self.sys_tree.selection()
+        if not sel or not self._sys_items.get(sel[0], {}).get("manual"):
+            return
+        it = self._sys_items[sel[0]]
+        d = dict(i18n.load_settings().get("manual_checks") or {})
+        d[it["id"]] = not it["done"]
+        i18n.save_setting("manual_checks", d)
+        self._refresh_sys()
+
+    def _sys_select(self, _e=None):
+        sel = self.sys_tree.selection()
+        if not sel or sel[0] not in self._sys_items:
+            return
+        c = self._sys_items[sel[0]]
+        if c.get("manual"):
+            txt = c["how"] + "\n\n" + (_("Revisado. Doble clic o «Marcar como revisada» para desmarcarlo.") if c["done"]
+                                        else _("Cuando lo hayas comprobado, haz doble clic o pulsa «Marcar como revisada»."))
+            self.btn_sys_mark.configure(state="normal", text=_("Desmarcar") if c["done"] else _("Marcar como revisada"))
+        else:
+            txt = c["detail"]
+            if c["actions"]:
+                txt += _("\n\nQué hacer:\n") + "\n".join(f"  • {x}" for x in c["actions"])
+            self.btn_sys_mark.configure(state="disabled", text=_("Marcar como revisada"))
+        self.sys_text.configure(state="normal")
+        self.sys_text.delete("1.0", "end")
+        self.sys_text.insert("1.0", txt)
+        self.sys_text.configure(state="disabled")
 
     def _tab_monitor(self):
         f = ttk.Frame(self.nb, padding=14)
@@ -550,6 +654,7 @@ class App(tk.Tk):
         self.hw_text.delete("1.0", "end")
         self.hw_text.insert("1.0", "\n".join(lines))
         self.hw_text.configure(state="disabled")
+        self._refresh_sys()
 
     def _refresh_profiles(self):
         if not self.cfg or not self.cfg.renderer:

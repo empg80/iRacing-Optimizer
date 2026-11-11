@@ -1,6 +1,7 @@
 """Interfaz de línea de comandos.
 
   python -m iroptimizer scan                    # equipo + configuración actual
+  python -m iroptimizer check-system            # chequeo de BIOS, RAM, gráfica, pantallas y Windows
   python -m iroptimizer monitor [--analyze]     # graba una sesión (Ctrl+C para parar)
   python -m iroptimizer analyze sesion.csv      # informe HTML + recomendaciones
   python -m iroptimizer apply sesion.recs.json  # aplica cambios (con backup)
@@ -17,7 +18,7 @@ import sys
 import webbrowser
 from pathlib import Path
 
-from . import apply as applier, config_reader, hardware, pipeline, profiles
+from . import apply as applier, config_reader, hardware, pipeline, profiles, syscheck
 
 KEYS_SHOWN = ["MaxCarsToDraw", "MaxCarsToDrawInMirrors", "ShadowMapType", "ShaderQuality", "MirrorDetail",
               "MaxCockpitMirrors", "NumDynamicCubemaps", "ParticleDetail", "DynamicLODSpacing", "LimitFrameRate",
@@ -129,6 +130,22 @@ def cmd_check_update(args):
         print(_("Tienes la última versión ({cur}) o no se pudo comprobar.", cur=__version__))
 
 
+def cmd_check_system(args):
+    hw = hardware.get_hardware()
+    icon = {"problema": "✖", "aviso": "▲", "ok": "✔", "info": "ℹ"}
+    checks = syscheck.evaluate(hw)
+    if not checks:
+        print(_("No se pudieron leer los datos del sistema (solo en Windows)."))
+    for c in checks:
+        print(f"{icon[c['status']]} {c['title']}: {c['metric']}")
+        if c["status"] in ("problema", "aviso"):
+            for a in c["actions"]:
+                print(f"     • {a}")
+    print(_("\nComprobaciones manuales:"))
+    for it in syscheck.manual_items(hw):
+        print(f"  ☐ {it['title']}\n     {it['how']}")
+
+
 def cmd_restore(args):
     for line in applier.restore(config_reader.find_iracing_dir(args.ini_dir), args.stamp):
         print(line)
@@ -193,6 +210,8 @@ def main(argv=None):
     ex.set_defaults(fn=cmd_export)
 
     sub.add_parser("check-update", parents=[common], help=_("Comprueba si hay una versión nueva en GitHub")).set_defaults(fn=cmd_check_update)
+
+    sub.add_parser("check-system", parents=[common], help=_("Chequeo del sistema: BIOS, RAM, gráfica, pantallas y Windows")).set_defaults(fn=cmd_check_system)
 
     r = sub.add_parser("restore", parents=[common])
     r.add_argument("--stamp", help=_("Copia concreta (carpeta en iroptimizer_backups)"))

@@ -18,6 +18,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  '\nCarpeta: {d}\nRenderer: {r}  (candidatos: {c})': '\n'
                                                      'Folder: {d}\n'
                                                      'Renderer: {r}  (candidates: {c})',
+ '\nComprobaciones manuales:': '\nManual checks:',
  '\nGuardado: {p}': '\nSaved: {p}',
  '\nInforme: {h}\nRecomendaciones: {j}': '\nReport: {h}\nRecommendations: {j}',
  '\nPrueba apply en los ini de demo:\n  python -m iroptimizer apply "{json_p}" --ini-dir "{ini_dir}" --dry-run': '\n'
@@ -76,12 +77,16 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                   '· GPU {p1:.0f} '
                                                                                   '% of frames',
  ' · activo el {p0:.0f} % de la sesión': ' · active {p0:.0f} % of the session',
+ ' · admite {hz} Hz': ' · supports {hz} Hz',
  ' · asignada a iRacing {v:.0f} GB': ' · allocated to iRacing {v:.0f} GB',
+ ' · el módulo declara {spd}': ' · module reports {spd}',
  ' · iRacing {ir:.0f} % · resto {other:.0f} %': ' · iRacing {ir:.0f} % · other {other:.0f} %',
+ ' · la gráfica admite PCIe {g}.0': ' · the card supports PCIe {g}.0',
  ' · limitación térmica {therm:.1f} % del tiempo': ' · thermal throttling {therm:.1f} % of the '
                                                    'time',
  ' · servidor→tú p5 {pqp5:.0f} %': ' · server→you p5 {pqp5:.0f} %',
  ' · {n} coches cerca': ' · {n} cars nearby',
+ ' · {n} manuales por revisar': ' · {n} manual checks pending',
  '(no existe)': '(missing)',
  '(simulación, no se ha escrito nada)': '(dry run, nothing was written)',
  '(ya coincide)': '(already matches)',
@@ -332,15 +337,22 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                    'drops.</td></tr>',
  '> 0,1 s el {big:.1f} % del tiempo · máx. {p1:.2f} s': '> 0.1 s {big:.1f} % of the time · max '
                                                         '{p1:.2f} s',
+ 'AMD Software → Pantalla → AMD FreeSync: activado.': 'AMD Software → Display → AMD FreeSync: on.',
  'Abrir carpeta': 'Open folder',
  'Abrir informe HTML': 'Open HTML report',
  'Abrir sesión (.csv)…': 'Open session (.csv)…',
+ 'Activa EXPO (AMD) o XMP (Intel) en la BIOS.': 'Enable EXPO (AMD) or XMP (Intel) in the BIOS.',
  'Activa QoS/SQM en el router si lo soporta.': 'Enable QoS/SQM on your router if supported.',
  'Activa el perfil XMP/EXPO de la RAM en la BIOS.': 'Enable the RAM XMP/EXPO profile in the BIOS.',
  'Activa el tope (ver recomendaciones de Análisis).': 'Enable the FPS cap (see Analysis '
                                                       'recommendations).',
+ 'Activada': 'On',
+ 'Activadas': 'On',
+ 'Activado ({gb:.0f} GB)': 'On ({gb:.0f} GB)',
  'Actual': 'Current',
  'Actualiza el driver de NVIDIA y vuelve a grabar.': 'Update the NVIDIA driver and record again.',
+ 'Actualiza la BIOS a la última versión de la web del fabricante de tu placa.': "Update the BIOS to the latest version from your motherboard maker's website.",
+ 'Adaptive-Sync / FreeSync activado en el monitor': 'Adaptive-Sync / FreeSync enabled on the monitor',
  'Ahora': 'Now',
  'Ahora en iRacing: {p0:.0f}° ({p1}{diff:.0f}°': 'Currently in iRacing: {p0:.0f}° ({p1}{diff:.0f}°',
  'Ahora no': 'Not now',
@@ -528,6 +540,10 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                'administrator). '
                                                                                                                'Trying '
                                                                                                                'anyway.',
+ 'BIOS': 'BIOS',
+ 'BIOS anterior a mayo de 2023 con un Ryzen X3D: estas versiones podían subir el voltaje SoC por encima de 1,30 V con EXPO activado, lo que ha llegado a dañar procesadores.': 'BIOS older than May 2023 with a Ryzen X3D: these versions could push SoC voltage above 1.30 V with EXPO enabled, which has damaged processors.',
+ 'BIOS {v}': 'BIOS {v}',
+ 'BIOS, RAM, gráfica, pantallas y Windows: lo que conviene tener bien antes de optimizar iRacing. Las filas «Manual» son ajustes que la app no puede leer: revísalos y márcalos.': 'BIOS, RAM, graphics card, displays and Windows: what should be right before optimizing iRacing. "Manual" rows are settings the app cannot read: review them and mark them.',
  'Baja calidad de texturas o desactiva CarPaint2048x2048.': 'Lower texture quality or disable '
                                                             'CarPaint2048x2048.',
  'Bajo objetivo': 'Below target',
@@ -558,6 +574,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                             'and, if you can, '
                                                                             'restart the router '
                                                                             'before long races.',
+ 'Caché de sombreadores de NVIDIA': 'NVIDIA shader cache',
  'Cada espejo es otra cámara que renderiza coches: es el recorte con mejor relación coste/beneficio para el hilo principal en salidas y pelotones.': 'Each '
                                                                                                                                                      'mirror '
                                                                                                                                                      'is '
@@ -710,6 +727,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                        'outside '
                                                                                                                                        'your '
                                                                                                                                        'home.',
+ 'Chequeo del sistema: BIOS, RAM, gráfica, pantallas y Windows': 'System check: BIOS, RAM, graphics card, displays and Windows',
  'Cierra apps que usan GPU (navegador con vídeo, overlays con aceleración).': 'Close apps using '
                                                                               'the GPU (browser '
                                                                               'playing video, '
@@ -748,10 +766,14 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Comparar con otra sesión…': 'Compare with another session…',
  'Comprimiendo el registro de PresentMon…': 'Compressing the PresentMon log…',
  'Comprobación': 'Check',
+ 'Comprobando el sistema…': 'Checking the system…',
+ 'Comprobar de nuevo': 'Check again',
  'Comprueba que no haya otro equipo de la casa saturando la conexión.': 'Make sure no other device '
                                                                         'at home is saturating the '
                                                                         'connection.',
  'Comprueba si hay una versión nueva en GitHub': 'Check GitHub for a new version',
+ 'Compruébalo con GPU-Z o CPU-Z (pestaña Mainboard → Graphic Interface).': 'Verify it with GPU-Z or CPU-Z (Mainboard tab → Graphic Interface).',
+ 'Compruébalo en el Panel de control de NVIDIA → Información del sistema → Resizable BAR.': 'Verify it in NVIDIA Control Panel → System Information → Resizable BAR.',
  "Con 'Economizador' la CPU no sube frecuencias.": "With 'Power saver' the CPU does not boost.",
  'Con G-Sync/FreeSync conviene V-Sync del juego desactivado y tope de FPS unos fps por debajo de la frecuencia.': 'With '
                                                                                                                   'G-Sync/FreeSync, '
@@ -769,6 +791,8 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                   'the '
                                                                                                                   'refresh '
                                                                                                                   'rate.',
+ 'Con OCCT o HWiNFO, mira «CPU VDDCR_SOC». Con EXPO lo normal es 1,20–1,25 V. Si pasa de 1,30 V, actualiza la BIOS.': 'With OCCT or HWiNFO, check "CPU VDDCR_SOC". With EXPO, 1.20–1.25 V is normal. If it exceeds 1.30 V, update the BIOS.',
+ 'Con Resizable BAR la CPU accede a toda la memoria de la gráfica de golpe. Tu gráfica lo admite y está desactivado.': "With Resizable BAR the CPU accesses all of the graphics card's memory at once. Your card supports it and it is off.",
  'Con VRR conviene limitar unos fps por debajo de la frecuencia ({refresh:.0f} Hz) para no salir del rango G-Sync y caer en V-Sync.': 'With '
                                                                                                                                       'VRR, '
                                                                                                                                       'cap '
@@ -818,11 +842,17 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                 'up almost '
                                                                                 'sideways: check '
                                                                                 'the radius.',
+ 'Conecta el monitor principal a una salida de la tarjeta gráfica, no a la de la placa base.': "Plug the main monitor into an output on the graphics card, not the motherboard's.",
  'Configuración cambiada durante la grabación': 'Settings changed during recording',
  'Configuración cargada: {p0}': 'Configuration loaded: {p0}',
+ 'Configuración → Juegos → Capturas → «Grabar lo que ha pasado»: desactivado.': 'Settings → Gaming → Captures → "Record what happened": off.',
+ 'Configuración → Pantalla → HDR. Los monitores con retroiluminación por bordes no dan HDR real, y con HDR de Windows iRacing puede perder overlays.': "Settings → Display → HDR. Edge-lit monitors don't deliver real HDR, and with Windows HDR iRacing can lose overlays.",
+ 'Configuración → Sistema → Pantalla → Gráficos → Cambiar la configuración de gráficos predeterminada → «Optimizaciones para juegos en ventana»: activado.': 'Settings → System → Display → Graphics → Change default graphics settings → "Optimizations for windowed games": on.',
+ 'Configuración → Sistema → Pantalla → Pantalla avanzada → Elegir una frecuencia de actualización: pon la máxima.': 'Settings → System → Display → Advanced display → Choose a refresh rate: set the highest.',
  'Consumo bajo: señal de que ya codificas con la GPU (NVENC). Bien así.': 'Low usage: a sign you '
                                                                           'already encode on the '
                                                                           'GPU (NVENC). Good.',
+ 'Conéctala a la tarjeta gráfica si tiene salidas libres.': 'Plug it into the graphics card if it has free outputs.',
  'Conéctate por cable, no por Wi-Fi.': 'Use a cable, not Wi-Fi.',
  'Copia concreta (carpeta en iroptimizer_backups)': 'Specific backup (folder in '
                                                     'iroptimizer_backups)',
@@ -867,9 +897,12 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                          'you '
                                                                                          "don't "
                                                                                          'use.',
+ 'Cuando lo hayas comprobado, haz doble clic o pulsa «Marcar como revisada».': 'Once you have checked it, double-click it or press "Mark as checked".',
  'Da el ancho visible; súmale los dos biseles.': 'Gives the visible width; add both bezels.',
  'Dar permiso…': 'Grant permission…',
  'Desactivada': 'Disabled',
+ 'Desactivadas': 'Off',
+ 'Desactivado (BAR1 {mb} MB)': 'Off (BAR1 {mb} MB)',
  'Descargar': 'Download',
  'Descripción:': 'Description:',
  'Desfase de reloj con el servidor': 'Clock skew with the server',
@@ -886,7 +919,9 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                         'file") '
                                                                                                         'before '
                                                                                                         'recording.',
+ 'Desmarcar': 'Unmark',
  'Desmarcar todo': 'Uncheck all',
+ 'Después comprueba en el Administrador de tareas → Rendimiento → Memoria que la velocidad es la de tu kit (por ejemplo 6000 MT/s).': 'Then check in Task Manager → Performance → Memory that the speed matches your kit (for example 6000 MT/s).',
  'Detalle': 'Detail',
  'Detalle de boxes al mínimo.': 'Pit detail at minimum.',
  'Detalle de boxes: las caídas en pit lane vienen de aquí y de MaxPitObjsToDraw.': 'Pit detail: '
@@ -953,6 +988,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                                      'thread '
                                                                                                                                                                                      'have '
                                                                                                                                                                                      'headroom.',
+ 'El monitor principal está conectado a la placa base. iRacing se dibuja en la tarjeta gráfica y cada imagen se copia a la integrada, o directamente se dibuja con la integrada: pierdes rendimiento y añades latencia.': 'The main monitor is plugged into the motherboard. iRacing is rendered on the graphics card and every frame is copied to the integrated GPU, or it is rendered on the integrated GPU itself: you lose performance and add latency.',
  'El occlusion culling evita dibujar lo que no se ve; casi siempre compensa.': 'Occlusion culling '
                                                                                'avoids drawing '
                                                                                "what can't be "
@@ -1125,8 +1161,13 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'En algunos equipos mejora la latencia y la estabilidad del frametime.': 'On some PCs it improves '
                                                                           'latency and frametime '
                                                                           'stability.',
+ 'En el menú del monitor (OSD), busca Adaptive-Sync, FreeSync o VRR y actívalo. En algunos monitores solo funciona con el modo juego activado.': 'In the monitor menu (OSD), look for Adaptive-Sync, FreeSync or VRR and turn it on. On some monitors it only works with game mode enabled.',
  'En el tope': 'At cap',
+ 'En la BIOS, comprueba que el perfil EXPO/XMP está activado.': 'In the BIOS, check that the EXPO/XMP profile is enabled.',
+ 'En la BIOS: activa «Above 4G Decoding» y «Re-Size BAR Support» (CSM debe estar desactivado).': 'In the BIOS: enable "Above 4G Decoding" and "Re-Size BAR Support" (CSM must be disabled).',
+ 'Enlace PCIe de la gráfica': 'Graphics card PCIe link',
  'Equilibrado': 'Balanced',
+ 'Equipo': 'Hardware',
  'Equipo y configuración': 'Hardware and configuration',
  'Error': 'Error',
  'Error: {e}': 'Error: {e}',
@@ -1298,8 +1339,10 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Frames limitados por CPU': 'CPU-bound frames',
  'Frametime máx.': 'Max frametime',
  'Frecuencia (Hz):': 'Refresh rate (Hz):',
+ 'Frecuencia de la pantalla principal': 'Main display refresh rate',
  'Frecuencia del visor': 'Headset refresh rate',
  'Frecuencia real del visor': 'Actual headset refresh rate',
+ 'FreeSync activado en AMD Adrenalin': 'FreeSync enabled in AMD Adrenalin',
  'Fuentes de navegador de OBS (alertas, chat, overlays web): ponlas a 30 fps, quita las ocultas y activa «Apagar la fuente cuando no sea visible».': 'OBS '
                                                                                                                                                      'browser '
                                                                                                                                                      'sources '
@@ -1324,6 +1367,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                      'visible".',
  'G HUB: cierra la ventana (deja solo el agente).': 'G HUB: close the window (leave only the '
                                                     'agent).',
+ 'G-SYNC activado en pantalla completa y en ventana': 'G-SYNC enabled for full screen and windowed',
  'GPU %': 'GPU %',
  'GPU al límite el {gpu_share:.0f} % del tiempo en {lbl}. {why}': 'GPU maxed {gpu_share:.0f} % of '
                                                                   'the time in {lbl}. {why}',
@@ -1374,6 +1418,8 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                     'system '
                                                                                                     'diagnostics.',
  'Grabación detenida.': 'Recording stopped.',
+ 'Grabación en segundo plano de Xbox Game Bar': 'Xbox Game Bar background recording',
+ 'Grabación instantánea de NVIDIA desactivada si emites con OBS': 'NVIDIA Instant Replay off if you stream with OBS',
  'Grabando': 'Recording',
  'Gradas: mismo motivo, coste de CPU en rectas principales.': 'Grandstands: same reason, CPU cost '
                                                               'on main straights.',
@@ -1381,6 +1427,8 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                           'calls on main straights '
                                                                           'and areas with stands.',
  'Gráficos (calidad y rendimiento)': 'Graphics (quality and performance)',
+ 'Gráficos → Configuración de programa → iRacing (si no aparece, «Añadir» → iRacingSim64DX11.exe): Sincronización vertical activada (y desactivada en iRacing), Modo de baja latencia desactivado si usas Reflex, Velocidad máx. de fotogramas desactivada, Gestión de energía «Preferir rendimiento máximo».': 'Graphics → Program Settings → iRacing (if missing, "Add" → iRacingSim64DX11.exe): Vertical Sync On (and off in iRacing), Low Latency Mode Off if you use Reflex, Max Frame Rate Off, Power Management "Prefer maximum performance".',
+ 'Gráficos → Configuración global → Tamaño de caché de sombreadores: predeterminado o 10 GB. Revísalo tras actualizar el driver.': 'Graphics → Global Settings → Shader Cache Size: driver default or 10 GB. Check it again after driver updates.',
  'Guarda tu configuración actual con un nombre (p. ej. «Monitor carreras», «VR», «Grabar vídeos») y aplícala cuando quieras. Útil si alternas monitor y gafas VR o distintos usos.': 'Save '
                                                                                                                                                                                      'your '
                                                                                                                                                                                      'current '
@@ -1416,6 +1464,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Guardar': 'Save',
  'Guardar configuración actual…': 'Save current configuration…',
  'Guardar perfil': 'Save profile',
+ 'HDR desactivado salvo monitor OLED o mini-LED': 'HDR off unless you have an OLED or mini-LED monitor',
  'Hecho. Cierra sesión en Windows y vuelve a entrar para que el permiso se active.': 'Done. Sign '
                                                                                      'out of '
                                                                                      'Windows and '
@@ -1482,6 +1531,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                     'belongs '
                                                                                                                                     'to.',
  'Interfaz web de {owner}': 'Web UI of {owner}',
+ 'La CPU puede acceder a toda la memoria de la gráfica.': "The CPU can access all of the graphics card's memory.",
  'La GPU es el límite: baja ajustes que cuestan GPU (MSAA, sombras, shaders, espejos en alto) o la resolución.': 'The '
                                                                                                                  'GPU '
                                                                                                                  'is '
@@ -1595,6 +1645,11 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                     'shadows) '
                                                                                     'without '
                                                                                     'losing FPS.',
+ 'La RAM funciona a la velocidad base (JEDEC): parece que el perfil EXPO/XMP está desactivado. iRacing suele ir limitado por la CPU y la memoria lenta se nota en los FPS mínimos.': 'RAM is running at base (JEDEC) speed: the EXPO/XMP profile seems to be off. iRacing is usually CPU-bound and slow memory shows in the minimum FPS.',
+ 'La RAM funciona por encima de la velocidad base: el perfil EXPO/XMP está activo.': 'RAM is running above base speed: the EXPO/XMP profile is on.',
+ 'La RAM va por debajo de la velocidad que declaran los módulos. Puede ser a propósito (estabilidad, 4 módulos), pero revisa el perfil EXPO/XMP.': 'RAM is running below the speed the modules report. It may be on purpose (stability, 4 modules), but check the EXPO/XMP profile.',
+ 'La gráfica está funcionando con menos líneas PCIe de las que admite. Suele ser una ranura secundaria, un SSD M.2 que comparte líneas con la gráfica o la tarjeta mal insertada.': 'The graphics card is running with fewer PCIe lanes than it supports. Usually a secondary slot, an M.2 SSD sharing lanes with the card, or a badly seated card.',
+ 'La gráfica usa todas sus líneas PCIe.': 'The graphics card is using all its PCIe lanes.',
  'La latencia depende sobre todo de la distancia al servidor; lo que importa es que sea estable. Los picos provocan saltos de coches y contactos fantasma.': 'Latency '
                                                                                                                                                              'depends '
                                                                                                                                                              'mostly '
@@ -1615,6 +1670,8 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                              'and '
                                                                                                                                                              'ghost '
                                                                                                                                                              'contacts.',
+ 'La pantalla principal está a su frecuencia máxima.': 'The main display is at its maximum refresh rate.',
+ 'La placa o la ranura limita la generación PCIe. Con x16 la pérdida es pequeña; a x8 en PCIe 3.0 ya se puede notar.': 'The motherboard or slot limits the PCIe generation. At x16 the loss is small; at x8 on PCIe 3.0 it can be noticeable.',
  'La sesión es de VR, pero se leyó el archivo gráfico de monitor. En VR iRacing usa rendererDX11OpenXR.ini, así que los ajustes y perfiles mostrados no son los que estabas usando.': 'This '
                                                                                                                                                                                       'is '
                                                                                                                                                                                       'a '
@@ -1657,6 +1714,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                          'average '
                                                                                          '(1 s).',
  'Las sesiones se guardan en {p0}': 'Sessions are saved in {p0}',
+ 'Las ventanas de esa pantalla (SimHub, overlays) se suelen dibujar en la tarjeta gráfica y se copian a la integrada a través de la RAM: no alivia a la CPU y añade algo de trabajo. Si lo hiciste para ganar rendimiento, compara dos sesiones antes de dejarlo así.': "Windows on that display (SimHub, overlays) are usually rendered on the graphics card and copied to the integrated GPU through RAM: it doesn't relieve the CPU and adds some work. If you did it to gain performance, compare two sessions before leaving it like that.",
  'Latencia con el servidor': 'Latency to the server',
  'Latencia ms': 'Latency ms',
  'Leer de iRacing': 'Read from iRacing',
@@ -1757,6 +1815,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                            'with '
                                                                                                            'few '
                                                                                                            'cars.',
+ 'Los juegos en ventana usan el mismo modo de presentación que en pantalla completa (menos latencia, VRR).': 'Windowed games use the same presentation mode as full screen (lower latency, VRR).',
  'Límite de CPU / motor': 'CPU / engine limit',
  'Límite de memoria del sim ({wcfg:.0f} MB) bajo para tus {p1:.0f} GB de RAM': 'Sim memory limit '
                                                                                '({wcfg:.0f} MB) is '
@@ -1774,6 +1833,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                        'automatically.',
  'Marcar P1': 'Check P1',
  'Marcar P1 + P2': 'Check P1 + P2',
+ 'Marcar como revisada': 'Mark as checked',
  'Marcar todo': 'Select all',
  'Margen para subir la frecuencia del visor': 'Headroom to raise the headset refresh rate',
  'Max Cars es un ajuste de red: limita los coches que te envía el servidor. Bajarlo deja sin datos a overlays y telemetría (relatives, estrategia de combustible). Para rendimiento usa MaxCarsToDraw.': 'Max '
@@ -1918,6 +1978,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                   'recording '
                                                                                                   'content.',
  'Máximo rendimiento': 'Maximum performance',
+ 'NVIDIA App → superposición (Alt+Z) → Grabación instantánea: desactivada. Si ya grabas con OBS, las dos compiten por el codificador.': 'NVIDIA App → overlay (Alt+Z) → Instant Replay: off. If you already record with OBS, both compete for the encoder.',
  'NVIDIA App/overlay: desactiva la superposición y la grabación instantánea si no la usas.': 'NVIDIA '
                                                                                              'App/overlay: '
                                                                                              'disable '
@@ -2018,6 +2079,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                        'runtime.',
  'No llegas a la frecuencia del visor': 'Not reaching the headset refresh rate',
  'No se detecta software de VR.': 'No VR software detected.',
+ 'No se pudieron leer los datos del sistema (solo en Windows).': 'Could not read the system data (Windows only).',
  'No se pudo lanzar la petición. Alternativa: ejecuta iRacing Optimizer como administrador.': 'Could '
                                                                                               'not '
                                                                                               'launch '
@@ -2118,6 +2180,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                                                                                                                                                 'it '
                                                                                                                                                                                                                                                                                                 'as '
                                                                                                                                                                                                                                                                                                 'is.',
+ 'Optimizaciones para juegos en ventana': 'Optimizations for windowed games',
  'Optimizador de gráficos y rendimiento para iRacing': 'Graphics and performance optimizer for '
                                                        'iRacing',
  'Ordena la escena en varios hilos: descarga el hilo principal.': 'Sorts the scene on several '
@@ -2131,7 +2194,10 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                  'their refresh '
                                                                                  'rate.',
  'Paginación a disco: {pf:.0f} fallos/s': 'Paging to disk: {pf:.0f} faults/s',
+ 'Panel de control de NVIDIA (Microsoft Store) → Pantalla → Configurar G-SYNC → «Habilitar para el modo de ventana y de pantalla completa». Para comprobarlo: menú Pantalla → Indicador de G-SYNC.': 'NVIDIA Control Panel (Microsoft Store) → Display → Set up G-SYNC → "Enable for windowed and full screen mode". To verify: Display menu → G-SYNC Indicator.',
+ 'Pantalla principal en la gráfica integrada': 'Main display on the integrated graphics',
  'Pantalla principal: {w}×{h} @ {hz} Hz': 'Main display: {w}×{h} @ {hz} Hz',
+ 'Pantalla secundaria en la gráfica integrada': 'Secondary display on the integrated graphics',
  'Pantalla visible: {p0:.0f} mm por monitor.': 'Visible screen: {p0:.0f} mm per monitor.',
  'Pantalla y monitores (resolución, FOV físico, triples)': 'Display and monitors (resolution, '
                                                            'physical FOV, triples)',
@@ -2140,6 +2206,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Pausa descargas, actualizaciones y sincronizaciones en la nube.': 'Pause downloads, updates and '
                                                                     'cloud syncs.',
  'Perfil': 'Profile',
+ 'Perfil de iRacing en NVIDIA App': 'iRacing profile in the NVIDIA App',
  'Perfil importado en {p0}. Se descartaron {p1} valores que no parecían ajustes válidos de iRacing.': 'Profile '
                                                                                                       'imported '
                                                                                                       'as '
@@ -2219,6 +2286,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                       'below '
                                                                                                                       'your '
                                                                                                                       'Hz.',
+ 'Pon la gráfica en la ranura PCIe superior (la más cercana a la CPU).': 'Put the graphics card in the top PCIe slot (closest to the CPU).',
  'Pon un nombre y elige al menos un grupo.': 'Enter a name and choose at least one group.',
  'PresentMon en VR': 'PresentMon in VR',
  'PresentMon grabó {x} frames, pero ninguno coincide en el tiempo con la sesión en pista, así que no se han usado.': 'PresentMon '
@@ -2426,6 +2494,8 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                              'temperature…)',
  'Render scene using 3 projections': 'Render scene using 3 projections',
  'Reproyección activa en VR': 'Reprojection active in VR',
+ 'Resizable BAR': 'Resizable BAR',
+ 'Resizable BAR está desactivado; tu gráfica puede no admitirlo.': 'Resizable BAR is off; your graphics card may not support it.',
  'Restaurar la copia {stamp}?\nSe sobrescribirán los .ini actuales (antes se guarda una copia del estado actual).': 'Restore '
                                                                                                                     'backup '
                                                                                                                     '{stamp}?\n'
@@ -2446,10 +2516,12 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                     'first).',
  'Restaurar seleccionada': 'Restore selected',
  'Resultado': 'Result',
+ 'Revisa en el manual de la placa qué ranuras M.2 comparten líneas con la gráfica.': 'Check the motherboard manual for which M.2 slots share lanes with the graphics card.',
  'Revisa la carga del hilo BG y la estabilidad de la red.': 'Check the BG thread load and network '
                                                             'stability.',
  'Revisa la curva de ventiladores y el flujo de aire de la caja.': 'Check the fan curve and case '
                                                                    'airflow.',
+ 'Revisado. Doble clic o «Marcar como revisada» para desmarcarlo.': 'Checked. Double-click or use "Unmark" to clear it.',
  'Revisar cambios…': 'Review changes…',
  'Runtime OpenXR activo y programas de VR detectados durante la grabación.': 'Active OpenXR '
                                                                              'runtime and VR '
@@ -2559,6 +2631,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                              'and '
                                                                                                              'blurry '
                                                                                                              'textures.',
+ 'Si la dejas en la integrada, pon esos programas en «Ahorro de energía» en Configuración → Pantalla → Gráficos.': 'If you keep it on the integrated GPU, set those programs to "Power saving" in Settings → Display → Graphics.',
  'Si la usas, pon irsdkLogAllCars=0 para grabar solo tu coche.': 'If you use it, set '
                                                                  'irsdkLogAllCars=0 to record only '
                                                                  'your car.',
@@ -2581,6 +2654,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                              'manually '
                                                                                                                              'with '
                                                                                                                              'Alt+L.',
+ 'Si no aparece, usa un cable DisplayPort (o HDMI 2.1) conectado a la tarjeta gráfica.': "If it isn't listed, use a DisplayPort (or HDMI 2.1) cable plugged into the graphics card.",
  'Si querías {sel:.0f} Hz, cámbialo en la app del PC (Meta Horizon Link → Dispositivos → Gráficos) o en el visor, y graba otra vez.': 'If '
                                                                                                                                       'you '
                                                                                                                                       'wanted '
@@ -2641,6 +2715,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                    'during '
                                                                                                    'the '
                                                                                                    'race.',
+ 'Sin configurar (valor de Windows)': 'Not set (Windows default)',
  'Sin datos GPU': 'No GPU data',
  'Sin datos del driver NVIDIA': 'No data from the NVIDIA driver',
  'Sin límite de FPS tus FPS oscilan entre {p0:.0f} (p5) y {p1:.0f} (p95) en {lbl}. Un tope que puedas sostener da frametimes constantes y menos picos de input lag.': 'Without '
@@ -2956,6 +3031,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Tope propuesto: {cap} fps ≈ lo que mantienes el 90 % del tiempo': 'Proposed cap: {cap} fps ≈ '
                                                                     'what you hold 90 % of the '
                                                                     'time',
+ 'Tras actualizar, vuelve a activar EXPO (la actualización borra los ajustes de la BIOS).': 'After updating, enable EXPO again (the update resets BIOS settings).',
  'Tras aplicar, puedes confirmarlo en iRacing: Ajustes → Pantalla → Monitor → Compute.': 'After '
                                                                                          'applying, '
                                                                                          'you can '
@@ -3139,7 +3215,9 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                                                                                                                                                                                                                          'for '
                                                                                                                                                                                                                                                                                                                                          'each '
                                                                                                                                                                                                                                                                                                                                          'case.',
+ 'Velocidad de la RAM': 'RAM speed',
  'Ver novedades': "What's new",
+ 'Versión y fecha de la BIOS. Actualizarla solo hace falta si hay un motivo (seguridad, estabilidad, CPU nueva).': 'BIOS version and date. Updating is only needed if there is a reason (security, stability, new CPU).',
  'Virtual Desktop: la codificación usa GPU; si vas justo, baja el bitrate o la calidad (High en vez de Ultra) antes que los gráficos.': 'Virtual '
                                                                                                                                         'Desktop: '
                                                                                                                                         'encoding '
@@ -3196,8 +3274,12 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                           'FOV '
                                                                                                                                           'in '
                                                                                                                                           'iRacing.',
+ 'Voltaje SoC por debajo de 1,30 V (Ryzen X3D)': 'SoC voltage below 1.30 V (Ryzen X3D)',
  'Volver a aplicar los míos': 'Re-apply mine',
  'Vuelta': 'Lap',
+ 'Windows graba continuamente los últimos minutos de juego. Usa el codificador de la gráfica y algo de CPU y disco todo el rato.': 'Windows is constantly recording the last minutes of gameplay. It uses the GPU encoder and some CPU and disk all the time.',
+ 'Windows no está grabando en segundo plano.': 'Windows is not recording in the background.',
+ 'Windows tiene la pantalla a menos frecuencia de la que admite. Es muy habitual después de instalar un driver o cambiar de cable.': 'Windows has the display at a lower refresh rate than it supports. This is very common after installing a driver or changing cables.',
  'Ya existe un perfil con ese nombre. ¿Sobrescribir?': 'A profile with that name already exists. '
                                                        'Overwrite?',
  'Ya tienes los objetos de boxes recortados: es el coste normal de la zona, solo afecta a la entrada y salida de boxes.': 'Pit '
@@ -3240,6 +3322,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                       "you don't look at and limit "
                                                                       'their refresh rate.',
  'iRacing desconectado. Fin de la grabación.': 'iRacing disconnected. Recording finished.',
+ 'iRacing en ventana o ventana sin bordes pasa por el compositor de Windows. Con esta opción usa el modo de presentación moderno: menos latencia y G-SYNC/FreeSync más fiable.': 'iRacing in windowed or borderless mode goes through the Windows compositor. With this option it uses the modern presentation mode: lower latency and more reliable G-SYNC/FreeSync.',
  'iRacing está en VR: la sesión se analizará como VR.': 'iRacing is running in VR: the session '
                                                         'will be analysed as VR.',
  'iRacing está guardando un archivo .ibt de telemetría continuamente': 'iRacing is continuously '
@@ -3404,6 +3487,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                                                                              'choose '
                                                                                                                                              'another '
                                                                                                                                              'file.',
+ '{typ} a {conf} MT/s · {n} módulos': '{typ} at {conf} MT/s · {n} modules',
  '¡Ojo! Circuitos distintos: la comparación es orientativa.': 'Warning: different tracks, the '
                                                               'comparison is only indicative.',
  '¿Eliminar el perfil «{p0}»?': 'Delete profile «{p0}»?',
@@ -3518,6 +3602,8 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  '■  Detener': '■  Stop',
  '▲ Aviso': '▲ Warning',
  '▶  Iniciar grabación': '▶  Start recording',
+ '☐ Manual': '☐ Manual',
+ '☑ Revisado': '☑ Checked',
  '⚠ {p0} ajustes han cambiado desde la última vez que los aplicaste.': '⚠ {p0} settings have '
                                                                        'changed since you last '
                                                                        'applied them.',

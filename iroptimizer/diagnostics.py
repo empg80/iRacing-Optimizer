@@ -504,6 +504,9 @@ def run(rows: list[dict], meta: dict, analysis: dict) -> dict:
         add(_("Sistema"), _("Sin tope de FPS"), WARN, "LimitFrameRate=0",
             _("Sin tope los FPS oscilan mucho y el input lag varía."), [_("Activa el tope (ver recomendaciones de Análisis).")])
 
+    from .syscheck import evaluate as _syscheck  # aquí para evitar el import circular
+    checks += _syscheck(hw)
+
     checks.sort(key=lambda c: (STATUS_ORDER[c["status"]], c["area"]))
     events.sort(key=lambda e: (e.get("session_type") or "", e.get("session_time") or 0))
     summary = Counter(c["status"] for c in checks)

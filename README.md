@@ -11,6 +11,10 @@ Lee tu configuración de iRacing y de tu equipo y graba una sesión (mejor si es
 <details>
 <summary>Más capturas</summary>
 
+**Sistema** (chequeo de BIOS, RAM, gráfica, pantallas y Windows)
+
+![Sistema](docs/sistema.png)
+
 **Diagnóstico**
 
 ![Diagnóstico](docs/diagnostico.png)
@@ -48,14 +52,15 @@ La interfaz está en **español e inglés**: sigue el idioma de Windows y se pue
 ## Uso
 
 1. **Equipo y configuración**: avisa si iRacing (por ejemplo tras una actualización) o tú desde el simulador habéis cambiado ajustes que la app había aplicado, y te deja volver a aplicarlos o quedarte con los nuevos. Además detecta la carpeta `Documentos\iRacing`, el archivo gráfico (`rendererDX11Monitor.ini` u OpenXR para VR), la CPU, la GPU, la RAM y la pantalla.
-2. **Monitor de sesión** (con **PresentMon** opcional para medir frametimes reales frame a frame): pulsa *Iniciar grabación*, entra a pista (lo ideal es una carrera completa) y pulsa *Detener* al terminar. Durante la grabación muestra en vivo FPS, GPU, hilo de física/red, latencia y coches cerca, y avisa al momento de tirones, picos de latencia, pérdida de paquetes, saturación del hilo de física o GPU caliente. Al acabar, analiza la sesión. Con PresentMon obtienes 1 % / 0,1 % lows reales y tirones de milisegundos, cada uno con su posición en la vuelta y si lo causó la CPU o la GPU. La primera vez puede pedirte un permiso de Windows (ver [SECURITY.md](SECURITY.md)).
-3. **Diagnóstico**: revisa por áreas (CPU, GPU, frametime, red, memoria y sistema) y marca cada comprobación como OK, aviso o problema. Para cada una explica qué significa y qué hacer, y lista los incidentes con su minuto y su posición en la vuelta.
-4. **Análisis y recomendaciones**: muestra los FPS medios, el 5 % y el 1 % peor, el porcentaje de tiempo bajo el objetivo, qué te limita y una lista de cambios priorizados (P1 aplicar ya, P2 recomendable, P3 opcional). Marca los que quieras y pulsa **Aplicar seleccionados**. Hay un informe HTML con gráficas.
-5. **Perfiles**: tres configuraciones de partida (Máximo rendimiento, Equilibrado y Calidad gráfica). Si has analizado una sesión, el tope de FPS y el LOD dinámico se ajustan a tu medición. Cada perfil muestra exactamente qué cambia antes de aplicarlo.
-6. **Mis perfiles**: guarda tu configuración actual con un nombre ("Monitor carreras", "VR", "Grabar vídeos"…) y aplícala cuando la necesites. Puedes elegir qué guardar: gráficos, pantalla/monitores y FOV. Cada perfil recuerda su archivo gráfico (`rendererDX11Monitor.ini` para el monitor, `rendererDX11OpenXR.ini` para VR), así que alternar entre monitor y gafas es un clic. Antes de aplicar enseña exactamente qué cambia. Se pueden exportar e importar para compartirlos.
-7. **FOV**: calculadora visual para 1 monitor plano o curvo y para triples planos o curvos. Usa las mismas medidas que iRacing: ancho con biseles medido en recto, bisel de un lado, ángulo de los laterales o radio de curvatura, y distancia de los ojos a la pantalla. Dibuja el puesto visto desde arriba con el FOV resultante, lo compara con el que tienes en iRacing, calcula el ángulo ideal de los laterales y lo aplica (`[MonitorSetup]` + `drivingCamFOV`). Después puedes confirmarlo con *Compute* en el menú Monitor de iRacing.
-8. **Comparar**: en Análisis, *Comparar con otra sesión…* enfrenta la sesión nueva con una anterior. Muestra los FPS según el tráfico (la comparación justa entre una práctica y una carrera) y qué ajustes cambiaron entre las dos.
-9. **Copias de seguridad**: lista las copias y restaura cualquiera con un clic.
+2. **Sistema** (nuevo en 0.10): revisa lo que conviene tener bien antes de tocar iRacing, sin permisos de administrador. Detecta solo la RAM sin perfil EXPO/XMP, una BIOS antigua con Ryzen X3D (voltaje SoC), Resizable BAR desactivado, la gráfica funcionando con menos líneas PCIe de las que admite, la pantalla por debajo de su frecuencia máxima, monitores conectados a la gráfica integrada, las optimizaciones para juegos en ventana y la grabación en segundo plano de Xbox Game Bar. Lo que no se puede leer (G-SYNC en ventana, el perfil de iRacing en NVIDIA App, la caché de sombreadores, HDR, voltaje SoC) aparece como comprobación **manual** con instrucciones, y puedes marcarla como revisada. Estas comprobaciones también salen en el Diagnóstico de cada sesión, también en las que te envíen otros usuarios.
+3. **Monitor de sesión** (con **PresentMon** opcional para medir frametimes reales frame a frame): pulsa *Iniciar grabación*, entra a pista (lo ideal es una carrera completa) y pulsa *Detener* al terminar. Durante la grabación muestra en vivo FPS, GPU, hilo de física/red, latencia y coches cerca, y avisa al momento de tirones, picos de latencia, pérdida de paquetes, saturación del hilo de física o GPU caliente. Al acabar, analiza la sesión. Con PresentMon obtienes 1 % / 0,1 % lows reales y tirones de milisegundos, cada uno con su posición en la vuelta y si lo causó la CPU o la GPU. La primera vez puede pedirte un permiso de Windows (ver [SECURITY.md](SECURITY.md)).
+4. **Diagnóstico**: revisa por áreas (CPU, GPU, frametime, red, memoria y sistema) y marca cada comprobación como OK, aviso o problema. Para cada una explica qué significa y qué hacer, y lista los incidentes con su minuto y su posición en la vuelta.
+5. **Análisis y recomendaciones**: muestra los FPS medios, el 5 % y el 1 % peor, el porcentaje de tiempo bajo el objetivo, qué te limita y una lista de cambios priorizados (P1 aplicar ya, P2 recomendable, P3 opcional). Marca los que quieras y pulsa **Aplicar seleccionados**. Hay un informe HTML con gráficas.
+6. **Perfiles**: tres configuraciones de partida (Máximo rendimiento, Equilibrado y Calidad gráfica). Si has analizado una sesión, el tope de FPS y el LOD dinámico se ajustan a tu medición. Cada perfil muestra exactamente qué cambia antes de aplicarlo.
+7. **Mis perfiles**: guarda tu configuración actual con un nombre ("Monitor carreras", "VR", "Grabar vídeos"…) y aplícala cuando la necesites. Puedes elegir qué guardar: gráficos, pantalla/monitores y FOV. Cada perfil recuerda su archivo gráfico (`rendererDX11Monitor.ini` para el monitor, `rendererDX11OpenXR.ini` para VR), así que alternar entre monitor y gafas es un clic. Antes de aplicar enseña exactamente qué cambia. Se pueden exportar e importar para compartirlos.
+8. **FOV**: calculadora visual para 1 monitor plano o curvo y para triples planos o curvos. Usa las mismas medidas que iRacing: ancho con biseles medido en recto, bisel de un lado, ángulo de los laterales o radio de curvatura, y distancia de los ojos a la pantalla. Dibuja el puesto visto desde arriba con el FOV resultante, lo compara con el que tienes en iRacing, calcula el ángulo ideal de los laterales y lo aplica (`[MonitorSetup]` + `drivingCamFOV`). Después puedes confirmarlo con *Compute* en el menú Monitor de iRacing.
+9. **Comparar**: en Análisis, *Comparar con otra sesión…* enfrenta la sesión nueva con una anterior. Muestra los FPS según el tráfico (la comparación justa entre una práctica y una carrera) y qué ajustes cambiaron entre las dos.
+10. **Copias de seguridad**: lista las copias y restaura cualquiera con un clic.
 
 Aplica los cambios **con iRacing cerrado**, porque el simulador reescribe los `.ini` al salir. La app lo comprueba antes de escribir.
 
@@ -106,6 +111,7 @@ El mismo `.exe`, o `python -m iroptimizer`, acepta subcomandos:
 
 ```
 iRacingOptimizer.exe scan
+iRacingOptimizer.exe check-system
 iRacingOptimizer.exe monitor --analyze --presentmon
 iRacingOptimizer.exe analyze sesion.csv [--target 165] [--presentmon pm.csv]
 iRacingOptimizer.exe apply sesion.recs.json --max-priority 1 [--dry-run]
@@ -157,6 +163,8 @@ iroptimizer/
   iniio.py              lectura/escritura de .ini conservando comentarios
   config_reader.py      localiza Documentos\iRacing (respeta OneDrive)
   hardware.py           inventario del equipo
+  sysinfo.py            BIOS, RAM, enlace PCIe/ReBAR, pantallas y ajustes de Windows (sin administrador)
+  syscheck.py           chequeo del sistema y comprobaciones manuales
   report.py             informe HTML
   i18n.py, locale_en.py traducción (textos en español con _(), catálogo en inglés)
 ```

@@ -11,6 +11,10 @@ iRacing Optimizer reads your iRacing and PC configuration and records a session 
 <details>
 <summary>More screenshots</summary>
 
+**System** (BIOS, RAM, graphics card, displays and Windows check)
+
+![System](docs/en/system.png)
+
 **Diagnostics**
 
 ![Diagnostics](docs/en/diag.png)
@@ -40,24 +44,25 @@ The interface is available in **English and Spanish**. It follows your Windows l
 ## Features
 
 1. **Hardware and configuration**: detects the `Documents\iRacing` folder, the graphics file (`rendererDX11Monitor.ini`, or OpenXR for VR), CPU, GPU, RAM and display. It also **warns you if iRacing** (for example after an update) **or you, from inside the sim, changed settings the app had applied**, and lets you re-apply them or keep the new ones.
-2. **Session monitor** (with optional **PresentMon** for real frame-by-frame frametimes): click *Start recording*, get on track (a full race is ideal) and click *Stop* when you're done.
+2. **System** (new in 0.10): checks what should be right before touching iRacing, without admin rights. It detects RAM without its EXPO/XMP profile, an old BIOS with a Ryzen X3D (SoC voltage), Resizable BAR off, the graphics card running on fewer PCIe lanes than it supports, the display below its maximum refresh rate, monitors plugged into the integrated graphics, optimizations for windowed games and Xbox Game Bar background recording. What can't be read (G-SYNC in windowed mode, the iRacing profile in the NVIDIA App, shader cache, HDR, SoC voltage) appears as a **manual** check with instructions that you can mark as done. These checks also show up in each session's Diagnostics, including sessions other users send you.
+3. **Session monitor** (with optional **PresentMon** for real frame-by-frame frametimes): click *Start recording*, get on track (a full race is ideal) and click *Stop* when you're done.
    - While recording it shows FPS, GPU, physics/network thread, latency and nearby cars live, and warns you immediately about stutters, latency spikes, packet loss, a saturated physics thread or a hot GPU.
    - With PresentMon you get real 1 % / 0.1 % lows and millisecond stutters, each with its lap position and whether the CPU or the GPU caused it.
    - When the recording ends, the PresentMon log is trimmed and compressed (`.presentmon.csv.gz`, about 7 MB per hour of racing instead of ~100 MB).
    - The first time, it may ask for a Windows permission (see [SECURITY.md](SECURITY.md)).
-3. **Diagnostics**: checks each area (CPU, GPU, frametime, network, memory, system) and marks it OK, warning or problem. For each check it explains what it means and what to do, and lists incidents with their minute and lap position.
-4. **Analysis and recommendations**: average FPS, the worst 5 % and 1 %, time below target, what limits you, FPS loss with nearby traffic, and the slowest sections of the track. It gives a list of prioritized changes (P1 apply now, P2 recommended, P3 optional): tick the ones you want and click **Apply selected**. An HTML report with charts is also generated.
-5. **Profiles**: three starting presets (Maximum performance, Balanced, Graphics quality). If you've analyzed a session, the FPS cap and dynamic LOD are tuned to your measurement. Each profile shows exactly what it will change before applying.
-6. **My profiles**: save your current configuration under a name ("Monitor racing", "VR", "Recording videos"…) and apply it whenever you need it.
+4. **Diagnostics**: checks each area (CPU, GPU, frametime, network, memory, system) and marks it OK, warning or problem. For each check it explains what it means and what to do, and lists incidents with their minute and lap position.
+5. **Analysis and recommendations**: average FPS, the worst 5 % and 1 %, time below target, what limits you, FPS loss with nearby traffic, and the slowest sections of the track. It gives a list of prioritized changes (P1 apply now, P2 recommended, P3 optional): tick the ones you want and click **Apply selected**. An HTML report with charts is also generated.
+6. **Profiles**: three starting presets (Maximum performance, Balanced, Graphics quality). If you've analyzed a session, the FPS cap and dynamic LOD are tuned to your measurement. Each profile shows exactly what it will change before applying.
+7. **My profiles**: save your current configuration under a name ("Monitor racing", "VR", "Recording videos"…) and apply it whenever you need it.
    - You choose what to save: graphics, display/monitors and FOV.
    - Each profile remembers its graphics file (`rendererDX11Monitor.ini` for monitor, `rendererDX11OpenXR.ini` for VR), so switching between monitor and headset is one click.
    - Profiles can be exported and imported to share them.
-7. **FOV**: visual calculator for 1 flat or curved monitor and for flat or curved triples.
+8. **FOV**: visual calculator for 1 flat or curved monitor and for flat or curved triples.
    - It uses the same measurements iRacing asks for: width including bezels measured straight, bezel on one side, side screen angle or curvature radius, and eye-to-screen distance.
    - It draws a top view of your rig with the resulting FOV, compares it with your current iRacing FOV, computes the ideal side screen angle and applies everything (`[MonitorSetup]` + `drivingCamFOV`).
    - You can confirm the result afterwards with *Compute* in iRacing's Monitor menu.
-8. **Compare**: in Analysis, *Compare with another session…* puts the new session against an earlier one. It shows FPS by nearby traffic, which is a fair comparison even between a practice and a race, and which settings changed between the two.
-9. **Backups**: list backups and restore any of them with one click.
+9. **Compare**: in Analysis, *Compare with another session…* puts the new session against an earlier one. It shows FPS by nearby traffic, which is a fair comparison even between a practice and a race, and which settings changed between the two.
+10. **Backups**: list backups and restore any of them with one click.
 
 Apply changes **with iRacing closed**: the sim rewrites its `.ini` files on exit. The app checks this before writing.
 
@@ -112,6 +117,7 @@ The same `.exe`, or `python -m iroptimizer`, accepts subcommands:
 
 ```
 iRacingOptimizer.exe scan
+iRacingOptimizer.exe check-system
 iRacingOptimizer.exe monitor --analyze --presentmon
 iRacingOptimizer.exe analyze session.csv [--target 165] [--presentmon pm.csv]
 iRacingOptimizer.exe apply session.recs.json --max-priority 1 [--dry-run]
