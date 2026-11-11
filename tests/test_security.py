@@ -82,6 +82,22 @@ def test_export_is_anonymized(tmp_path):
     assert pipeline.run(out).analysis["presentmon"]
 
 
+def test_export_import_with_compressed_presentmon(tmp_path):
+    import zipfile
+    from iroptimizer import presentmon, sharing
+    csv_path, _ = demo.make(tmp_path, with_presentmon=True)
+    small = presentmon.compact(csv_path.with_suffix(".presentmon.csv"))
+    meta = json.loads(csv_path.with_suffix(".json").read_text())
+    meta["presentmon"]["csv"] = small.name
+    csv_path.with_suffix(".json").write_text(json.dumps(meta))
+    z = sharing.export_session(csv_path)
+    with zipfile.ZipFile(z) as zf:
+        assert "session_demo.presentmon.csv.gz" in zf.namelist()
+    out = sharing.import_session(z, tmp_path / "rec")
+    assert (out.parent / "session_demo_recibida.presentmon.csv.gz").is_file()
+    assert pipeline.run(out).analysis["presentmon"]
+
+
 def test_import_rejects_malicious_zip(tmp_path):
     import zipfile
     from iroptimizer import sharing

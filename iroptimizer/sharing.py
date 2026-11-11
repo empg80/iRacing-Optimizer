@@ -17,6 +17,7 @@ import zipfile
 from datetime import datetime
 from pathlib import Path
 
+from . import presentmon
 from .i18n import _
 
 RENDERER_SECTIONS = ("Graphics Options", "MonitorSetup", "Display")
@@ -60,13 +61,15 @@ def export_session(csv_path: str | Path, out_zip: str | Path | None = None) -> P
     out_zip = Path(out_zip) if out_zip else csv_path.with_name(f"{stem}_compartir.zip")
     anon = anonymize_meta(meta)
     pm_name = (meta.get("presentmon") or {}).get("csv")
-    pm_path = csv_path.parent / Path(pm_name).name if pm_name else None
+    pm_path = presentmon.find_file(csv_path.parent / Path(pm_name).name) if pm_name else None
     with zipfile.ZipFile(out_zip, "w", compression=zipfile.ZIP_DEFLATED) as z:
         z.write(csv_path, f"{stem}.csv")
-        if pm_path and pm_path.is_file():
-            z.write(pm_path, f"{stem}.presentmon.csv")
+        if pm_path:
+            pm_arc = f"{stem}.presentmon.csv" + (".gz" if pm_path.suffix == ".gz" else "")
+            # un .gz ya va comprimido: se guarda sin volver a comprimir
+            z.write(pm_path, pm_arc, compress_type=zipfile.ZIP_STORED if pm_path.suffix == ".gz" else None)
             anon["presentmon"] = {k: v for k, v in (anon.get("presentmon") or {}).items() if k in ("t0",)}
-            anon["presentmon"]["csv"] = f"{stem}.presentmon.csv"
+            anon["presentmon"]["csv"] = pm_arc
         z.writestr(f"{stem}.json", json.dumps(anon, indent=2, ensure_ascii=False))
     return out_zip
 
@@ -83,7 +86,8 @@ def import_session(zip_path: str | Path, dest_dir: str | Path) -> Path:
         stem = Path(csvs[0]).stem
         if "/" in csvs[0] or "\\" in csvs[0] or not NAME_RE.match(stem):
             raise ValueError(_("El archivo no parece una sesión de iRacing Optimizer."))
-        allowed = {f"{stem}.csv": MAX_CSV, f"{stem}.json": MAX_JSON, f"{stem}.presentmon.csv": MAX_CSV}
+        allowed = {f"{stem}.csv": MAX_CSV, f"{stem}.json": MAX_JSON, f"{stem}.presentmon.csv": MAX_CSV,
+                   f"{stem}.presentmon.csv.gz": MAX_CSV}
         # renombrar para no pisar sesiones propias
         new_stem = f"{stem}_recibida"
         out_csv = None
@@ -99,8 +103,10 @@ def import_session(zip_path: str | Path, dest_dir: str | Path) -> Path:
                 meta = json.loads(data.decode("utf-8"))
                 if not isinstance(meta, dict):
                     raise ValueError(_("El archivo no parece una sesión de iRacing Optimizer."))
-                if isinstance(meta.get("presentmon"), dict) and meta["presentmon"].get("csv"):
-                    meta["presentmon"]["csv"] = f"{new_stem}.presentmon.csv"
+                pm = meta.get("presentmon")
+                if isinstance(pm, dict) and pm.get("csv"):
+                    gz = str(pm["csv"]).endswith(".gz")
+                    pm["csv"] = f"{new_stem}.presentmon.csv" + (".gz" if gz else "")
                 meta["received"] = True
                 data = json.dumps(meta, indent=2, ensure_ascii=False).encode("utf-8")
             target.write_bytes(data)

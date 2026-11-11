@@ -76,6 +76,7 @@ Para saber qué te limita usa la carga real de la GPU:
 - Por **debajo del 80 %**, la GPU está esperando frames y el límite es la CPU o el motor (hilo principal, draw calls).
 
 Los FPS del SDK son una media de 1 s. Para medir microstutter (1 % / 0,1 % lows reales), activa PresentMon en el monitor (viene incluido en el `.exe`).
+Al terminar, el registro de PresentMon se guarda reducido y comprimido (`.presentmon.csv.gz`, unos 7 MB por hora de carrera en vez de ~100 MB).
 
 ## Realidad virtual
 

@@ -14,6 +14,7 @@ from __future__ import annotations
 from .i18n import _
 
 import csv
+import gzip
 import math
 import os
 import re
@@ -37,6 +38,9 @@ COL_TIME_DATE = ("CPUStartDateTime",)
 COL_TIME_S = ("TimeInSeconds", "CPUStartTimeInSeconds", "CPUStartTime")
 COL_TIME_MS = ("CPUStartTimeInMs",)
 COL_APP = ("Application", "ProcessName")
+
+# Tope de frames leídos: ~7 h a 240 fps. Evita agotar la memoria con un .gz recibido manipulado.
+MAX_FRAMES = 6_000_000
 
 
 def _resource_dirs() -> list[Path]:
@@ -182,10 +186,68 @@ def _fnum(x):
         return None
 
 
+def _open_text(path: Path, mode: str = "r"):
+    """Abre un CSV de PresentMon, comprimido (.gz) o no."""
+    path = Path(path)
+    if path.suffix == ".gz":
+        return gzip.open(path, mode + "t", newline="", encoding="utf-8", errors="replace")
+    return open(path, mode, newline="", encoding="utf-8", errors="replace")
+
+
+def compact(path: str | Path) -> Path:
+    """Reduce el CSV de PresentMon a lo que usa el análisis y lo comprime.
+
+    PresentMon escribe ~25 columnas por frame (~80 MB en 50 min); el análisis solo usa la hora, el frametime y
+    CPU/GPU ocupadas de iRacing. Se copian esos valores tal cual (sin redondear) a «<nombre>.gz» y se borra el
+    original. Si algo falla, el original se queda como estaba y se devuelve su ruta.
+    """
+    src = Path(path)
+    if src.suffix == ".gz" or not src.is_file():
+        return src
+    dst = src.with_name(src.name + ".gz")
+    tmp = dst.with_name(dst.name + ".tmp")
+    try:
+        with _open_text(src) as fi:
+            rd = csv.DictReader(fi)
+            fields = rd.fieldnames or []
+            c_ft = _col(fields, COL_FRAMETIME)
+            if not c_ft:
+                return src
+            c_time = _col(fields, COL_TIME_DATE) or _col(fields, COL_TIME_S) or _col(fields, COL_TIME_MS)
+            c_cpu, c_gpu, c_app = _col(fields, COL_CPU), _col(fields, COL_GPU), _col(fields, COL_APP)
+            cols = [c for c in (c_time, c_ft, c_cpu, c_gpu) if c]
+            with gzip.open(tmp, "wt", newline="", encoding="utf-8", compresslevel=6) as fo:
+                w = csv.writer(fo)
+                w.writerow(cols)
+                for r in rd:
+                    if c_app and not (r.get(c_app) or "").lower().startswith("iracingsim"):
+                        continue
+                    w.writerow([r.get(c) or "" for c in cols])
+        os.replace(tmp, dst)
+    except (OSError, csv.Error, EOFError):
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+        return src
+    try:
+        src.unlink()
+    except OSError:
+        pass  # queda el original además del comprimido; se usa el comprimido
+    return dst
+
+
+def find_file(path: str | Path) -> Path | None:
+    """El CSV de PresentMon indicado o su variante comprimida/sin comprimir, si existe."""
+    p = Path(path)
+    alt = p.with_name(p.name[:-3]) if p.suffix == ".gz" else p.with_name(p.name + ".gz")
+    return next((c for c in (p, alt) if c.is_file()), None)
+
+
 def load_frames(path: str | Path, t0: float | None = None) -> list[tuple]:
     """Devuelve [(t_abs_o_rel, frametime_ms, cpu_busy_ms|None, gpu_busy_ms|None)] de iRacing."""
     frames = []
-    with open(path, newline="", encoding="utf-8", errors="replace") as f:
+    with _open_text(path) as f:
         rd = csv.DictReader(f)
         fields = rd.fieldnames or []
         c_ft = _col(fields, COL_FRAMETIME)
@@ -211,6 +273,8 @@ def load_frames(path: str | Path, t0: float | None = None) -> list[tuple]:
             else:
                 t = None
             frames.append((t, ft, _fnum(r.get(c_cpu)) if c_cpu else None, _fnum(r.get(c_gpu)) if c_gpu else None))
+            if len(frames) > MAX_FRAMES:
+                raise ValueError(_("El registro de PresentMon es demasiado grande."))
     return align_clock(frames, t0)
 
 

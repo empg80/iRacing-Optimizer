@@ -337,6 +337,11 @@ class SessionMonitor:
                 if cap:
                     log("Cerrando PresentMon…")
                     cap.stop()
+                    from .presentmon import compact
+                    log(_("Comprimiendo el registro de PresentMon…"))
+                    small = compact(cap.out_csv)
+                    if small != cap.out_csv:
+                        self.meta["presentmon"]["csv"] = small.name
         self.meta["top_processes"] = [p for p in self.sys.top_processes(12) if not p["is_iracing"]][:8]
         self.meta["iracing_cpu_pct"] = next((p["cpu_pct"] for p in self.sys.top_processes(12) if p["is_iracing"]), None)
         self.meta["samples"] = rows

@@ -261,3 +261,28 @@ def test_cap_change_during_recording():
             "config_end": {"renderer": {"Graphics Options": {"DesiredFPSLimit": "120", "MSAASamples": "4"}}}}
     pipeline.use_final_config(meta)
     assert ("DesiredFPSLimit", "80", "120") in meta["config_changes"] and meta["config"] is meta["config_end"]
+
+
+def test_presentmon_compact_roundtrip(tmp_path):
+    """v0.9.7: el CSV de PresentMon se reduce a 4 columnas, se comprime y se lee igual."""
+    from iroptimizer import presentmon
+    csv_path, _ = demo.make(tmp_path, with_presentmon=True)
+    pm = csv_path.with_suffix(".presentmon.csv")
+    before = presentmon.load_frames(pm)
+    size = pm.stat().st_size
+    small = presentmon.compact(pm)
+    assert small.name.endswith(".presentmon.csv.gz") and not pm.exists()
+    assert small.stat().st_size < size / 3
+    assert presentmon.load_frames(small) == before
+    # el análisis encuentra el .gz aunque la sesión apunte al nombre sin comprimir
+    res = pipeline.run(csv_path)
+    assert res.analysis["presentmon"]
+    assert presentmon.compact(small) == small  # idempotente
+
+
+def test_presentmon_compact_keeps_original_on_bad_file(tmp_path):
+    from iroptimizer import presentmon
+    p = tmp_path / "x.presentmon.csv"
+    p.write_text("Foo,Bar\n1,2\n")
+    assert presentmon.compact(p) == p and p.exists()
+    assert not list(tmp_path.glob("*.gz"))

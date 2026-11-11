@@ -746,6 +746,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
  'Comparación de sesiones': 'Session comparison',
  'Comparando…': 'Comparing…',
  'Comparar con otra sesión…': 'Compare with another session…',
+ 'Comprimiendo el registro de PresentMon…': 'Compressing the PresentMon log…',
  'Comprobación': 'Check',
  'Comprueba que no haya otro equipo de la casa saturando la conexión.': 'Make sure no other device '
                                                                         'at home is saturating the '
@@ -957,6 +958,7 @@ CATALOG = {'\n\nQué hacer:\n': '\n\nWhat to do:\n',
                                                                                "what can't be "
                                                                                "seen; it's almost "
                                                                                'always worth it.',
+ 'El registro de PresentMon es demasiado grande.': 'The PresentMon log is too large.',
  'El {p:.0f} % del tiempo estás a ~{h:.0f} fps (la mitad de {hz:.0f} Hz): el runtime inventa uno de cada dos frames y aparecen «fantasmas» en coches y bordes. Aplica los recortes de abajo o baja la frecuencia del visor: mejor {lower} Hz estables que {hz:.0f} Hz con reproyección.': '{p:.0f} '
                                                                                                                                                                                                                                                                                           '% '
                                                                                                                                                                                                                                                                                           'of '

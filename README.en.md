@@ -43,6 +43,7 @@ The interface is available in **English and Spanish**. It follows your Windows l
 2. **Session monitor** (with optional **PresentMon** for real frame-by-frame frametimes): click *Start recording*, get on track (a full race is ideal) and click *Stop* when you're done.
    - While recording it shows FPS, GPU, physics/network thread, latency and nearby cars live, and warns you immediately about stutters, latency spikes, packet loss, a saturated physics thread or a hot GPU.
    - With PresentMon you get real 1 % / 0.1 % lows and millisecond stutters, each with its lap position and whether the CPU or the GPU caused it.
+   - When the recording ends, the PresentMon log is trimmed and compressed (`.presentmon.csv.gz`, about 7 MB per hour of racing instead of ~100 MB).
    - The first time, it may ask for a Windows permission (see [SECURITY.md](SECURITY.md)).
 3. **Diagnostics**: checks each area (CPU, GPU, frametime, network, memory, system) and marks it OK, warning or problem. For each check it explains what it means and what to do, and lists incidents with their minute and lap position.
 4. **Analysis and recommendations**: average FPS, the worst 5 % and 1 %, time below target, what limits you, FPS loss with nearby traffic, and the slowest sections of the track. It gives a list of prioritized changes (P1 apply now, P2 recommended, P3 optional): tick the ones you want and click **Apply selected**. An HTML report with charts is also generated.

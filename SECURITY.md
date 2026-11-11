@@ -53,9 +53,9 @@ Para compartir usa **Exportar para compartir…** (o `export`). El `.zip` result
 ## Abrir sesiones de otros
 
 Al abrir un `.zip` recibido:
-- solo se aceptan nombres `session_*.csv/.json/.presentmon.csv`, sin carpetas ni rutas;
+- solo se aceptan nombres `session_*.csv/.json/.presentmon.csv(.gz)`, sin carpetas ni rutas;
 - se ignora cualquier otro archivo del `.zip`;
-- hay límites de tamaño (200 MB por CSV, 2 MB por JSON);
+- hay límites de tamaño (200 MB por CSV, 2 MB por JSON) y de frames leídos de PresentMon (6 millones), para que un `.gz` manipulado no agote la memoria;
 - nada se ejecuta ni se aplica a tu iRacing: solo se analiza.
 
 ## Verificar la descarga

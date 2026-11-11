@@ -42,9 +42,11 @@ def load_pm(csv_path: Path, meta: dict, rows: list[dict], explicit: str | None =
     path = Path(explicit) if explicit else (csv_path.parent / Path(info["csv"]).name if info.get("csv") else None)
     if not path:
         return None
-    if not path.is_file():
+    found = presentmon.find_file(path)
+    if not found:
         meta["presentmon_status"] = ("missing", path.name)
         return None
+    path = found
     try:
         frames = presentmon.load_frames(path, info.get("t0"))
     except (OSError, ValueError) as e:
